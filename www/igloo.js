@@ -139,11 +139,12 @@ Igloo.prototype.elements = function(data, usage) {
  * @param {GLenum} [format=GL_RGBA]
  * @param {GLenum} [wrap=GL_CLAMP_TO_EDGE]
  * @param {GLenum} [filter=GL_LINEAR]
+ * @param {GLenum} [type=UNSIGNED_BYTE]
  * @returns {Igloo.Texture}
  */
-Igloo.prototype.texture = function(source, format, wrap, filter) {
-    var texture = new Igloo.Texture(this.gl, format, wrap, filter);
-    if (source != null) {
+Igloo.prototype.texture = function(source, format, wrap, filter, type) {
+    var texture = new Igloo.Texture(this.gl, format, wrap, filter, type);
+    if (source !== null) {
         texture.set(source);
     }
     return texture;
@@ -367,19 +368,21 @@ Igloo.Buffer.prototype.update = function(data, usage) {
  * @param {GLenum} [format=GL_RGBA]
  * @param {GLenum} [wrap=GL_CLAMP_TO_EDGE]
  * @param {GLenum} [filter=GL_LINEAR]
+ * @param {GLenum} [type=UNSIGNED_BYTE]
  * @returns {Igloo.Texture}
  */
-Igloo.Texture = function(gl, format, wrap, filter) {
+Igloo.Texture = function(gl, format, wrap, filter, type) {
     this.gl = gl;
     var texture = this.texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
-    wrap = wrap == null ? gl.CLAMP_TO_EDGE : wrap;
-    filter = filter == null ? gl.LINEAR : filter;
+    wrap = wrap === null ? gl.CLAMP_TO_EDGE : wrap;
+    filter = filter === null ? gl.LINEAR : filter;
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrap);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrap);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
-    this.format = format = format == null ? gl.RGBA : format;
+    this.format = format === null ? gl.RGBA : format;
+    this.type = type === null ? gl.UNSIGNED_BYTE : type;
 };
 
 /**
@@ -405,7 +408,7 @@ Igloo.Texture.prototype.blank = function(width, height) {
     var gl = this.gl;
     this.bind();
     gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height,
-                  0, this.format, gl.UNSIGNED_BYTE, null);
+                  0, this.format, this.type, null);
     return this;
 };
 
@@ -424,10 +427,10 @@ Igloo.Texture.prototype.set = function(source, width, height) {
     if (width != null || height != null) {
         gl.texImage2D(gl.TEXTURE_2D, 0, this.format,
                       width, height, 0, this.format,
-                      gl.UNSIGNED_BYTE, source);
+                      this.type, source);
     } else {
         gl.texImage2D(gl.TEXTURE_2D, 0, this.format,
-                      this.format, gl.UNSIGNED_BYTE, source);
+                      this.format, this.type, source);
     }
     return this;
 };
@@ -448,10 +451,10 @@ Igloo.Texture.prototype.subset = function(source, xoff, yoff, width, height) {
     if (width != null || height != null) {
         gl.texSubImage2D(gl.TEXTURE_2D, 0, xoff, yoff,
                          width, height,
-                         this.format, gl.UNSIGNED_BYTE, source);
+                         this.format, this.type, source);
     } else {
         gl.texSubImage2D(gl.TEXTURE_2D, 0, xoff, yoff,
-                         this.format, gl.UNSIGNED_BYTE, source);
+                         this.format, this.type, source);
     }
     return this;
 };

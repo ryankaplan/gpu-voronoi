@@ -13,7 +13,7 @@ class Igloo {
     def array(arr Float32Array) Buffer
     def array(arr Float32Array, usage GLenum) Buffer
     def elements(array dynamic, usage GLenum) Buffer
-    def texture(source dynamic, format GLenum, wrap GLenum, filter GLenum) Texture
+    def texture(source dynamic, format GLenum, wrap GLenum, filter GLenum, type GLenum) Texture
     def framebuffer(texture Texture) FrameBuffer
     def framebuffer FrameBuffer
 }
@@ -50,6 +50,7 @@ namespace Igloo {
     }
 
     class Texture {
+        def new(gl WebGLRenderingContext, format GLenum, wrap GLenum, filter GLenum, type GLenum)
         def new(gl WebGLRenderingContext, format GLenum, wrap GLenum, filter GLenum)
         def new(gl WebGLRenderingContext, format GLenum, wrap GLenum)
         def new(gl WebGLRenderingContext, format GLenum)
