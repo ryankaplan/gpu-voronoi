@@ -1,0 +1,107 @@
+interface TouchHandler {
+    def touchStart(e HTMLTouchEvent)
+    def touchMove(e HTMLTouchEvent)
+    def touchEnd(e HTMLTouchEvent)
+}
+
+############################################################################
+
+class PanTouchHandler :: TouchHandler {
+    var _controller Controller
+    var _panning = false
+    var _dragBehavior DragMouseBehavior = null
+
+    def touchStart(e HTMLTouchEvent) {
+        # Start panning if there's just a single touch
+        _panning = e.touches.count == 1
+
+        if _panning {
+            _dragBehavior = DragMouseBehavior.new(_controller)
+            _dragBehavior.down(e.touches[0].clientX, e.touches[0].clientY)
+        }
+
+        e.preventDefault
+    }
+
+    def touchMove(e HTMLTouchEvent) {
+        # If we were panning, keep panning if we still have just one touch
+        _panning = _panning && e.touches.count == 1
+
+        if _panning {
+            _dragBehavior.move(e.touches[0].clientX, e.touches[0].clientY)
+        }
+
+        e.preventDefault
+    }
+
+    def touchEnd(e HTMLTouchEvent) {
+        # If we were panning, keep panning if we still have just one touch
+        _panning = _panning && e.touches.count == 1
+
+        if _panning {
+            _dragBehavior.up(e.touches[0].clientX, e.touches[0].clientY)
+        }
+        _panning = false
+
+        e.preventDefault
+    }
+}
+
+############################################################################
+
+class ZoomTouchHandler :: TouchHandler {
+    var _controller Controller
+    var _scaling = false
+
+    var _onStartDistance Box<double> = null
+    var _onStartViewport Rect = null
+
+    def touchStart(e HTMLTouchEvent) {
+        if e.touches.count == 2 {
+            _scaling = true
+            _onStartViewport = _controller.viewport
+            _onStartDistance = Box<double>.new(_distanceBetweenTouches(e))
+        }
+    }
+
+    def touchMove(e HTMLTouchEvent) {
+        if _onStartViewport != null && e.touches.count == 2 {
+            _onZoom(e)
+        }
+    }
+
+    def touchEnd(e HTMLTouchEvent) {
+        if _onStartViewport != null && e.touches.count == 2 {
+            _onZoom(e)
+            _onStartViewport = null
+        }
+    }
+
+    def _distanceBetweenTouches(e HTMLTouchEvent) double {
+        const aTouch = e.touches[0]
+        const bTouch = e.touches[1]
+        const a = Vector.new(aTouch.clientX, aTouch.clientY)
+        const b = Vector.new(bTouch.clientX, bTouch.clientY)
+        return a.distanceTo(b)
+    }
+
+    def _touchCenter(e HTMLTouchEvent) Vector {
+        const aTouch = e.touches[0]
+        const bTouch = e.touches[1]
+        const a = Vector.new(aTouch.clientX, aTouch.clientY)
+        const b = Vector.new(bTouch.clientX, bTouch.clientY)
+        return (a + b) / 2.0
+    }
+
+    def _onZoom(e HTMLTouchEvent) {
+        assert(_onStartViewport != null)
+        assert(_onStartDistance != null)
+
+        _controller.viewport = Zoom.zoomViewport(
+            _onStartViewport,
+            _onStartDistance.value - _distanceBetweenTouches(e),
+            _touchCenter(e),
+            _controller.canvasSize
+        )
+    }
+}

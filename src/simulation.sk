@@ -1,0 +1,91 @@
+
+class Simulation {
+    var _igloo Igloo
+
+    # Width and height of Game of Life grid. It's always square.
+    var gridSize int
+
+    var _program Igloo.Program
+    var _quadBuffer Igloo.Buffer
+    var _sourceTexture Igloo.Texture
+    var _destTexture Igloo.Texture
+    var _framebuffer Igloo.FrameBuffer
+
+    def new(igloo Igloo, gridSize_ int) {
+        _igloo = igloo
+        gridSize = gridSize_
+
+        var gl = _igloo.gl
+        gl.disable(gl.DEPTH_TEST)
+
+        _program = _igloo.program("glsl/quad.vert", "glsl/game_of_life.frag")
+        _quadBuffer = igloo.array(Igloo.QUAD2)
+        _sourceTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST).blank(gridSize, gridSize)
+        _destTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST).blank(gridSize, gridSize)
+        _framebuffer = _igloo.framebuffer
+
+        # Initialize the cell grid with random values
+        const randomGrid = Uint8Array.new(gridSize * gridSize)
+        for i in 0..randomGrid.length {
+            randomGrid[i] = Math.random < 0.5 ? 1 : 0
+        }
+        setCellGrid(randomGrid)
+    }
+
+    def gridTexture Igloo.Texture {
+        return _sourceTexture
+    }
+
+    def setCellGrid(inputGrid Uint8Array) {
+        var rgba = Uint8Array.new(gridSize * gridSize * 4)
+        for i in 0..inputGrid.length {
+            var j = i * 4
+            rgba[j + 0] = inputGrid[i] == 1 ? 255 : 0
+            rgba[j + 1] = inputGrid[i] == 1 ? 255 : 0
+            rgba[j + 2] = inputGrid[i] == 1 ? 255 : 0
+            rgba[j + 3] = 255
+        }
+        _sourceTexture.subset(rgba, 0, 0, gridSize, gridSize)
+    }
+
+    def getCellGrid Uint8Array {
+        const gl = _igloo.gl
+        const w = gridSize
+        const h = gridSize
+        _framebuffer.attach(_sourceTexture)
+        const rgba = Uint8Array.new(w * h * 4)
+        gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, rgba)
+        const state = Uint8Array.new(w * h)
+        for i in 0..w * h {
+            state[i] = rgba[i * 4] > 128 ? 1 : 0
+        }
+        return state
+    }
+
+    def step {
+        # The current simulation state is always in _sourceTexture
+        # and we draw onto _destTexture. So...
+        #
+        # 1. Bind the _destTexture onto the framebuffer so that
+        #    we'll draw onto it.
+        #
+        # 2. Bind _sourceTexture texture to index 0. This is
+        #    passed to the shader by setting the
+        #    cellGridTexture uniform below.
+        #
+        _framebuffer.attach(_destTexture)
+        _sourceTexture.bind(0)
+        _igloo.gl.viewport(0, 0, gridSize, gridSize)
+        _program
+            .use
+            .attrib("quad", _quadBuffer, 2)
+            .uniformi("cellGridTexture", 0)
+            .uniform("cellGridSize", Float32Array.new([gridSize, gridSize]))
+            .draw(_igloo.gl.TRIANGLE_STRIP, 4)
+
+        # Swap the source and destination textures
+        const tmp = _sourceTexture
+        _sourceTexture = _destTexture
+        _destTexture = tmp
+    }
+}

@@ -1,0 +1,161 @@
+
+namespace Controller {
+    var gridSize = 32
+}
+
+class Controller {
+    var _canvas HTMLCanvasElement
+    var _simulation Simulation
+    var _igloo Igloo
+
+    var _program Igloo.Program
+    var _quadBuffer Igloo.Buffer
+
+    var _mouseBehaviors List<MouseBehavior>
+    var _touchHandlers List<TouchHandler>
+
+    # viewport in grid-space
+    var viewport Rect
+
+    def new(canvas HTMLCanvasElement) {
+        _canvas = canvas
+        viewport = Rect.new(-50, -10, 100, 100)
+
+        _igloo = Igloo.new(canvas)
+        if _igloo.gl == null {
+            document.getElementById("app-container").style.display = "none"
+            document.getElementById("webgl-error").style.display = null
+            throw Error.new("Failed to initialize Igloo")
+        }
+
+        _simulation = Simulation.new(_igloo, gridSize)
+        _igloo.gl.disable(_igloo.gl.DEPTH_TEST)
+        _program = _igloo.program("glsl/quad.vert", "glsl/draw_grid.frag")
+        _quadBuffer = _igloo.array(Igloo.QUAD2)
+
+        _mouseBehaviors = [
+            DragMouseBehavior.new(self),
+            ZoomMouseBehavior.new(self)
+         ]
+
+         _touchHandlers = [
+             PanTouchHandler.new(self),
+             ZoomTouchHandler.new(self)
+         ]
+
+        _bindMouseBehaviors
+        _onResize
+        window.addEventListener("resize", () => { _onResize })
+    }
+
+    def setCanvasCursor(cssCursor string) {
+        _canvas.style.cursor = cssCursor
+    }
+
+    def _onResize {
+        const canvasContainer dynamic = document.getElementById("canvas-container")
+        _canvas.width = canvasContainer.offsetWidth
+        _canvas.height = canvasContainer.offsetHeight
+
+        # Constrain the viewport size to the same aspect ratio
+        # as the canvas
+        viewport.size.constrainToAspectRatio(Vector.new(_canvas.width, _canvas.height), Axis.Y)
+
+        if !RELEASE {
+            const viewportAspectRatio = viewport.size.y / viewport.size.x
+            const canvasAspectRatio = _canvas.height as double / _canvas.width
+            assert(viewportAspectRatio - canvasAspectRatio < 0.001)
+        }
+    }
+
+    def canvas HTMLCanvasElement {
+        return _canvas
+    }
+
+    def canvasSize Vector {
+        return Vector.new(_canvas.width, _canvas.height)
+    }
+
+    def draw {
+        # As per the comment at the top of 'step', the current grid
+        # state is stored in the 'front' texture. So we bind that to
+        # index 0 and pass that to the shader as cellGridTexture.
+        _igloo.defaultFramebuffer.bind
+        _simulation.gridTexture.bind(0)
+        _igloo.gl.viewport(0, 0, _canvas.width, _canvas.height)
+        _program
+            .use
+            .attrib("quad", _quadBuffer, 2)
+            .uniformi("cellGridTexture", 0)
+            .uniform("viewportOffset", viewport.origin.toFloat32Array)
+            .uniform("viewportSize", viewport.size.toFloat32Array)
+            .uniform("canvasSize", Float32Array.new([_canvas.width, _canvas.height]))
+            .uniform("gridSize", Float32Array.new([_simulation.gridSize, _simulation.gridSize]))
+            .uniform("showDebugUI", !RELEASE, true)
+            .draw(_igloo.gl.TRIANGLE_STRIP, 4)
+    }
+
+    def start {
+        setInterval(() => {
+            _simulation.step
+            draw
+        }, 60)
+    }
+
+    def _bindMouseBehaviors {
+        _canvas.addEventListener("mousedown", (e HTMLMouseEvent) => {
+            for behavior in _mouseBehaviors {
+                behavior.down(e.offsetX, e.offsetY)
+            }
+            e.preventDefault
+        })
+
+        _canvas.addEventListener("mousemove", (e HTMLMouseEvent) => {
+            for behavior in _mouseBehaviors {
+                behavior.move(e.offsetX, e.offsetY)
+            }
+            e.preventDefault
+        })
+
+        _canvas.addEventListener("mouseup", (e HTMLMouseEvent) => {
+            for behavior in _mouseBehaviors {
+                behavior.up(e.offsetX, e.offsetY)
+            }
+            e.preventDefault
+        })
+
+        _canvas.addEventListener("mouseleave", (e HTMLMouseEvent) => {
+            for behavior in _mouseBehaviors {
+                behavior.up(e.offsetX, e.offsetY)
+            }
+        })
+
+        _canvas.addEventListener("wheel", (e HTMLWheelEvent) => {
+            for behavior in _mouseBehaviors {
+                behavior.scroll(e.offsetX, e.offsetY, e.deltaX, e.deltaY)
+            }
+            e.preventDefault
+        })
+
+        _canvas.addEventListener("touchstart", (e HTMLTouchEvent) => {
+            for touchHandler in _touchHandlers {
+                touchHandler.touchStart(e)
+            }
+            e.preventDefault
+        })
+
+        _canvas.addEventListener("touchmove", (e HTMLTouchEvent) => {
+            for touchHandler in _touchHandlers {
+                touchHandler.touchMove(e)
+            }
+            e.preventDefault
+        })
+
+        _canvas.addEventListener("touchend", (e HTMLTouchEvent) => {
+            for touchHandler in _touchHandlers {
+               touchHandler.touchEnd(e)
+            }
+            e.preventDefault
+        })
+    }
+}

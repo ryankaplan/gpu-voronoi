@@ -1,0 +1,40 @@
+class Rect {
+    var origin = Vector.new
+    var size = Vector.new
+
+    def new(left double, top double, width double, height double) {
+        origin = Vector.new(left, top)
+        size = Vector.new(width, height)
+    }
+
+    def clone Rect {
+        return Rect.new(origin.x, origin.y, size.x, size.y)
+    }
+
+    def equals(other Rect) bool {
+        return other.origin.equals(origin) && other.size.equals(size)
+    }
+
+	def toString string {
+		return "Rect(\(origin.x), \(origin.y), \(size.x), \(size.y))"
+	}
+
+    def top double { return origin.y }
+    def right double { return origin.x + size.x }
+    def bottom double { return origin.y + size.y }
+    def left double { return origin.x }
+
+    def pointAtUvCoordinate(uv Vector) Vector {
+        return origin + uv * size
+    }
+}
+
+namespace Rect {
+    def withOriginAndSize(origin Vector, size Vector) Rect {
+        return Rect.new(origin.x, origin.y, size.x, size.y)
+    }
+
+    def withCenterAndSize(center Vector, size Vector) Rect {
+        return Rect.withOriginAndSize(center - size / 2, size)
+    }
+}

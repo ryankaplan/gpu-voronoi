@@ -1,0 +1,35 @@
+@import
+namespace console {
+    const log dynamic
+}
+
+@import
+def isTouchDevice bool
+
+namespace Controller {
+    const cellSize = 1
+}
+
+class HTMLWindow {
+    var onload dynamic
+    var onresize dynamic
+}
+
+@entry
+def main {
+    window.onload = => {
+        const canvas = document.getElementById("game-of-life-canvas") as HTMLCanvasElement
+        const controller = Controller.new(canvas)
+        controller.draw
+        controller.start
+        if !RELEASE {
+            # Expose this for in-browser debugging
+            (window as dynamic).controller = controller
+        }
+
+        if isTouchDevice {
+            document.getElementById("instructions").innerHTML = "Pinch and drag to move around."
+        }
+    }
+}
+

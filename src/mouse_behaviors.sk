@@ -1,0 +1,101 @@
+interface MouseBehavior {
+    def down(x int, y int)
+    def move(x int, y int)
+    def up(x int, y int)
+    def scroll(x int, y int, deltaX double, deltaY double)
+}
+
+def canvasSpaceToGridSpace(canvasPosition Vector, canvasSize Vector, viewport Rect) Vector {
+    const canvasSpaceUv = canvasPosition / canvasSize
+    return viewport.pointAtUvCoordinate(canvasSpaceUv)
+}
+
+def canvasSpaceToGridSpace(canvasPosition Vector, controller Controller) Vector {
+    return canvasSpaceToGridSpace(
+        canvasPosition,
+        Vector.new(controller.canvas.width, controller.canvas.height),
+        controller.viewport
+    )
+}
+
+############################################################################
+
+class DragMouseBehavior :: MouseBehavior {
+    var _controller Controller
+
+    var _onDownGridSpace Box<Vector> = null
+    var _onDownViewport Box<Rect> = null
+
+    def down(x int, y int) {
+        _onDownViewport = Box<Rect>.new(_controller.viewport.clone)
+        _onDownGridSpace = Box<Vector>.new(_canvasSpaceToGridSpace(x, y))
+        _controller.setCanvasCursor("move")
+    }
+
+    def move(x int, y int) {
+        if _onDownGridSpace == null {
+            return
+        }
+        const onMoveGridSpace = _canvasSpaceToGridSpace(x, y)
+        const delta = _delta(onMoveGridSpace)
+        _controller.viewport.origin = _onDownViewport.value.origin + delta
+        _controller.setCanvasCursor("move")
+    }
+
+    def up(x int, y int) {
+        if _onDownGridSpace != null {
+            const onUpGridSpace = _canvasSpaceToGridSpace(x, y)
+            const delta = _delta(onUpGridSpace)
+            if delta.length > 10 {
+                _controller.viewport.origin = _onDownViewport.value.origin + delta
+            }
+        }
+
+        _onDownGridSpace = null
+        _onDownViewport = null
+        _controller.setCanvasCursor("default")
+    }
+
+    def scroll(x int, y int, deltaX double, deltaY double) { }
+
+    def _canvasSpaceToGridSpace(x int, y int) Vector {
+        if _onDownViewport == null {
+            throw Error.new("Shouldn't call _gridSpaceFromCanvasSpace unless _onDownViewport is set")
+        }
+
+        return canvasSpaceToGridSpace(
+            Vector.new(x, y),
+            Vector.new(_controller.canvas.width, _controller.canvas.height),
+            _onDownViewport.value
+        )
+    }
+
+    def _delta(newLocation Vector) Vector {
+        if _onDownGridSpace == null {
+            throw Error.new("Shouldn't call _delta unless _onDownGridSpace is set")
+        }
+
+        const delta = _onDownGridSpace.value - newLocation
+        delta.y *= -1
+        return delta
+    }
+}
+
+############################################################################
+
+class ZoomMouseBehavior :: MouseBehavior {
+    var _controller Controller
+
+    def down(x int, y int) {}
+    def move(x int, y int) {}
+    def up(x int, y int) {}
+
+    def scroll(x int, y int, deltaX double, deltaY double) {
+        _controller.viewport = Zoom.zoomViewport(
+            _controller.viewport,
+            deltaY,
+            Vector.new(x, y),
+            _controller.canvasSize
+        )
+    }
+}

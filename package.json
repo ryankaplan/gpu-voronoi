@@ -1,0 +1,10 @@
+{
+  "name": "gameoflife.sk",
+  "version": "0.1.0",
+  "description": "Port of Game of Life on the GPU by nullprogram (http://nullprogram.com/blog/2014/06/10/)",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "skew": "latest"
+  }
+}
