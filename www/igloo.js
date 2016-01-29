@@ -447,7 +447,13 @@ Igloo.Texture.prototype.set = function(source, width, height) {
 Igloo.Texture.prototype.subset = function(source, xoff, yoff, width, height) {
     var gl = this.gl;
     this.bind();
-    if (source instanceof Array) source = new Uint8Array(source);
+    if (source instanceof Array) {
+        if (type === gl.FLOAT) {
+            source = new Float32Array(source);
+        } else {
+            source = new Uint8Array(source);
+        }
+    }
     if (width != null || height != null) {
         gl.texSubImage2D(gl.TEXTURE_2D, 0, xoff, yoff,
                          width, height,
