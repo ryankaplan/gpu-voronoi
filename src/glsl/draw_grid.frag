@@ -43,18 +43,12 @@ vec4 getGridColor(vec2 fragCoord) {
         return vec4(0.0, 0.0, 0.0, 1.0);
     }
 
-    vec4 gridColor = texture2D(cellGridTexture, gridUv);
-
-    // Color the grid
-    vec4 color = vec4(
-        fragCoord.x / canvasSize.x,
-        fragCoord.y / canvasSize.y,
-        fragCoord.y * 2.0 / canvasSize.y,
-        1.0
-    );
-
-    // If the cell is 'solid', it will have r == g == b == 1.0
-    return gridColor.r > 0.5 ? color : vec4(0.13, 0.13, 0.13, 0.0);
+    vec4 texColor = texture2D(cellGridTexture, gridUv);
+    if (texColor.r > 0.5) {
+        return vec4(0.0, 0.0, 0.0, 1.0);
+    } else {
+        return vec4(1.0, 1.0, 1.0, 1.0);
+    }
 }
 
 void main() {

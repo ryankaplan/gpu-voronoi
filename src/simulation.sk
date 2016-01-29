@@ -1,3 +1,10 @@
+def ext(gl WebGLRenderingContext, name string) dynamic {
+    const ext = gl.getExtension(name)
+    if ext == null {
+        throw Error.new("Unsupported WebGL extension with name \(name)")
+    }
+    return ext
+}
 
 class Simulation {
     var _igloo Igloo
@@ -16,16 +23,18 @@ class Simulation {
         gridSize = gridSize_
 
         var gl = _igloo.gl
+        var float = ext(gl, "OES_texture_float")
+        console.log(float)
         gl.disable(gl.DEPTH_TEST)
 
         _program = _igloo.program("glsl/quad.vert", "glsl/game_of_life.frag")
         _quadBuffer = igloo.array(Igloo.QUAD2)
-        _sourceTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST).blank(gridSize, gridSize)
-        _destTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST).blank(gridSize, gridSize)
+        _sourceTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.FLOAT).blank(gridSize, gridSize)
+        _destTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.FLOAT).blank(gridSize, gridSize)
         _framebuffer = _igloo.framebuffer
 
         # Initialize the cell grid with random values
-        const randomGrid = Uint8Array.new(gridSize * gridSize)
+        const randomGrid = Float32Array.new(gridSize * gridSize)
         for i in 0..randomGrid.length {
             randomGrid[i] = Math.random < 0.5 ? 1 : 0
         }
@@ -36,30 +45,16 @@ class Simulation {
         return _sourceTexture
     }
 
-    def setCellGrid(inputGrid Uint8Array) {
-        var rgba = Uint8Array.new(gridSize * gridSize * 4)
+    def setCellGrid(inputGrid Float32Array) {
+        var rgba = Float32Array.new(gridSize * gridSize * 4)
         for i in 0..inputGrid.length {
             var j = i * 4
-            rgba[j + 0] = inputGrid[i] == 1 ? 255 : 0
-            rgba[j + 1] = inputGrid[i] == 1 ? 255 : 0
-            rgba[j + 2] = inputGrid[i] == 1 ? 255 : 0
-            rgba[j + 3] = 255
+            rgba[j + 0] = inputGrid[i] > 0.5 ? 1.0 : 0.0
+            rgba[j + 1] = inputGrid[i] > 0.5 ? 1.0 : 0.0
+            rgba[j + 2] = inputGrid[i] > 0.5 ? 1.0 : 0.0
+            rgba[j + 3] = 1.0
         }
         _sourceTexture.subset(rgba, 0, 0, gridSize, gridSize)
-    }
-
-    def getCellGrid Uint8Array {
-        const gl = _igloo.gl
-        const w = gridSize
-        const h = gridSize
-        _framebuffer.attach(_sourceTexture)
-        const rgba = Uint8Array.new(w * h * 4)
-        gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, rgba)
-        const state = Uint8Array.new(w * h)
-        for i in 0..w * h {
-            state[i] = rgba[i * 4] > 128 ? 1 : 0
-        }
-        return state
     }
 
     def step {
@@ -74,6 +69,13 @@ class Simulation {
         #    cellGridTexture uniform below.
         #
         _framebuffer.attach(_destTexture)
+
+        const gl = _igloo.gl
+        var check = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
+        if check != gl.FRAMEBUFFER_COMPLETE {
+            throw Error.new("Framebuffer completion issue")
+        }
+
         _sourceTexture.bind(0)
         _igloo.gl.viewport(0, 0, gridSize, gridSize)
         _program

@@ -5,23 +5,23 @@ precision mediump float;
 uniform sampler2D cellGridTexture;
 uniform vec2 cellGridSize;
 
-int get(vec2 offset) {
-    return int(texture2D(cellGridTexture, (gl_FragCoord.xy + offset) / cellGridSize).r);
+float get(vec2 offset) {
+    return texture2D(cellGridTexture, (gl_FragCoord.xy + offset) / cellGridSize).r;
+}
+
+bool approx(float a, float b) {
+    return abs(a - b) < 0.001;
 }
 
 void main() {
-    int sum =
-        get(vec2(-1.0, -1.0)) +
-        get(vec2(-1.0,  0.0)) +
-        get(vec2(-1.0,  1.0)) +
-        get(vec2( 0.0, -1.0)) +
-        get(vec2( 0.0,  1.0)) +
-        get(vec2( 1.0, -1.0)) +
-        get(vec2( 1.0,  0.0)) +
-        get(vec2( 1.0,  1.0));
-    if (sum == 3) {
+    float sum = get(vec2(-1.0, -1.0)) + get(vec2(-1.0,  0.0)) +
+        get(vec2(-1.0,  1.0)) + get(vec2( 0.0, -1.0)) +
+        get(vec2( 0.0,  1.0)) + get(vec2( 1.0, -1.0)) +
+        get(vec2( 1.0,  0.0)) + get(vec2( 1.0,  1.0));
+
+    if (approx(sum, 3.0)) {
         gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-    } else if (sum == 2) {
+    } else if (approx(sum, 2.0)) {
         float current = float(get(vec2(0.0, 0.0)));
         gl_FragColor = vec4(current, current, current, 1.0);
     } else {
