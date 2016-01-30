@@ -76,6 +76,10 @@ class Controller {
         return Vector.new(_canvas.width, _canvas.height)
     }
 
+    def userClickGridSpace(point Vector) {
+        _simulation.userClickGridSpace(point)
+    }
+
     def draw {
         # As per the comment at the top of 'step', the current grid
         # state is stored in the 'front' texture. So we bind that to

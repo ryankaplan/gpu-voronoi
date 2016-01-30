@@ -1,7 +1,7 @@
 {
-  "name": "gameoflife.sk",
+  "name": "voronooi.sk",
   "version": "0.1.0",
-  "description": "Port of Game of Life on the GPU by nullprogram (http://nullprogram.com/blog/2014/06/10/)",
+  "description": "Approximate Voronooi generation on the GPU",
   "dependencies": {
   },
   "devDependencies": {

@@ -23,12 +23,14 @@ def canvasSpaceToGridSpace(canvasPosition Vector, controller Controller) Vector 
 class DragMouseBehavior :: MouseBehavior {
     var _controller Controller
 
-    var _onDownGridSpace Box<Vector> = null
-    var _onDownViewport Box<Rect> = null
+    var _onDownGridSpace Vector = null
+    var _onDownViewport Rect = null
 
     def down(x int, y int) {
-        _onDownViewport = Box<Rect>.new(_controller.viewport.clone)
-        _onDownGridSpace = Box<Vector>.new(_canvasSpaceToGridSpace(x, y))
+        _onDownViewport = _controller.viewport.clone
+        _onDownGridSpace = _canvasSpaceToGridSpace(x, y)
+
+        _controller.userClickGridSpace(_onDownGridSpace)
         _controller.setCanvasCursor("move")
     }
 
@@ -38,7 +40,7 @@ class DragMouseBehavior :: MouseBehavior {
         }
         const onMoveGridSpace = _canvasSpaceToGridSpace(x, y)
         const delta = _delta(onMoveGridSpace)
-        _controller.viewport.origin = _onDownViewport.value.origin + delta
+        _controller.viewport.origin = _onDownViewport.origin + delta
         _controller.setCanvasCursor("move")
     }
 
@@ -47,7 +49,7 @@ class DragMouseBehavior :: MouseBehavior {
             const onUpGridSpace = _canvasSpaceToGridSpace(x, y)
             const delta = _delta(onUpGridSpace)
             if delta.length > 10 {
-                _controller.viewport.origin = _onDownViewport.value.origin + delta
+                _controller.viewport.origin = _onDownViewport.origin + delta
             }
         }
 
@@ -59,6 +61,7 @@ class DragMouseBehavior :: MouseBehavior {
     def scroll(x int, y int, deltaX double, deltaY double) { }
 
     def _canvasSpaceToGridSpace(x int, y int) Vector {
+        y = _controller.canvasSize.y as int - y
         if _onDownViewport == null {
             throw Error.new("Shouldn't call _gridSpaceFromCanvasSpace unless _onDownViewport is set")
         }
@@ -66,7 +69,7 @@ class DragMouseBehavior :: MouseBehavior {
         return canvasSpaceToGridSpace(
             Vector.new(x, y),
             Vector.new(_controller.canvas.width, _controller.canvas.height),
-            _onDownViewport.value
+            _onDownViewport
         )
     }
 
@@ -75,9 +78,7 @@ class DragMouseBehavior :: MouseBehavior {
             throw Error.new("Shouldn't call _delta unless _onDownGridSpace is set")
         }
 
-        const delta = _onDownGridSpace.value - newLocation
-        delta.y *= -1
-        return delta
+        return _onDownGridSpace - newLocation
     }
 }
 

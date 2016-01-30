@@ -38,15 +38,26 @@ class Simulation {
         for i in 0..randomGrid.length {
             randomGrid[i] = Math.random < 0.5 ? 1 : 0
         }
-        setCellGrid(randomGrid)
+        setCellGrid(randomGrid, 0, 0)
     }
 
     def gridTexture Igloo.Texture {
         return _sourceTexture
     }
 
-    def setCellGrid(inputGrid Float32Array) {
-        var rgba = Float32Array.new(gridSize * gridSize * 4)
+    def userClickGridSpace(point Vector) {
+        # Initialize the cell grid with random values
+        const randomGrid = Float32Array.new(gridSize * gridSize)
+        for i in 0..randomGrid.length {
+            randomGrid[i] = Math.random < 0.5 ? 1 : 0
+        }
+
+        setCellGrid(randomGrid, 0, 0)
+    }
+
+    def setCellGrid(inputGrid Float32Array, offsetX int, offsetY int) {
+        const textureWidth = (Math.sqrt(inputGrid.length) as int)
+        var rgba = Float32Array.new(textureWidth * textureWidth * 4)
         for i in 0..inputGrid.length {
             var j = i * 4
             rgba[j + 0] = inputGrid[i] > 0.5 ? 1.0 : 0.0
@@ -54,7 +65,7 @@ class Simulation {
             rgba[j + 2] = inputGrid[i] > 0.5 ? 1.0 : 0.0
             rgba[j + 3] = 1.0
         }
-        _sourceTexture.subset(rgba, 0, 0, gridSize, gridSize)
+        _sourceTexture.subset(rgba, offsetX, offsetY, gridSize, gridSize)
     }
 
     def step {
@@ -70,10 +81,12 @@ class Simulation {
         #
         _framebuffer.attach(_destTexture)
 
-        const gl = _igloo.gl
-        var check = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
-        if check != gl.FRAMEBUFFER_COMPLETE {
-            throw Error.new("Framebuffer completion issue")
+        if !RELEASE {
+            const gl = _igloo.gl
+            var check = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
+            if check != gl.FRAMEBUFFER_COMPLETE {
+                throw Error.new("Framebuffer completion issue")
+            }
         }
 
         _sourceTexture.bind(0)
