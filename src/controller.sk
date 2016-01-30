@@ -34,7 +34,7 @@ class Controller {
         _quadBuffer = _igloo.array(Igloo.QUAD2)
 
         _mouseBehaviors = [
-            DragMouseBehavior.new(self),
+            ClickDragMouseBehavior.new(self),
             ZoomMouseBehavior.new(self)
          ]
 

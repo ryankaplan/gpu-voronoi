@@ -9,14 +9,14 @@ interface TouchHandler {
 class PanTouchHandler :: TouchHandler {
     var _controller Controller
     var _panning = false
-    var _dragBehavior DragMouseBehavior = null
+    var _dragBehavior ClickDragMouseBehavior = null
 
     def touchStart(e HTMLTouchEvent) {
         # Start panning if there's just a single touch
         _panning = e.touches.count == 1
 
         if _panning {
-            _dragBehavior = DragMouseBehavior.new(_controller)
+            _dragBehavior = ClickDragMouseBehavior.new(_controller)
             _dragBehavior.down(e.touches[0].clientX, e.touches[0].clientY)
         }
 
