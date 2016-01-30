@@ -14,6 +14,7 @@ bool approx(float a, float b) {
 }
 
 void main() {
+    // For now don't do anything
     float val = get(vec2(0.0, 0.0));
     gl_FragColor = vec4(val, val, val, val);
     return;

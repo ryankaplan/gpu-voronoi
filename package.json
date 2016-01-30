@@ -2,9 +2,15 @@
   "name": "voronooi.sk",
   "version": "0.1.0",
   "description": "Approximate Voronooi generation on the GPU",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:ryankaplan/voronooi.git"
+  },
+  "license": "SEE LICENSE IN <LICENSE>",
   "dependencies": {
   },
   "devDependencies": {
-    "skew": "latest"
+    "skew": "latest",
+    "fast-watch": "latest"
   }
 }
