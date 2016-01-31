@@ -7,6 +7,16 @@ precision mediump float;
 //
 ////////////////////////////////////////////////////////////////////////
 
+const float EPSILON = 0.0001;
+
+bool approxEqual(float a, float b) {
+    return abs(a - b) < EPSILON;
+}
+
+vec2 gridPositionToUv(vec2 position, vec2 gridSize) {
+    return position / gridSize;
+}
+
 ////////////////////////////////////////////////////////////////////////
 //
 //                           Draw Quad
@@ -28,29 +38,27 @@ export void vCopyPosition() {
 uniform sampler2D cellGridTexture;
 uniform vec2 cellGridSize;
 
-float get(vec2 offset) {
-    return texture2D(cellGridTexture, (gl_FragCoord.xy + offset) / cellGridSize).r;
-}
-
-bool approx(float a, float b) {
-    return abs(a - b) < 0.001;
+// Return the value of the grid as position gl_FragCoord.xy + offset
+float gridGet(vec2 offset) {
+    return texture2D(cellGridTexture, gridPositionToUv(gl_FragCoord.xy + offset, cellGridSize)).r;
 }
 
 export void fGameOfLife() {
-    // For now don't do anything
-    float val = get(vec2(0.0, 0.0));
+    // For now don't do anything. Comment this out to progress Game of Life simulation.
+    float val = gridGet(vec2(0.0, 0.0));
     gl_FragColor = vec4(val, val, val, val);
     return;
 
-    float sum = get(vec2(-1.0, -1.0)) + get(vec2(-1.0,  0.0)) +
-        get(vec2(-1.0,  1.0)) + get(vec2( 0.0, -1.0)) +
-        get(vec2( 0.0,  1.0)) + get(vec2( 1.0, -1.0)) +
-        get(vec2( 1.0,  0.0)) + get(vec2( 1.0,  1.0));
+    float sum =
+        gridGet(vec2(-1.0, -1.0)) + gridGet(vec2(-1.0,  0.0)) +
+        gridGet(vec2(-1.0,  1.0)) + gridGet(vec2( 0.0, -1.0)) +
+        gridGet(vec2( 0.0,  1.0)) + gridGet(vec2( 1.0, -1.0)) +
+        gridGet(vec2( 1.0,  0.0)) + gridGet(vec2( 1.0,  1.0));
 
-    if (approx(sum, 3.0)) {
+    if (approxEqual(sum, 3.0)) {
         gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-    } else if (approx(sum, 2.0)) {
-        float current = float(get(vec2(0.0, 0.0)));
+    } else if (approxEqual(sum, 2.0)) {
+        float current = float(gridGet(vec2(0.0, 0.0)));
         gl_FragColor = vec4(current, current, current, 1.0);
     } else {
         gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
