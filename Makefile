@@ -6,20 +6,17 @@ npm-modules:
 	npm install
 
 build-shaders: | npm-modules
-	cp -r src/glsl www
+	node_modules/.bin/glslx src/shaders.glsl --output=src/shaders.sk --format=skew --renaming=internal-only --pretty-print
 
-build-skew-debug: | npm-modules
+build-debug: | npm-modules build-shaders
 	$(BUILD)
 
-build-skew-release: | npm-modules
+build-release: | npm-modules build-shaders
 	$(BUILD) --release
-
-build-debug: | npm-modules build-skew-debug build-shaders
 
 watch: | npm-modules
 	node_modules/.bin/watch src 'clear && make build-debug'
 
 clean:
-	echo "[Cleaning]"
 	rm www/compiled.js
 	rm -rf www/glsl

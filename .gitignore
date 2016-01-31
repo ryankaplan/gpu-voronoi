@@ -3,3 +3,4 @@ node_modules/
 bin
 www/compiled.js
 www/glsl
+src/shaders.sk

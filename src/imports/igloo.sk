@@ -27,6 +27,7 @@ namespace Igloo {
     def isArray(obj dynamic) bool
 
     class Program {
+        def new(gl WebGLRenderingContext, vertex string, fragment string)
         def makeShader(type GLenum, source string) WebGLShader
         def use Program
 

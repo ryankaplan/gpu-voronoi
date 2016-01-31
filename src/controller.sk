@@ -30,7 +30,7 @@ class Controller {
 
         _simulation = Simulation.new(_igloo, gridSize)
         _igloo.gl.disable(_igloo.gl.DEPTH_TEST)
-        _program = _igloo.program("glsl/quad.vert", "glsl/draw_grid.frag")
+        _program = Igloo.Program.new(_igloo.gl, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_GRID)
         _quadBuffer = _igloo.array(Igloo.QUAD2)
 
         _mouseBehaviors = [
