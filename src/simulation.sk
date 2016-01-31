@@ -1,9 +1,14 @@
-def ext(gl WebGLRenderingContext, name string) dynamic {
+def getWebGLExtension(gl WebGLRenderingContext, name string) dynamic {
     const ext = gl.getExtension(name)
     if ext == null {
         throw Error.new("Unsupported WebGL extension with name \(name)")
     }
     return ext
+}
+
+class Seed {
+    var position Vector
+    var color Color
 }
 
 class Simulation {
@@ -23,8 +28,7 @@ class Simulation {
         gridSize = gridSize_
 
         var gl = _igloo.gl
-        var float = ext(gl, "OES_texture_float")
-        console.log(float)
+        getWebGLExtension(gl, "OES_texture_float")
         gl.disable(gl.DEPTH_TEST)
 
         _program = Igloo.Program.new(_igloo.gl, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_GAME_OF_LIFE)
@@ -33,12 +37,37 @@ class Simulation {
         _destTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.FLOAT).blank(gridSize, gridSize)
         _framebuffer = _igloo.framebuffer
 
-        # Initialize the cell grid with random values
-        const randomGrid = Float32Array.new(gridSize * gridSize)
-        for i in 0..randomGrid.length {
-            randomGrid[i] = Math.random < 0.5 ? 1 : 0
+        # Need a list of seeds
+        const seeds = [
+            Seed.new(
+                Vector.new(5, 5),
+                Color.new(1, 0, 0)
+            ),
+            Seed.new(
+                Vector.new(10, 10),
+                Color.new(1, 1, 0)
+            ),
+            Seed.new(
+                Vector.new(5, 10),
+                Color.new(0, 1, 0)
+            ),
+            Seed.new(
+                Vector.new(30, 30),
+                Color.new(0, 0, 1)
+            )
+        ]
+
+        # Seeds are encoded in the grid as a 4-type (isSeed, color, seedX, seedY)
+        var rgba = Float32Array.new(gridSize * gridSize * 4)
+        for seed in seeds {
+            const coord = ((seed.position.x * gridSize + seed.position.y) * 4) as int
+            rgba[coord] = 1.0 # isSeed = true
+            rgba[coord + 1] = seed.color.toDouble # color
+            rgba[coord + 2] = seed.position.x
+            rgba[coord + 3] = seed.position.y
         }
-        setCellGrid(randomGrid, 0, 0)
+
+        _sourceTexture.subset(rgba, 0, 0, gridSize, gridSize)
     }
 
     def gridTexture Igloo.Texture {

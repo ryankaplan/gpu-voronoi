@@ -1,12 +1,12 @@
-BUILD = node_modules/.bin/skewc src --output-file=www/compiled.js
+BUILD = node_modules/.bin/skewc src compiled/shaders.sk --output-file=www/compiled.js
 
-default: build-shaders build-skew-release
+default: build-release
 
 npm-modules:
 	npm install
 
 build-shaders: | npm-modules
-	node_modules/.bin/glslx src/shaders.glsl --output=src/shaders.sk --format=skew --renaming=internal-only --pretty-print
+	node_modules/.bin/glslx src/shaders.glsl --output=compiled/shaders.sk --format=skew --renaming=internal-only --pretty-print
 
 build-debug: | npm-modules build-shaders
 	$(BUILD)
