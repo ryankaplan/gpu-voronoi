@@ -1,6 +1,6 @@
 
 namespace Controller {
-    var gridSize = 32
+    var gridSize = 128
 }
 
 class Controller {
@@ -19,7 +19,7 @@ class Controller {
 
     def new(canvas HTMLCanvasElement) {
         _canvas = canvas
-        viewport = Rect.new(-50, -10, 100, 100)
+        viewport = Rect.new(-50, -10, 200, 200)
 
         _igloo = Igloo.new(canvas)
         if _igloo.gl == null {

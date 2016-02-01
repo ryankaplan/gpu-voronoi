@@ -1,6 +1,5 @@
-// TODO(ryan): Only do this if GL_ES?
+// TODO(ryan): How slow does this make things on mobile devices?
 precision highp float;
-
 
 uniform sampler2D cellGridTexture;
 uniform vec2 gridSize; // Width and height of cellGridTexture
@@ -126,7 +125,7 @@ vec4 getObjectForOffset(const vec4 self, const vec2 offset) {
     else {
         vec2 selfSeed = objectSeedLocation(self);
         vec2 otherSeed = objectSeedLocation(other);
-        if (distance(selfSeed, gl_FragCoord.xy) < distance(otherSeed, gl_FragCoord.xy)) {
+        if (distance(selfSeed, gl_FragCoord.xy) > distance(otherSeed, gl_FragCoord.xy)) {
             return encodeObject(false, objectSeedIndex(other), otherSeed);
         }
     }

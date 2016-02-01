@@ -4,3 +4,14 @@ class Color {
     var b double
     var a double
 }
+
+namespace Color {
+    def fromHex(number int) Color {
+        return Color.new(
+            (number >> 16) & 255,
+            (number >> 8) & 255,
+            number & 255,
+            255
+        )
+    }
+}

@@ -27,6 +27,35 @@ class Seed {
     var color Color
 }
 
+namespace Seed {
+    def random(gridSize Vector, colors List<Color>) Seed {
+        return Seed.new(
+            Vector.new(gridSize.x * Math.random, gridSize.y * Math.random),
+            colors[(Math.random * colors.count) as int]
+        )
+    }
+
+    def random(gridSize Vector, colors List<Color>, numSeeds int) List<Seed> {
+        var seeds List<Seed> = []
+        for i in 0..numSeeds {
+            seeds.append(Seed.random(gridSize, colors))
+        }
+        return seeds
+    }
+}
+
+const colors List<Color> = [
+    Color.fromHex(0x6C88FF),
+    Color.fromHex(0x42D1FF),
+    # Color.fromHex(0xB841D7),
+    # Color.fromHex(0x9825FF),
+    # Color.fromHex(0x5EFFFC),
+    # Color.fromHex(0x49FFA9),
+    # Color.fromHex(0x7E6EFF),
+    # Color.fromHex(0xA0FFCE),
+    # Color.fromHex(0xE854FF),
+]
+
 class Simulation {
     var _igloo Igloo
 
@@ -40,20 +69,7 @@ class Simulation {
     var _seedTexture Igloo.Texture
     var _framebuffer Igloo.FrameBuffer
 
-    var seeds = [
-            Seed.new(
-                Vector.new(5, 5),
-                Color.new(1, 0, 0, 1)
-            ),
-            Seed.new(
-                Vector.new(5, 10),
-                Color.new(0, 1, 0, 1)
-            ),
-            Seed.new(
-                Vector.new(30, 30),
-                Color.new(0, 0, 1, 1)
-            )
-        ]
+    var seeds = Seed.random(Vector.new(Controller.gridSize, Controller.gridSize), colors, 3)
 
     var _seedTextureSize int
 
@@ -156,47 +172,48 @@ class Simulation {
         _destTexture = tmp
     }
 
-    def computeVoronoi {
-        var stepSize = gridSize / 2
-        while stepSize >= 1 {
-            console.log("Calling with step size \(stepSize)")
-            # The current simulation state is always in _sourceTexture
-            # and we draw onto _destTexture. So...
-            #
-            # 1. Bind the _destTexture onto the framebuffer so that
-            #    we'll draw onto it.
-            #
-            # 2. Bind _sourceTexture texture to index 0. This is
-            #    passed to the shader by setting the
-            #    cellGridTexture uniform below.
-            #
-            _framebuffer.attach(_destTexture)
+    def runJumpFloodStep(stepSize int) {
+        console.log("Calling with step size \(stepSize)")
+        # The current simulation state is always in _sourceTexture
+        # and we draw onto _destTexture. So...
+        #
+        # 1. Bind the _destTexture onto the framebuffer so that
+        #    we'll draw onto it.
+        #
+        # 2. Bind _sourceTexture texture to index 0. This is
+        #    passed to the shader by setting the
+        #    cellGridTexture uniform below.
+        #
+        _framebuffer.attach(_destTexture)
 
-            if !RELEASE {
-                const gl = _igloo.gl
-                var check = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
-                if check != gl.FRAMEBUFFER_COMPLETE {
-                    throw Error.new("Framebuffer completion issue")
-                }
-            }
-
-            _sourceTexture.bind(0)
-            _igloo.gl.viewport(0, 0, gridSize, gridSize)
-            _program
-                .use
-                .attrib("quad", _quadBuffer, 2)
-                .uniformi("cellGridTexture", 0)
-                .uniformi("stepSize", stepSize)
-                .uniform("cellGridSize", Float32Array.new([gridSize, gridSize]))
-                .draw(_igloo.gl.TRIANGLE_STRIP, 4)
-
-            self.swapBuffers
-
-            if stepSize == 1 {
-                break
-            } else {
-                stepSize /= 2
+        if !RELEASE {
+            const gl = _igloo.gl
+            var check = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
+            if check != gl.FRAMEBUFFER_COMPLETE {
+                throw Error.new("Framebuffer completion issue")
             }
         }
+
+        _sourceTexture.bind(0)
+        _igloo.gl.viewport(0, 0, gridSize, gridSize)
+        _program
+            .use
+            .attrib("quad", _quadBuffer, 2)
+            .uniformi("cellGridTexture", 0)
+            .uniformi("stepSize", stepSize)
+            .uniform("cellGridSize", Float32Array.new([gridSize, gridSize]))
+            .draw(_igloo.gl.TRIANGLE_STRIP, 4)
+
+        self.swapBuffers
+    }
+
+    def computeVoronoi {
+        var stepSize int = gridSize / 2
+        while stepSize >= 1 {
+            runJumpFloodStep(stepSize)
+            stepSize /= 2
+        }
+        runJumpFloodStep(2)
+        runJumpFloodStep(1)
     }
 }
