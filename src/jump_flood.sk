@@ -68,8 +68,12 @@ class JumpFlood {
     var _destTexture Igloo.Texture
     var _seedTexture Igloo.Texture
     var _framebuffer Igloo.FrameBuffer
+    var _simulationStepper dynamic
 
-    var seeds = Seed.random(Vector.new(Controller.gridSize, Controller.gridSize), colors, 3)
+    var seeds = [
+        Seed.new(Vector.new(5, 5), colors[0]),
+        Seed.new(Vector.new(100, 100), colors[1])
+    ]
 
     var _seedTextureSize int
 
@@ -102,6 +106,7 @@ class JumpFlood {
             seedsRgba[index + 2] = (255.0 * seeds[i].color.b) as int
             seedsRgba[index + 3] = (255.0 * seeds[i].color.a) as int
         }
+        console.log(seedsRgba)
         _seedTexture.subset(seedsRgba, 0, 0, _seedTextureSize, _seedTextureSize)
 
         # Seeds are encoded in the grid as a 4-type (isSeed, seedTextureIndex, seedLocationX, seedLocationY)
@@ -142,13 +147,30 @@ class JumpFlood {
     }
 
     def userClickGridSpace(point Vector) {
-        point = point.clone
-        point.x = Math.max(Math.min(point.x, gridSize), 0)
-        point.y = Math.max(Math.min(point.y, gridSize), 0)
+        # Advance to next step
+        if _simulationStepper == null {
+            var stepSize int = gridSize / 2
 
-        # Draw a single pixel at point
-        const sample = Float32Array.new([1])
-        setCellGrid(sample, point.x as int, point.y as int)
+            _simulationStepper = () => {
+                if stepSize >= 1 {
+                    runJumpFloodStep(stepSize)
+                    stepSize /= 2
+                } else if stepSize < 1 {
+                    runJumpFloodStep(2)
+                    runJumpFloodStep(1)
+                }
+            }
+        }
+
+        _simulationStepper()
+
+        # point = point.clone
+        # point.x = Math.max(Math.min(point.x, gridSize), 0)
+        # point.y = Math.max(Math.min(point.y, gridSize), 0)
+
+        # # Draw a single pixel at point
+        # const sample = Float32Array.new([1])
+        # setCellGrid(sample, point.x as int, point.y as int)
     }
 
     def setCellGrid(inputGrid Float32Array, offsetX int, offsetY int) {
@@ -173,7 +195,7 @@ class JumpFlood {
     }
 
     def runJumpFloodStep(stepSize int) {
-        console.log("Calling with step size \(stepSize)")
+        console.log("Running jump flood step with size \(stepSize)")
         # The current simulation state is always in _sourceTexture
         # and we draw onto _destTexture. So...
         #

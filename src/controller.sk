@@ -29,7 +29,7 @@ class Controller {
         }
 
         _simulation = JumpFlood.new(_igloo, gridSize)
-        _simulation.computeVoronoi
+        #_simulation.computeVoronoi
         _igloo.gl.disable(_igloo.gl.DEPTH_TEST)
         _program = Igloo.Program.new(_igloo.gl, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_GRID)
         _quadBuffer = _igloo.array(Igloo.QUAD2)

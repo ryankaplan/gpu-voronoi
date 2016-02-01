@@ -1,4 +1,5 @@
 class Color {
+    # 0-1 values
     var r double
     var g double
     var b double
@@ -8,10 +9,10 @@ class Color {
 namespace Color {
     def fromHex(number int) Color {
         return Color.new(
-            (number >> 16) & 255,
-            (number >> 8) & 255,
-            number & 255,
-            255
+            ((number >> 16) & 255) / 255,
+            ((number >> 8) & 255) / 255.0,
+            (number & 255) / 255.0,
+            1.0
         )
     }
 }
