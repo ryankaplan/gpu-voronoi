@@ -6,6 +6,22 @@ def getWebGLExtension(gl WebGLRenderingContext, name string) dynamic {
     return ext
 }
 
+def nextPowerOfTwo(value int) int {
+    var val = 1
+    while val < value {
+        val *= 2
+    }
+    return val
+}
+
+def powerOfTwoGridSizeToFitValues(numValues int) int {
+    var val = 1
+    while val * val < numValues {
+        val *= 2
+    }
+    return val
+}
+
 class Seed {
     var position Vector
     var color Color
@@ -21,7 +37,25 @@ class Simulation {
     var _quadBuffer Igloo.Buffer
     var _sourceTexture Igloo.Texture
     var _destTexture Igloo.Texture
+    var _seedTexture Igloo.Texture
     var _framebuffer Igloo.FrameBuffer
+
+    var seeds = [
+            Seed.new(
+                Vector.new(5, 5),
+                Color.new(1, 0, 0, 1)
+            ),
+            Seed.new(
+                Vector.new(5, 10),
+                Color.new(0, 1, 0, 1)
+            ),
+            Seed.new(
+                Vector.new(30, 30),
+                Color.new(0, 0, 1, 1)
+            )
+        ]
+
+    var _seedTextureSize int
 
     def new(igloo Igloo, gridSize_ int) {
         _igloo = igloo
@@ -37,41 +71,58 @@ class Simulation {
         _destTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.FLOAT).blank(gridSize, gridSize)
         _framebuffer = _igloo.framebuffer
 
-        # Need a list of seeds
-        const seeds = [
-            Seed.new(
-                Vector.new(5, 5),
-                Color.new(1, 0, 0)
-            ),
-            Seed.new(
-                Vector.new(10, 10),
-                Color.new(1, 1, 0)
-            ),
-            Seed.new(
-                Vector.new(5, 10),
-                Color.new(0, 1, 0)
-            ),
-            Seed.new(
-                Vector.new(30, 30),
-                Color.new(0, 0, 1)
-            )
-        ]
+        # _seedTexture - the pixel at (i, 0) is the color of the i'th seed
+        # TODO(ryan): make this a square texture
+        _seedTextureSize = powerOfTwoGridSizeToFitValues(seeds.count)
+        _seedTexture =
+            _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.UNSIGNED_BYTE)
+            .blank(_seedTextureSize, _seedTextureSize)
 
-        # Seeds are encoded in the grid as a 4-type (isSeed, color, seedX, seedY)
+        var seedsRgba = Uint8Array.new(_seedTextureSize * _seedTextureSize * 4)
+        for i in 0..seeds.count {
+            const index = i * 4
+            seedsRgba[index] = (255.0 * seeds[i].color.r) as int
+            seedsRgba[index + 1] = (255.0 * seeds[i].color.g) as int
+            seedsRgba[index + 2] = (255.0 * seeds[i].color.b) as int
+            seedsRgba[index + 3] = (255.0 * seeds[i].color.a) as int
+        }
+        _seedTexture.subset(seedsRgba, 0, 0, _seedTextureSize, _seedTextureSize)
+
+        # Seeds are encoded in the grid as a 4-type (isSeed, seedTextureIndex, seedLocationX, seedLocationY)
         var rgba = Float32Array.new(gridSize * gridSize * 4)
-        for seed in seeds {
+
+        for i in 0..rgba.length {
+            if i % 4 == 0 {
+                # isSeed defaults to false
+                rgba[i] = 0.0
+            } else {
+                # All other fields default to -1
+                rgba[i] = -1.0
+            }
+        }
+
+        # Fill the rest with seed objects as described above
+        for i in 0..seeds.count {
+            const seed = seeds[i]
             const coord = ((seed.position.x * gridSize + seed.position.y) * 4) as int
             rgba[coord] = 1.0 # isSeed = true
-            rgba[coord + 1] = seed.color.toDouble # color
+            rgba[coord + 1] = i
             rgba[coord + 2] = seed.position.x
             rgba[coord + 3] = seed.position.y
         }
-
         _sourceTexture.subset(rgba, 0, 0, gridSize, gridSize)
     }
 
     def gridTexture Igloo.Texture {
         return _sourceTexture
+    }
+
+    def seedTexture Igloo.Texture {
+        return _seedTexture
+    }
+
+    def seedTextureSize int {
+        return _seedTextureSize
     }
 
     def userClickGridSpace(point Vector) {
@@ -98,39 +149,54 @@ class Simulation {
         _sourceTexture.subset(rgba, offsetX, offsetY, textureWidth, textureHeight)
     }
 
-    def step {
-        # The current simulation state is always in _sourceTexture
-        # and we draw onto _destTexture. So...
-        #
-        # 1. Bind the _destTexture onto the framebuffer so that
-        #    we'll draw onto it.
-        #
-        # 2. Bind _sourceTexture texture to index 0. This is
-        #    passed to the shader by setting the
-        #    cellGridTexture uniform below.
-        #
-        _framebuffer.attach(_destTexture)
-
-        if !RELEASE {
-            const gl = _igloo.gl
-            var check = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
-            if check != gl.FRAMEBUFFER_COMPLETE {
-                throw Error.new("Framebuffer completion issue")
-            }
-        }
-
-        _sourceTexture.bind(0)
-        _igloo.gl.viewport(0, 0, gridSize, gridSize)
-        _program
-            .use
-            .attrib("quad", _quadBuffer, 2)
-            .uniformi("cellGridTexture", 0)
-            .uniform("cellGridSize", Float32Array.new([gridSize, gridSize]))
-            .draw(_igloo.gl.TRIANGLE_STRIP, 4)
-
+    def swapBuffers {
         # Swap the source and destination textures
         const tmp = _sourceTexture
         _sourceTexture = _destTexture
         _destTexture = tmp
+    }
+
+    def computeVoronoi {
+        var stepSize = gridSize / 2
+        while stepSize >= 1 {
+            console.log("Calling with step size \(stepSize)")
+            # The current simulation state is always in _sourceTexture
+            # and we draw onto _destTexture. So...
+            #
+            # 1. Bind the _destTexture onto the framebuffer so that
+            #    we'll draw onto it.
+            #
+            # 2. Bind _sourceTexture texture to index 0. This is
+            #    passed to the shader by setting the
+            #    cellGridTexture uniform below.
+            #
+            _framebuffer.attach(_destTexture)
+
+            if !RELEASE {
+                const gl = _igloo.gl
+                var check = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
+                if check != gl.FRAMEBUFFER_COMPLETE {
+                    throw Error.new("Framebuffer completion issue")
+                }
+            }
+
+            _sourceTexture.bind(0)
+            _igloo.gl.viewport(0, 0, gridSize, gridSize)
+            _program
+                .use
+                .attrib("quad", _quadBuffer, 2)
+                .uniformi("cellGridTexture", 0)
+                .uniformi("stepSize", stepSize)
+                .uniform("cellGridSize", Float32Array.new([gridSize, gridSize]))
+                .draw(_igloo.gl.TRIANGLE_STRIP, 4)
+
+            self.swapBuffers
+
+            if stepSize == 1 {
+                break
+            } else {
+                stepSize /= 2
+            }
+        }
     }
 }

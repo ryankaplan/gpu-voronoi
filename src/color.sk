@@ -1,19 +1,6 @@
 class Color {
-    # 0-1 values
     var r double
     var g double
     var b double
-
-    def toDouble double {
-        return r + g * 256 + b * 256 * 256
-    }
-}
-
-namespace Color {
-    def fromDouble(value double) Color {
-        const b = Math.floor(value / (256 * 256))
-        const g = Math.floor((value - b * 256 * 256) / 256)
-        const r = Math.floor(value - b * 256 * 256 - g * 256)
-        return Color.new(r, g, b)
-    }
+    var a double
 }

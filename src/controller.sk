@@ -29,6 +29,7 @@ class Controller {
         }
 
         _simulation = Simulation.new(_igloo, gridSize)
+        _simulation.computeVoronoi
         _igloo.gl.disable(_igloo.gl.DEPTH_TEST)
         _program = Igloo.Program.new(_igloo.gl, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_GRID)
         _quadBuffer = _igloo.array(Igloo.QUAD2)
@@ -86,22 +87,24 @@ class Controller {
         # index 0 and pass that to the shader as cellGridTexture.
         _igloo.defaultFramebuffer.bind
         _simulation.gridTexture.bind(0)
+        _simulation.seedTexture.bind(1)
         _igloo.gl.viewport(0, 0, _canvas.width, _canvas.height)
         _program
             .use
             .attrib("quad", _quadBuffer, 2)
             .uniformi("cellGridTexture", 0)
+            .uniformi("seedTexture", 1)
+            .uniformi("seedTextureSize", _simulation.seedTextureSize)
             .uniform("viewportOffset", viewport.origin.toFloat32Array)
             .uniform("viewportSize", viewport.size.toFloat32Array)
             .uniform("canvasSize", Float32Array.new([_canvas.width, _canvas.height]))
             .uniform("gridSize", Float32Array.new([_simulation.gridSize, _simulation.gridSize]))
-            .uniform("showDebugUI", !RELEASE, true)
+            .uniform("RELEASE", RELEASE, true)
             .draw(_igloo.gl.TRIANGLE_STRIP, 4)
     }
 
     def start {
         setInterval(() => {
-            _simulation.step
             draw
         }, 60)
     }
