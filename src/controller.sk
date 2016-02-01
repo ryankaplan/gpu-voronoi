@@ -5,7 +5,7 @@ namespace Controller {
 
 class Controller {
     var _canvas HTMLCanvasElement
-    var _simulation Simulation
+    var _simulation JumpFlood
     var _igloo Igloo
 
     var _program Igloo.Program
@@ -28,7 +28,7 @@ class Controller {
             throw Error.new("Failed to initialize Igloo")
         }
 
-        _simulation = Simulation.new(_igloo, gridSize)
+        _simulation = JumpFlood.new(_igloo, gridSize)
         _simulation.computeVoronoi
         _igloo.gl.disable(_igloo.gl.DEPTH_TEST)
         _program = Igloo.Program.new(_igloo.gl, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_GRID)
