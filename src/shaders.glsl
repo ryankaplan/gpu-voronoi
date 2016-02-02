@@ -197,5 +197,5 @@ export void fDrawGrid() {
     int y = seedIndex / seedTextureSize;
     vec2 seedTexelCoord = vec2(float(x), float(y));
     vec2 seedUv = seedTexelCoord / float(seedTextureSize);
-    gl_FragColor = texture2D(seedTexture, seedUv);
+    gl_FragColor = seedIndex < 0 ? WHITE : texture2D(seedTexture, seedUv);
 }

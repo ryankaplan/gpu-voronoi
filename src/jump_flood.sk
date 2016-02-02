@@ -47,14 +47,29 @@ namespace Seed {
 const colors List<Color> = [
     Color.fromHex(0x6C88FF),
     Color.fromHex(0x42D1FF),
-    # Color.fromHex(0xB841D7),
-    # Color.fromHex(0x9825FF),
-    # Color.fromHex(0x5EFFFC),
-    # Color.fromHex(0x49FFA9),
-    # Color.fromHex(0x7E6EFF),
-    # Color.fromHex(0xA0FFCE),
-    # Color.fromHex(0xE854FF),
+    Color.fromHex(0xB841D7),
+    Color.fromHex(0x9825FF),
+    Color.fromHex(0x5EFFFC),
+    Color.fromHex(0x49FFA9),
+    Color.fromHex(0x7E6EFF),
+    Color.fromHex(0xA0FFCE),
+    Color.fromHex(0xE854FF),
 ]
+
+# const colors List<Color> = [
+#     Color.fromHex(0x000000),
+#     Color.fromHex(0xF00000),
+#     Color.fromHex(0xFF0000),
+#     Color.fromHex(0x00F000),
+#     Color.fromHex(0x00FF00),
+#     Color.fromHex(0x0000F0),
+#     Color.fromHex(0x0000FF),
+#     Color.fromHex(0xFFFF00),
+#     Color.fromHex(0x0FFFF0),
+#     Color.fromHex(0x00FFFF),
+#     Color.fromHex(0x0FFFFF),
+#     Color.fromHex(0xFFFFF0),
+# ]
 
 class JumpFlood {
     var _igloo Igloo
@@ -70,9 +85,25 @@ class JumpFlood {
     var _framebuffer Igloo.FrameBuffer
     var _simulationStepper dynamic
 
+    #var seeds = Seed.random(Vector.new(Controller.gridSize, Controller.gridSize), colors, 200)
+
     var seeds = [
-        Seed.new(Vector.new(5, 5), colors[0]),
-        Seed.new(Vector.new(100, 100), colors[1])
+        Seed.new(
+            Vector.new(50, 50),
+            Color.fromHex(0xFF0000)
+        ),
+        Seed.new(
+            Vector.new(50, 51),
+            Color.fromHex(0xFFFF00)
+        ),
+        Seed.new(
+            Vector.new(51, 50),
+            Color.fromHex(0xFFFF00)
+        ),
+        Seed.new(
+            Vector.new(10, 10),
+            Color.fromHex(0x0000FF)
+        ),
     ]
 
     var _seedTextureSize int
@@ -125,7 +156,7 @@ class JumpFlood {
         # Fill the rest with seed objects as described above
         for i in 0..seeds.count {
             const seed = seeds[i]
-            const coord = ((seed.position.x * gridSize + seed.position.y) * 4) as int
+            const coord = ((seed.position.y * gridSize + seed.position.x) * 4) as int
             rgba[coord] = 1.0 # isSeed = true
             rgba[coord + 1] = i
             rgba[coord + 2] = seed.position.x
@@ -156,8 +187,9 @@ class JumpFlood {
                     runJumpFloodStep(stepSize)
                     stepSize /= 2
                 } else if stepSize < 1 {
-                    runJumpFloodStep(2)
-                    runJumpFloodStep(1)
+                    for i in 1..10 {
+                        runJumpFloodStep(11 - i)
+                    }
                 }
             }
         }
