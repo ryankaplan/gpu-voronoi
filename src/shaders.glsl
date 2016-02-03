@@ -77,10 +77,6 @@ vec4 createInvalidCell() {
     return vec4(-1.0, -1.0, -1.0, -1.0);
 }
 
-bool cellIsSeed(const vec4 obj) {
-    return approxEqual(obj[0], 1.0);
-}
-
 int cellSeedIndex(const vec4 obj) {
     return int(obj[1]);
 }
@@ -101,7 +97,7 @@ vec4 getCellForOffset(const vec4 self, const vec2 offset) {
     vec4 otherCell = validUv(gridUv) ? texture2D(cellGridTexture, gridUv) : createInvalidCell();
 
     if (!cellIsValid(otherCell)) {
-        // Other is invalid - offset must have been off the grid.
+        // Other is invalid. This probably means that `offset` is off the grid.
         return self;
     }
 
@@ -127,22 +123,27 @@ vec4 getCellForOffset(const vec4 self, const vec2 offset) {
 }
 
 export void fGameOfLife() {
+    // Find the object at this grid position
     vec2 gridUv = gridPositionToUv(gl_FragCoord.xy, cellGridSize);
-    vec4 object = validUv(gridUv) ? texture2D(cellGridTexture, gridUv) : createInvalidCell();
 
-    gl_FragColor = object;
-
-    if (!cellIsSeed(object)) {
-        object = getCellForOffset(object, vec2(0, stepSize));
-        object = getCellForOffset(object, vec2(stepSize, stepSize));
-        object = getCellForOffset(object, vec2(stepSize, 0));
-        object = getCellForOffset(object, vec2(stepSize, -1 * stepSize));
-        object = getCellForOffset(object, vec2(0, -1 * stepSize));
-        object = getCellForOffset(object, vec2(-1 * stepSize, -1 * stepSize));
-        object = getCellForOffset(object, vec2(-1 * stepSize, 0));
-        object = getCellForOffset(object, vec2(-1 * stepSize, stepSize));
-        gl_FragColor = object;
+    // We gridUv should always be valid. We run this once for every
+    // cell in the grid.
+    if (!validUv(gridUv)) {
+        gl_FragColor.x = 1. / 0.;
     }
+
+    vec4 object = texture2D(cellGridTexture, gridUv);
+
+    // Object is always valid, because we
+    object = getCellForOffset(object, vec2(0, stepSize));
+    object = getCellForOffset(object, vec2(stepSize, stepSize));
+    object = getCellForOffset(object, vec2(stepSize, 0));
+    object = getCellForOffset(object, vec2(stepSize, - stepSize));
+    object = getCellForOffset(object, vec2(0, - stepSize));
+    object = getCellForOffset(object, vec2(- stepSize, - stepSize));
+    object = getCellForOffset(object, vec2(- stepSize, 0));
+    object = getCellForOffset(object, vec2(- stepSize, stepSize));
+    gl_FragColor = object;
 }
 
 // Fragment shader for drawing the result of the Jump Flood algorithm
