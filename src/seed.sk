@@ -1,0 +1,21 @@
+class Seed {
+    var position Vector
+    var color Color
+}
+
+namespace Seed {
+    def random(gridSize Vector, colors List<Color>) Seed {
+        return Seed.new(
+            Vector.new(gridSize.x * Math.random, gridSize.y * Math.random),
+            colors[(Math.random * colors.count) as int]
+        )
+    }
+
+    def random(gridSize Vector, colors List<Color>, numSeeds int) List<Seed> {
+        var seeds List<Seed> = []
+        for i in 0..numSeeds {
+            seeds.append(Seed.random(gridSize, colors))
+        }
+        return seeds
+    }
+}

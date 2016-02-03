@@ -6,44 +6,6 @@ def getWebGLExtension(gl WebGLRenderingContext, name string) dynamic {
     return ext
 }
 
-def nextPowerOfTwo(value int) int {
-    var val = 1
-    while val < value {
-        val *= 2
-    }
-    return val
-}
-
-def powerOfTwoGridSizeToFitValues(numValues int) int {
-    var val = 1
-    while val * val < numValues {
-        val *= 2
-    }
-    return val
-}
-
-class Seed {
-    var position Vector
-    var color Color
-}
-
-namespace Seed {
-    def random(gridSize Vector, colors List<Color>) Seed {
-        return Seed.new(
-            Vector.new(gridSize.x * Math.random, gridSize.y * Math.random),
-            colors[(Math.random * colors.count) as int]
-        )
-    }
-
-    def random(gridSize Vector, colors List<Color>, numSeeds int) List<Seed> {
-        var seeds List<Seed> = []
-        for i in 0..numSeeds {
-            seeds.append(Seed.random(gridSize, colors))
-        }
-        return seeds
-    }
-}
-
 const colors List<Color> = [
     Color.fromHex(0x6C88FF),
     Color.fromHex(0x42D1FF),
@@ -69,33 +31,7 @@ class JumpFlood {
     var _seedTexture Igloo.Texture
     var _framebuffer Igloo.FrameBuffer
     var _simulationStepper dynamic
-
-    var seeds = Seed.random(Vector.new(Controller.gridSize, Controller.gridSize), colors, 200)
-
-    # var seeds = [
-    #     Seed.new(
-    #         Vector.new(50, 50),
-    #         Color.fromHex(0xFF0000)
-    #     ),
-    #     Seed.new(
-    #         Vector.new(50, 51),
-    #         Color.fromHex(0xFFFF00)
-    #     ),
-    #     Seed.new(
-    #         Vector.new(51, 50),
-    #         Color.fromHex(0xFFFFF0)
-    #     ),
-    #     Seed.new(
-    #         Vector.new(10, 10),
-    #         Color.fromHex(0x0000FF)
-    #     ),
-    #     Seed.new(
-    #         Vector.new(11, 23),
-    #         Color.fromHex(0xF00A1F)
-    #     ),
-    # ]
-
-    var _seedTextureSize int
+    const _seedTextureSize int = 128 # 16k seeds should be enough for anyone
 
     # Read-only properties
     def gridTexture Igloo.Texture { return _sourceTexture }
@@ -116,12 +52,20 @@ class JumpFlood {
         _destTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.FLOAT).blank(gridSize, gridSize)
         _framebuffer = _igloo.framebuffer
 
-        # _seedTexture - the pixel at (i, 0) is the color of the i'th seed
-        # TODO(ryan): make this a square texture
-        _seedTextureSize = powerOfTwoGridSizeToFitValues(seeds.count)
+        # Allocate one large texture to hold all seeds we'd ever want in a given round
+        # of JFA. This seems better than re-allocating a texture every time the number
+        # of seeds changes.
         _seedTexture =
             _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.UNSIGNED_BYTE)
             .blank(_seedTextureSize, _seedTextureSize)
+        _setSeeds(Seed.random(Vector.new(Controller.gridSize, Controller.gridSize), colors, 200))
+    }
+
+    def _setSeeds(seeds List<Seed>) {
+        if seeds.count >= _seedTextureSize * _seedTextureSize {
+            # Too many seeds!
+            assert(false)
+        }
 
         var seedsRgba = Uint8Array.new(_seedTextureSize * _seedTextureSize * 4)
         for i in 0..seeds.count {
@@ -131,21 +75,20 @@ class JumpFlood {
             seedsRgba[index + 2] = (255.0 * seeds[i].color.b) as int
             seedsRgba[index + 3] = (255.0 * seeds[i].color.a) as int
         }
-        console.log(seedsRgba)
         _seedTexture.subset(seedsRgba, 0, 0, _seedTextureSize, _seedTextureSize)
 
-        # Seeds are encoded in the grid as a 4-type (isSeed, seedTextureIndex, seedLocationX, seedLocationY)
+        # Seeds are encoded in the grid as a vec4 (-1.0, seedTextureIndex, seedLocationX, seedLocationY)
         var rgba = Float32Array.new(gridSize * gridSize * 4)
 
+        # Set all values to -1 to that it's clear that they're all uninitialized
         for i in 0..rgba.length {
             rgba[i] = -1.0
         }
 
-        # Fill the rest with seed objects as described above
+        # Initialize the seeds
         for i in 0..seeds.count {
             const seed = seeds[i]
             const coord = ((seed.position.y * gridSize + seed.position.x) * 4) as int
-            #rgba[coord] = 1.0 # isSeed = true
             rgba[coord + 1] = i
             rgba[coord + 2] = seed.position.x
             rgba[coord + 3] = seed.position.y
