@@ -64,13 +64,13 @@ export void vCopyPosition() {
 }
 
 // Each pixel in our grid texture is a cell object. Each cell contains
-// the following info (isSeed, seedIndex, locationX, locationY). The
+// the following info (-1.0, seedIndex, locationX, locationY). The
 // following functions are an 'object-oriented' set of functions for
 // handling cells.
 ////////////////////////////////////////////////////////////////////////
 
-vec4 createCell(bool isSeed, int seedIndex, vec2 location) {
-    return vec4(isSeed ? 1.0 : 0.0, float(seedIndex), location);
+vec4 createCell(int seedIndex, vec2 location) {
+    return vec4(-1.0, float(seedIndex), location);
 }
 
 vec4 createInvalidCell() {
@@ -86,7 +86,7 @@ vec2 cellSeedLocation(const vec4 obj) {
 }
 
 bool cellIsValid(const vec4 obj) {
-    return !approxEqual(obj[0], -1.0);
+    return !approxEqual(obj[1], -1.0);
 }
 
 // Fragment shader for the Jump Flood algorithm
@@ -108,14 +108,14 @@ vec4 getCellForOffset(const vec4 self, const vec2 offset) {
 
     else if (cellSeedIndex(self) < 0) {
         // Our seed location hasn't been set
-        return createCell(false, cellSeedIndex(otherCell), cellSeedLocation(otherCell));
+        return createCell(cellSeedIndex(otherCell), cellSeedLocation(otherCell));
     }
 
     else {
         vec2 selfSeed = cellSeedLocation(self);
         vec2 otherSeed = cellSeedLocation(otherCell);
         if (distance(selfSeed, gl_FragCoord.xy) > distance(otherSeed, gl_FragCoord.xy)) {
-            return createCell(false, cellSeedIndex(otherCell), otherSeed);
+            return createCell(cellSeedIndex(otherCell), otherSeed);
         }
     }
 

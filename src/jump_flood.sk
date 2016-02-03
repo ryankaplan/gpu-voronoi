@@ -56,21 +56,6 @@ const colors List<Color> = [
     Color.fromHex(0xE854FF),
 ]
 
-# const colors List<Color> = [
-#     Color.fromHex(0x000000),
-#     Color.fromHex(0xF00000),
-#     Color.fromHex(0xFF0000),
-#     Color.fromHex(0x00F000),
-#     Color.fromHex(0x00FF00),
-#     Color.fromHex(0x0000F0),
-#     Color.fromHex(0x0000FF),
-#     Color.fromHex(0xFFFF00),
-#     Color.fromHex(0x0FFFF0),
-#     Color.fromHex(0x00FFFF),
-#     Color.fromHex(0x0FFFFF),
-#     Color.fromHex(0xFFFFF0),
-# ]
-
 class JumpFlood {
     var _igloo Igloo
 
@@ -112,6 +97,11 @@ class JumpFlood {
 
     var _seedTextureSize int
 
+    # Read-only properties
+    def gridTexture Igloo.Texture { return _sourceTexture }
+    def seedTexture Igloo.Texture { return _seedTexture }
+    def seedTextureSize int { return _seedTextureSize }
+
     def new(igloo Igloo, gridSize_ int) {
         _igloo = igloo
         gridSize = gridSize_
@@ -148,20 +138,14 @@ class JumpFlood {
         var rgba = Float32Array.new(gridSize * gridSize * 4)
 
         for i in 0..rgba.length {
-            if i % 4 == 0 {
-                # isSeed defaults to false
-                rgba[i] = 0.0
-            } else {
-                # All other fields default to -1
-                rgba[i] = -1.0
-            }
+            rgba[i] = -1.0
         }
 
         # Fill the rest with seed objects as described above
         for i in 0..seeds.count {
             const seed = seeds[i]
             const coord = ((seed.position.y * gridSize + seed.position.x) * 4) as int
-            rgba[coord] = 1.0 # isSeed = true
+            #rgba[coord] = 1.0 # isSeed = true
             rgba[coord + 1] = i
             rgba[coord + 2] = seed.position.x
             rgba[coord + 3] = seed.position.y
@@ -169,69 +153,47 @@ class JumpFlood {
         _sourceTexture.subset(rgba, 0, 0, gridSize, gridSize)
     }
 
-    def gridTexture Igloo.Texture {
-        return _sourceTexture
+    # Useful if you want to compute Voronoi in one step.
+    def computeVoronoi {
+        var stepSize int = gridSize / 2
+        while stepSize >= 1 {
+            _runJumpFloodStep(stepSize)
+            stepSize /= 2
+        }
+        _runJumpFloodStep(2)
+        _runJumpFloodStep(1)
     }
 
-    def seedTexture Igloo.Texture {
-        return _seedTexture
-    }
-
-    def seedTextureSize int {
-        return _seedTextureSize
-    }
-
-    def userClickGridSpace(point Vector) {
-        # Advance to next step
-        if _simulationStepper == null {
-            var stepSize int = gridSize / 2
-
-            _simulationStepper = () => {
-                if stepSize >= 1 {
-                    runJumpFloodStep(stepSize)
-                    stepSize /= 2
-                } else if stepSize < 1 {
-                    for i in 1..10 {
-                        runJumpFloodStep(11 - i)
-                    }
+    # Use resetVoronoiSteps and stepVoronoi to move foward
+    # through iterations of the JFA algorithm. Useful, for
+    # example, if you're showing an explanation of the
+    # algorithm.
+    def resetVoronoiSteps {
+        var stepSize int = gridSize / 2
+        _simulationStepper = () => {
+            if stepSize >= 1 {
+                _runJumpFloodStep(stepSize)
+                stepSize /= 2
+            } else if stepSize < 1 {
+                for i in 1..10 {
+                    _runJumpFloodStep(11 - i)
                 }
             }
         }
+    }
 
+    def stepVoronoi {
         _simulationStepper()
-
-        # point = point.clone
-        # point.x = Math.max(Math.min(point.x, gridSize), 0)
-        # point.y = Math.max(Math.min(point.y, gridSize), 0)
-
-        # # Draw a single pixel at point
-        # const sample = Float32Array.new([1])
-        # setCellGrid(sample, point.x as int, point.y as int)
     }
 
-    def setCellGrid(inputGrid Float32Array, offsetX int, offsetY int) {
-        const textureWidth = (Math.sqrt(inputGrid.length) as int)
-        const textureHeight = textureWidth
-        var rgba = Float32Array.new(textureWidth * textureWidth * 4)
-        for i in 0..inputGrid.length {
-            var j = i * 4
-            rgba[j + 0] = inputGrid[i] > 0.5 ? 1.0 : 0.0
-            rgba[j + 1] = inputGrid[i] > 0.5 ? 1.0 : 0.0
-            rgba[j + 2] = inputGrid[i] > 0.5 ? 1.0 : 0.0
-            rgba[j + 3] = 1.0
+    def userClickGridSpace(point Vector) {
+        if _simulationStepper == null {
+            resetVoronoiSteps
         }
-        _sourceTexture.subset(rgba, offsetX, offsetY, textureWidth, textureHeight)
+        _simulationStepper()
     }
 
-    def swapBuffers {
-        # Swap the source and destination textures
-        const tmp = _sourceTexture
-        _sourceTexture = _destTexture
-        _destTexture = tmp
-    }
-
-    def runJumpFloodStep(stepSize int) {
-        console.log("Running jump flood step with size \(stepSize)")
+    def _runJumpFloodStep(stepSize int) {
         # The current simulation state is always in _sourceTexture
         # and we draw onto _destTexture. So...
         #
@@ -262,16 +224,34 @@ class JumpFlood {
             .uniform("cellGridSize", Float32Array.new([gridSize, gridSize]))
             .draw(_igloo.gl.TRIANGLE_STRIP, 4)
 
-        self.swapBuffers
+        self._swapBuffers
     }
 
-    def computeVoronoi {
-        var stepSize int = gridSize / 2
-        while stepSize >= 1 {
-            runJumpFloodStep(stepSize)
-            stepSize /= 2
+    def _swapBuffers {
+        # Swap the source and destination textures
+        const tmp = _sourceTexture
+        _sourceTexture = _destTexture
+        _destTexture = tmp
+    }
+
+    # # Example use - Draw a single pixel at point
+    # point = point.clone
+    # point.x = Math.max(Math.min(point.x, gridSize), 0)
+    # point.y = Math.max(Math.min(point.y, gridSize), 0)
+    # const sample = Float32Array.new([1])
+    # _drawOntoGrid(sample, point.x as int, point.y as int)
+    #
+    def _drawOntoGrid(inputGrid Float32Array, offsetX int, offsetY int) {
+        const textureWidth = (Math.sqrt(inputGrid.length) as int)
+        const textureHeight = textureWidth
+        var rgba = Float32Array.new(textureWidth * textureWidth * 4)
+        for i in 0..inputGrid.length {
+            var j = i * 4
+            rgba[j + 0] = inputGrid[i] > 0.5 ? 1.0 : 0.0
+            rgba[j + 1] = inputGrid[i] > 0.5 ? 1.0 : 0.0
+            rgba[j + 2] = inputGrid[i] > 0.5 ? 1.0 : 0.0
+            rgba[j + 3] = 1.0
         }
-        runJumpFloodStep(2)
-        runJumpFloodStep(1)
+        _sourceTexture.subset(rgba, offsetX, offsetY, textureWidth, textureHeight)
     }
 }
