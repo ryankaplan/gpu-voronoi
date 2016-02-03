@@ -85,26 +85,30 @@ class JumpFlood {
     var _framebuffer Igloo.FrameBuffer
     var _simulationStepper dynamic
 
-    #var seeds = Seed.random(Vector.new(Controller.gridSize, Controller.gridSize), colors, 200)
+    var seeds = Seed.random(Vector.new(Controller.gridSize, Controller.gridSize), colors, 200)
 
-    var seeds = [
-        Seed.new(
-            Vector.new(50, 50),
-            Color.fromHex(0xFF0000)
-        ),
-        Seed.new(
-            Vector.new(50, 51),
-            Color.fromHex(0xFFFF00)
-        ),
-        Seed.new(
-            Vector.new(51, 50),
-            Color.fromHex(0xFFFF00)
-        ),
-        Seed.new(
-            Vector.new(10, 10),
-            Color.fromHex(0x0000FF)
-        ),
-    ]
+    # var seeds = [
+    #     Seed.new(
+    #         Vector.new(50, 50),
+    #         Color.fromHex(0xFF0000)
+    #     ),
+    #     Seed.new(
+    #         Vector.new(50, 51),
+    #         Color.fromHex(0xFFFF00)
+    #     ),
+    #     Seed.new(
+    #         Vector.new(51, 50),
+    #         Color.fromHex(0xFFFFF0)
+    #     ),
+    #     Seed.new(
+    #         Vector.new(10, 10),
+    #         Color.fromHex(0x0000FF)
+    #     ),
+    #     Seed.new(
+    #         Vector.new(11, 23),
+    #         Color.fromHex(0xF00A1F)
+    #     ),
+    # ]
 
     var _seedTextureSize int
 

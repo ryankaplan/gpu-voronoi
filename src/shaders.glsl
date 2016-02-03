@@ -12,10 +12,7 @@ uniform int seedTextureSize;
 uniform vec2 cellGridSize;
 uniform int stepSize;
 
-////////////////////////////////////////////////////////////////////////
-//
-//                           Helpers
-//
+// Helpers
 ////////////////////////////////////////////////////////////////////////
 
 const float EPSILON = 0.0001;
@@ -57,10 +54,7 @@ bool validUv(vec2 uv) {
     return uv.x >= 0.0 && uv.y >= 0.0 && uv.x <= 1.0 && uv.y <= 1.0;
 }
 
-////////////////////////////////////////////////////////////////////////
-//
-//                           Draw Quad
-//
+// Vertex shader for drawing a quad
 ////////////////////////////////////////////////////////////////////////
 
 attribute vec2 quad;
@@ -69,64 +63,63 @@ export void vCopyPosition() {
     gl_Position = vec4(quad, 0, 1.0);
 }
 
-////////////////////////////////////////////////////////////////////////
-//
-//                           Game of Life
-//
+// Each pixel in our grid texture is a cell object. Each cell contains
+// the following info (isSeed, seedIndex, locationX, locationY). The
+// following functions are an 'object-oriented' set of functions for
+// handling cells.
 ////////////////////////////////////////////////////////////////////////
 
-vec4 encodeObject(bool isSeed, int seedIndex, vec2 location) {
+vec4 createCell(bool isSeed, int seedIndex, vec2 location) {
     return vec4(isSeed ? 1.0 : 0.0, float(seedIndex), location);
 }
 
-bool objectIsSeed(const vec4 obj) {
+vec4 createInvalidCell() {
+    return vec4(-1.0, -1.0, -1.0, -1.0);
+}
+
+bool cellIsSeed(const vec4 obj) {
     return approxEqual(obj[0], 1.0);
 }
 
-int objectSeedIndex(const vec4 obj) {
+int cellSeedIndex(const vec4 obj) {
     return int(obj[1]);
 }
 
-vec2 objectSeedLocation(const vec4 obj) {
+vec2 cellSeedLocation(const vec4 obj) {
     return vec2(obj[2], obj[3]);
 }
 
-bool objectIsValid(const vec4 obj) {
+bool cellIsValid(const vec4 obj) {
     return !approxEqual(obj[0], -1.0);
 }
 
-// Return the value of the grid as position gl_FragCoord.xy + offset
-vec4 gridGet(vec2 offset) {
-    vec2 gridUv = gridPositionToUv(gl_FragCoord.xy + offset, cellGridSize);
-    if (!validUv(gridUv)) {
-        // Return -1 for invalid offset (not on grid)
-        return vec4(-1.0, -1.0, -1.0, -1.0);
-    }
-    return texture2D(cellGridTexture, gridUv);
-}
+// Fragment shader for the Jump Flood algorithm
+////////////////////////////////////////////////////////////////////////
 
-vec4 getObjectForOffset(const vec4 self, const vec2 offset) {
-    vec4 other = gridGet(offset);
-    if (!objectIsValid(other)) {
+vec4 getCellForOffset(const vec4 self, const vec2 offset) {
+    vec2 gridUv = gridPositionToUv(gl_FragCoord.xy + offset, cellGridSize);
+    vec4 otherCell = validUv(gridUv) ? texture2D(cellGridTexture, gridUv) : createInvalidCell();
+
+    if (!cellIsValid(otherCell)) {
         // Other is invalid - offset must have been off the grid.
         return self;
     }
 
-    if (objectSeedIndex(other) < 0) {
+    if (cellSeedIndex(otherCell) < 0) {
         // Other's seed location hasn't been set
         return self;
     }
 
-    else if (objectSeedIndex(self) < 0) {
+    else if (cellSeedIndex(self) < 0) {
         // Our seed location hasn't been set
-        return encodeObject(false, objectSeedIndex(other), objectSeedLocation(other));
+        return createCell(false, cellSeedIndex(otherCell), cellSeedLocation(otherCell));
     }
 
     else {
-        vec2 selfSeed = objectSeedLocation(self);
-        vec2 otherSeed = objectSeedLocation(other);
+        vec2 selfSeed = cellSeedLocation(self);
+        vec2 otherSeed = cellSeedLocation(otherCell);
         if (distance(selfSeed, gl_FragCoord.xy) > distance(otherSeed, gl_FragCoord.xy)) {
-            return encodeObject(false, objectSeedIndex(other), otherSeed);
+            return createCell(false, cellSeedIndex(otherCell), otherSeed);
         }
     }
 
@@ -134,26 +127,25 @@ vec4 getObjectForOffset(const vec4 self, const vec2 offset) {
 }
 
 export void fGameOfLife() {
-    vec4 object = gridGet(vec2(0, 0));
+    vec2 gridUv = gridPositionToUv(gl_FragCoord.xy, cellGridSize);
+    vec4 object = validUv(gridUv) ? texture2D(cellGridTexture, gridUv) : createInvalidCell();
+
     gl_FragColor = object;
 
-    if (!objectIsSeed(object)) {
-        object = getObjectForOffset(object, vec2(0, stepSize));
-        object = getObjectForOffset(object, vec2(stepSize, stepSize));
-        object = getObjectForOffset(object, vec2(stepSize, 0));
-        object = getObjectForOffset(object, vec2(stepSize, -1 * stepSize));
-        object = getObjectForOffset(object, vec2(0, -1 * stepSize));
-        object = getObjectForOffset(object, vec2(-1 * stepSize, -1 * stepSize));
-        object = getObjectForOffset(object, vec2(-1 * stepSize, 0));
-        object = getObjectForOffset(object, vec2(-1 * stepSize, stepSize));
+    if (!cellIsSeed(object)) {
+        object = getCellForOffset(object, vec2(0, stepSize));
+        object = getCellForOffset(object, vec2(stepSize, stepSize));
+        object = getCellForOffset(object, vec2(stepSize, 0));
+        object = getCellForOffset(object, vec2(stepSize, -1 * stepSize));
+        object = getCellForOffset(object, vec2(0, -1 * stepSize));
+        object = getCellForOffset(object, vec2(-1 * stepSize, -1 * stepSize));
+        object = getCellForOffset(object, vec2(-1 * stepSize, 0));
+        object = getCellForOffset(object, vec2(-1 * stepSize, stepSize));
         gl_FragColor = object;
     }
 }
 
-////////////////////////////////////////////////////////////////////////
-//
-//                            Draw grid
-//
+// Fragment shader for drawing the result of the Jump Flood algorithm
 ////////////////////////////////////////////////////////////////////////
 
 void drawDebugUI(vec2 gridPoint) {
@@ -192,7 +184,7 @@ export void fDrawGrid() {
     }
 
     vec4 object = texture2D(cellGridTexture, gridUv);
-    int seedIndex = objectSeedIndex(object);
+    int seedIndex = cellSeedIndex(object);
     int x = modInt(seedIndex, seedTextureSize);
     int y = seedIndex / seedTextureSize;
     vec2 seedTexelCoord = vec2(float(x), float(y));
