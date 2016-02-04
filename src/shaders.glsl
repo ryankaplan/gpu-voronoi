@@ -7,8 +7,6 @@ uniform vec2 canvasSize; // Size of HTML canvas element
 uniform vec2 viewportOffset; // Viewport offset in grid space
 uniform vec2 viewportSize; // Viewport size in grid space
 uniform int RELEASE; // Used for debugging
-uniform sampler2D seedTexture;
-uniform int seedTextureSize;
 uniform vec2 cellGridSize;
 uniform int stepSize;
 
@@ -28,6 +26,14 @@ const vec4 WHITE = vec4(1.0, 1.0, 1.0, 1.0);
 
 int modInt(int a, int b) {
     return int(mod(float(a), float(b)));
+}
+
+int encodeColorValues(int a, int b) {
+    return a * 256 + b;
+}
+
+vec2 decodeColorValues(int encoded) {
+    return vec2(encoded / 256, modInt(encoded, 256));
 }
 
 bool approxEqual(float a, float b) {
@@ -77,8 +83,10 @@ vec4 createInvalidCell() {
     return vec4(-1.0, -1.0, -1.0, -1.0);
 }
 
-int cellSeedIndex(const vec4 obj) {
-    return int(obj[1]);
+vec4 cellColor(const vec4 cell) {
+    int rg = int(cell[0]);
+    int ba = int(cell[1]);
+    return vec4(decodeColorValues(rg), decodeColorValues(ba)) / 255.;
 }
 
 vec2 cellSeedLocation(const vec4 obj) {
@@ -94,28 +102,24 @@ bool cellIsValid(const vec4 obj) {
 
 vec4 getCellForOffset(const vec4 self, const vec2 offset) {
     vec2 gridUv = gridPositionToUv(gl_FragCoord.xy + offset, cellGridSize);
-    vec4 otherCell = validUv(gridUv) ? texture2D(cellGridTexture, gridUv) : createInvalidCell();
+    vec4 other = validUv(gridUv) ? texture2D(cellGridTexture, gridUv) : createInvalidCell();
 
-    if (!cellIsValid(otherCell)) {
-        // Other is invalid. This probably means that `offset` is off the grid.
+    if (!cellIsValid(other)) {
+        // Other is invalid. This means that 'offset' is off the grid or
+        // 'otherCell' doesn't have any seed info yet.
         return self;
     }
 
-    if (cellSeedIndex(otherCell) < 0) {
-        // Other's seed location hasn't been set
-        return self;
-    }
-
-    else if (cellSeedIndex(self) < 0) {
-        // Our seed location hasn't been set
-        return createCell(cellSeedIndex(otherCell), cellSeedLocation(otherCell));
+    else if (!cellIsValid(self)) {
+        // Our seed location hasn't been set but other's has.
+        return other;
     }
 
     else {
         vec2 selfSeed = cellSeedLocation(self);
-        vec2 otherSeed = cellSeedLocation(otherCell);
+        vec2 otherSeed = cellSeedLocation(other);
         if (distance(selfSeed, gl_FragCoord.xy) > distance(otherSeed, gl_FragCoord.xy)) {
-            return createCell(cellSeedIndex(otherCell), otherSeed);
+            return other;
         }
     }
 
@@ -129,12 +133,11 @@ export void fGameOfLife() {
     // We gridUv should always be valid. We run this once for every
     // cell in the grid.
     if (!validUv(gridUv)) {
-        gl_FragColor.x = 1. / 0.;
+        discard;
     }
 
     vec4 object = texture2D(cellGridTexture, gridUv);
 
-    // Object is always valid, because we
     object = getCellForOffset(object, vec2(0, stepSize));
     object = getCellForOffset(object, vec2(stepSize, stepSize));
     object = getCellForOffset(object, vec2(stepSize, 0));
@@ -143,6 +146,7 @@ export void fGameOfLife() {
     object = getCellForOffset(object, vec2(- stepSize, - stepSize));
     object = getCellForOffset(object, vec2(- stepSize, 0));
     object = getCellForOffset(object, vec2(- stepSize, stepSize));
+
     gl_FragColor = object;
 }
 
@@ -185,10 +189,9 @@ export void fDrawGrid() {
     }
 
     vec4 object = texture2D(cellGridTexture, gridUv);
-    int seedIndex = cellSeedIndex(object);
-    int x = modInt(seedIndex, seedTextureSize);
-    int y = seedIndex / seedTextureSize;
-    vec2 seedTexelCoord = vec2(float(x), float(y));
-    vec2 seedUv = seedTexelCoord / float(seedTextureSize);
-    gl_FragColor = seedIndex < 0 ? WHITE : texture2D(seedTexture, seedUv);
+    if (!cellIsValid(object)) {
+        discard;
+    } else {
+        gl_FragColor = cellColor(object);
+    }
 }

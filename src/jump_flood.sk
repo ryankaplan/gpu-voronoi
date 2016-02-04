@@ -28,15 +28,11 @@ class JumpFlood {
     var _quadBuffer Igloo.Buffer
     var _sourceTexture Igloo.Texture
     var _destTexture Igloo.Texture
-    var _seedTexture Igloo.Texture
     var _framebuffer Igloo.FrameBuffer
     var _simulationStepper dynamic
-    const _seedTextureSize int = 128 # 16k seeds should be enough for anyone
 
     # Read-only properties
     def gridTexture Igloo.Texture { return _sourceTexture }
-    def seedTexture Igloo.Texture { return _seedTexture }
-    def seedTextureSize int { return _seedTextureSize }
 
     def new(igloo Igloo, gridSize_ int) {
         _igloo = igloo
@@ -51,33 +47,11 @@ class JumpFlood {
         _sourceTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.FLOAT).blank(gridSize, gridSize)
         _destTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.FLOAT).blank(gridSize, gridSize)
         _framebuffer = _igloo.framebuffer
-
-        # Allocate one large texture to hold all seeds we'd ever want in a given round
-        # of JFA. This seems better than re-allocating a texture every time the number
-        # of seeds changes.
-        _seedTexture =
-            _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.UNSIGNED_BYTE)
-            .blank(_seedTextureSize, _seedTextureSize)
         _setSeeds(Seed.random(Vector.new(Controller.gridSize, Controller.gridSize), colors, 200))
     }
 
     def _setSeeds(seeds List<Seed>) {
-        if seeds.count >= _seedTextureSize * _seedTextureSize {
-            # Too many seeds!
-            assert(false)
-        }
-
-        var seedsRgba = Uint8Array.new(_seedTextureSize * _seedTextureSize * 4)
-        for i in 0..seeds.count {
-            const index = i * 4
-            seedsRgba[index] = (255.0 * seeds[i].color.r) as int
-            seedsRgba[index + 1] = (255.0 * seeds[i].color.g) as int
-            seedsRgba[index + 2] = (255.0 * seeds[i].color.b) as int
-            seedsRgba[index + 3] = (255.0 * seeds[i].color.a) as int
-        }
-        _seedTexture.subset(seedsRgba, 0, 0, _seedTextureSize, _seedTextureSize)
-
-        # Seeds are encoded in the grid as a vec4 (-1.0, seedTextureIndex, seedLocationX, seedLocationY)
+        # Seeds are encoded in the grid as a vec4 (seedRg, seedBa, seedLocationX, seedLocationY)
         var rgba = Float32Array.new(gridSize * gridSize * 4)
 
         # Set all values to -1 to that it's clear that they're all uninitialized
@@ -89,7 +63,11 @@ class JumpFlood {
         for i in 0..seeds.count {
             const seed = seeds[i]
             const coord = ((seed.position.y * gridSize + seed.position.x) * 4) as int
-            rgba[coord + 1] = i
+            const rg = Color.encodeColorValues((seed.color.r * 255) as int, (seed.color.g * 255) as int)
+            const ba = Color.encodeColorValues((seed.color.b * 255) as int, (seed.color.a * 255) as int)
+
+            rgba[coord] = rg
+            rgba[coord + 1] = ba
             rgba[coord + 2] = seed.position.x
             rgba[coord + 3] = seed.position.y
         }

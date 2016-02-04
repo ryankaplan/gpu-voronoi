@@ -87,14 +87,11 @@ class Controller {
         # index 0 and pass that to the shader as cellGridTexture.
         _igloo.defaultFramebuffer.bind
         _simulation.gridTexture.bind(0)
-        _simulation.seedTexture.bind(1)
         _igloo.gl.viewport(0, 0, _canvas.width, _canvas.height)
         _program
             .use
             .attrib("quad", _quadBuffer, 2)
             .uniformi("cellGridTexture", 0)
-            .uniformi("seedTexture", 1)
-            .uniformi("seedTextureSize", _simulation.seedTextureSize)
             .uniform("viewportOffset", viewport.origin.toFloat32Array)
             .uniform("viewportSize", viewport.size.toFloat32Array)
             .uniform("canvasSize", Float32Array.new([_canvas.width, _canvas.height]))

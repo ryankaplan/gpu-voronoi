@@ -7,6 +7,23 @@ class Color {
 }
 
 namespace Color {
+    def encodeColorValues(a int, b int) int {
+        if a < 0 || a > 255 {
+            throw Error.new("First parameter \(a) is out of bounds. Must be between 0 and 255.")
+        }
+        if b < 0 || b > 255 {
+            throw Error.new("Second parameter \(b) is out of bounds. Must be between 0 and 255.")
+        }
+        return a * 256 + b
+    }
+
+    def decodeColorValues(encoded int) List<int> {
+        return [
+            encoded / 256,
+            encoded % 256
+        ]
+    }
+
     def fromHex(number int) Color {
         return Color.new(
             ((number >> 16) & 255) / 255,
