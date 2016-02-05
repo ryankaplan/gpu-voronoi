@@ -1,14 +1,17 @@
 // TODO(ryan): How slow does this make things on mobile devices?
 precision highp float;
 
-uniform sampler2D cellGridTexture;
-uniform vec2 gridSize; // Width and height of cellGridTexture
-uniform vec2 canvasSize; // Size of HTML canvas element
-uniform vec2 viewportOffset; // Viewport offset in grid space
-uniform vec2 viewportSize; // Viewport size in grid space
-uniform int RELEASE; // Used for debugging
-uniform vec2 cellGridSize;
-uniform int stepSize;
+uniform sampler2D iCellGridTexture;
+uniform vec2 iGridSize; // Width and height of iCellGridTexture
+uniform vec2 iCanvasSize; // Size of HTML canvas element
+uniform vec2 iViewportOffset; // Viewport offset in grid space
+uniform vec2 iViewportSize; // Viewport size in grid space
+uniform int iRelease; // Used for debugging
+uniform vec2 iCellGridSize;
+uniform int iStepSize;
+
+// The color that is *not* to be counted as seed.
+uniform vec4 iBackgroundColor;
 
 // Helpers
 ////////////////////////////////////////////////////////////////////////
@@ -40,8 +43,28 @@ bool approxEqual(float a, float b) {
     return abs(a - b) < EPSILON;
 }
 
-vec2 gridPositionToUv(vec2 position, vec2 gridSize) {
-    return position / gridSize;
+bool approxEqual(vec2 a, vec2 b) {
+    return
+        approxEqual(a[0], b[0]) &&
+        approxEqual(a[1], b[1]);
+}
+
+bool approxEqual(vec3 a, vec3 b) {
+    return
+        approxEqual(a[0], b[0]) &&
+        approxEqual(a[1], b[1]) &&
+        approxEqual(a[2], b[2]);
+}
+bool approxEqual(vec4 a, vec4 b) {
+    return
+        approxEqual(a[0], b[0]) &&
+        approxEqual(a[1], b[1]) &&
+        approxEqual(a[2], b[2]) &&
+        approxEqual(a[3], b[3]);
+}
+
+vec2 gridPositionToUv(vec2 position, vec2 iGridSize) {
+    return position / iGridSize;
 }
 
 bool between(vec2 value, vec2 bottom, vec2 top) {
@@ -50,10 +73,10 @@ bool between(vec2 value, vec2 bottom, vec2 top) {
 
 vec2 gridPointFromFragCoord(vec2 fragCoord) {
     // UV co-ordinates of the pixel we're drawing in canvas space
-    vec2 canvasSpaceUv = gl_FragCoord.xy / canvasSize;
+    vec2 canvasSpaceUv = gl_FragCoord.xy / iCanvasSize;
 
     // Use that to find the grid point that we're drawing
-    return viewportOffset + viewportSize * canvasSpaceUv;
+    return iViewportOffset + iViewportSize * canvasSpaceUv;
 }
 
 bool validUv(vec2 uv) {
@@ -75,8 +98,8 @@ export void vCopyPosition() {
 // handling cells.
 ////////////////////////////////////////////////////////////////////////
 
-vec4 createCell(int seedIndex, vec2 location) {
-    return vec4(-1.0, float(seedIndex), location);
+vec4 createCell(float rg, float ba, vec2 location) {
+    return vec4(rg, ba, location);
 }
 
 vec4 createInvalidCell() {
@@ -97,12 +120,28 @@ bool cellIsValid(const vec4 obj) {
     return !approxEqual(obj[1], -1.0);
 }
 
+// Fragment shader for prepping an image as a set of seeds ready for JFA
+////////////////////////////////////////////////////////////////////////
+
+export void fPrepForJFA() {
+    vec2 gridUv = gridPositionToUv(gl_FragCoord.xy, iCellGridSize);
+    vec4 pixel = texture2D(iCellGridTexture, gridUv);
+
+    if (approxEqual(pixel, iBackgroundColor)) {
+        gl_FragColor = createInvalidCell();
+    } else {
+        int rg = encodeColorValues(int(pixel.r * 256.), int(pixel.g * 256.));
+        int ba = encodeColorValues(int(pixel.b * 256.), int(pixel.a * 256.));
+        gl_FragColor = createCell(float(rg), float(ba), gl_FragCoord.xy);
+    }
+}
+
 // Fragment shader for the Jump Flood algorithm
 ////////////////////////////////////////////////////////////////////////
 
 vec4 getCellForOffset(const vec4 self, const vec2 offset) {
-    vec2 gridUv = gridPositionToUv(gl_FragCoord.xy + offset, cellGridSize);
-    vec4 other = validUv(gridUv) ? texture2D(cellGridTexture, gridUv) : createInvalidCell();
+    vec2 gridUv = gridPositionToUv(gl_FragCoord.xy + offset, iCellGridSize);
+    vec4 other = validUv(gridUv) ? texture2D(iCellGridTexture, gridUv) : createInvalidCell();
 
     if (!cellIsValid(other)) {
         // Other is invalid. This means that 'offset' is off the grid or
@@ -128,7 +167,7 @@ vec4 getCellForOffset(const vec4 self, const vec2 offset) {
 
 export void fGameOfLife() {
     // Find the object at this grid position
-    vec2 gridUv = gridPositionToUv(gl_FragCoord.xy, cellGridSize);
+    vec2 gridUv = gridPositionToUv(gl_FragCoord.xy, iCellGridSize);
 
     // We gridUv should always be valid. We run this once for every
     // cell in the grid.
@@ -136,16 +175,16 @@ export void fGameOfLife() {
         discard;
     }
 
-    vec4 object = texture2D(cellGridTexture, gridUv);
+    vec4 object = texture2D(iCellGridTexture, gridUv);
 
-    object = getCellForOffset(object, vec2(0, stepSize));
-    object = getCellForOffset(object, vec2(stepSize, stepSize));
-    object = getCellForOffset(object, vec2(stepSize, 0));
-    object = getCellForOffset(object, vec2(stepSize, - stepSize));
-    object = getCellForOffset(object, vec2(0, - stepSize));
-    object = getCellForOffset(object, vec2(- stepSize, - stepSize));
-    object = getCellForOffset(object, vec2(- stepSize, 0));
-    object = getCellForOffset(object, vec2(- stepSize, stepSize));
+    object = getCellForOffset(object, vec2(0, iStepSize));
+    object = getCellForOffset(object, vec2(iStepSize, iStepSize));
+    object = getCellForOffset(object, vec2(iStepSize, 0));
+    object = getCellForOffset(object, vec2(iStepSize, - iStepSize));
+    object = getCellForOffset(object, vec2(0, - iStepSize));
+    object = getCellForOffset(object, vec2(- iStepSize, - iStepSize));
+    object = getCellForOffset(object, vec2(- iStepSize, 0));
+    object = getCellForOffset(object, vec2(- iStepSize, iStepSize));
 
     gl_FragColor = object;
 }
@@ -154,7 +193,7 @@ export void fGameOfLife() {
 ////////////////////////////////////////////////////////////////////////
 
 void drawDebugUI(vec2 gridPoint) {
-    if (RELEASE == 1) {
+    if (iRelease == 1) {
         return;
     }
 
@@ -180,7 +219,7 @@ void drawDebugUI(vec2 gridPoint) {
 
 export void fDrawGrid() {
     vec2 gridPoint = gridPointFromFragCoord(gl_FragCoord.xy);
-    vec2 gridUv = gridPoint / gridSize;
+    vec2 gridUv = gridPoint / iGridSize;
 
     if (!validUv(gridUv)) {
         gl_FragColor = BLACK;
@@ -188,7 +227,7 @@ export void fDrawGrid() {
         return;
     }
 
-    vec4 object = texture2D(cellGridTexture, gridUv);
+    vec4 object = texture2D(iCellGridTexture, gridUv);
     if (!cellIsValid(object)) {
         discard;
     } else {

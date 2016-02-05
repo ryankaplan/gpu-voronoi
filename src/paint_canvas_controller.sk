@@ -1,0 +1,66 @@
+
+# A really simple way to draw on a canvas. Useful just for testing.
+
+class PaintCanvasController {
+    var _canvas HTMLCanvasElement
+    var _ctx CanvasRenderingContext2D
+    var _isMouseDown = false
+    var color = Color.new(1, 0, 0, 1)
+    var radius = 5
+    var onDraw fn()
+
+    def new(canvas HTMLCanvasElement) {
+        _canvas = canvas
+        _styleCanvas(canvas)
+        _ctx = _canvas.getContext2D
+
+        document.addEventListener("keyup", (e HTMLKeyboardEvent) => {
+            if e.which == 82 {
+                color = Color.new(1, 0, 0, 1)
+            } else if e.which == 71 {
+                color = Color.new(0, 1, 0, 1)
+            } else if e.which == 66 {
+                color = Color.new(0, 0, 1, 1)
+            }
+        })
+
+        _canvas.addEventListener("mousedown", (e HTMLMouseEvent) => {
+            _isMouseDown = true
+            e.stopPropagation
+            _draw(Vector.new(e.clientX, e.clientY))
+        })
+
+        _canvas.addEventListener("mousemove", (e HTMLMouseEvent) => {
+            if _isMouseDown {
+                _draw(Vector.new(e.clientX, e.clientY))
+            }
+            e.stopPropagation
+        })
+
+        _canvas.addEventListener("mouseup", (e HTMLMouseEvent) => {
+            _draw(Vector.new(e.clientX, e.clientY))
+            _isMouseDown = false
+            e.stopPropagation
+        })
+    }
+
+    def _draw(point Vector) {
+        _ctx.beginPath
+        _ctx.arc(point.x, point.y, radius, 0, 2 * Math.PI)
+        _ctx.fillStyle = color.toCSS
+        _ctx.fill
+        if onDraw != null {
+            onDraw()
+        }
+    }
+
+    def _styleCanvas(canvas HTMLCanvasElement) {
+        canvas.style.backgroundColor = "white"
+        canvas.width = Controller.gridSize
+        canvas.height = Controller.gridSize
+        canvas.style.position = "absolute"
+        canvas.style.left = "0px"
+        canvas.style.top = "0px"
+    }
+
+}

@@ -19,12 +19,14 @@
   <body>
       <div id="app-container">
         <div id="instructions">
-          Drag to move around. Use the scroll-wheel to zoom.
+          Drag to move around. Use the scroll-wheel to zoom. <span id="compute-button">GO</span>
         </div>
+        <!-- TODO(ryan) Find out why the z-index is necessary here -->
+        <canvas id="voronoi-input-canvas" style="z-index: 1;"></canvas>
 
         <!-- See CSS for why the canvas-container is necessary -->
         <div id="canvas-container">
-            <canvas id="game-of-life-canvas"></canvas>
+            <canvas id="voronoi-output-canvas"></canvas>
         </div>
       </div>
       <div id="webgl-error" style="display: none;">

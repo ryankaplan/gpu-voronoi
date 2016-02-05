@@ -420,6 +420,8 @@ Igloo.Texture.prototype.blank = function(width, height) {
  * @param {number} [height]
  * @returns {Igloo.Texture}
  */
+// TODO(ryan): This fails when source is an HTMLCanvasElement, I think because
+// gl.textImage2D doesn't like to have width and height passed in.
 Igloo.Texture.prototype.set = function(source, width, height) {
     var gl = this.gl;
     this.bind();

@@ -1,9 +1,14 @@
+
 class Color {
     # 0-1 values
     var r double
     var g double
     var b double
     var a double
+
+    def toCSS string {
+        return "rgba(\(r * 255), \(g * 255), \(b * 255), \(a))"
+    }
 }
 
 namespace Color {

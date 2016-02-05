@@ -18,8 +18,9 @@ class HTMLWindow {
 @entry
 def main {
     window.onload = => {
-        const canvas = document.getElementById("game-of-life-canvas") as HTMLCanvasElement
-        const controller = Controller.new(canvas)
+        const inputCanvas = document.getElementById("voronoi-input-canvas") as HTMLCanvasElement
+        const outputCanvas = document.getElementById("voronoi-output-canvas") as HTMLCanvasElement
+        const controller = Controller.new(inputCanvas, outputCanvas)
         controller.draw
         controller.start
         if !RELEASE {

@@ -51,6 +51,8 @@ namespace Igloo {
     }
 
     class Texture {
+        var texture WebGLTexture
+
         def new(gl WebGLRenderingContext, format GLenum, wrap GLenum, filter GLenum, type GLenum)
         def new(gl WebGLRenderingContext, format GLenum, wrap GLenum, filter GLenum)
         def new(gl WebGLRenderingContext, format GLenum, wrap GLenum)
