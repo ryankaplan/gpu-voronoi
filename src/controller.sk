@@ -1,6 +1,6 @@
 
 namespace Controller {
-    var gridSize = 128
+    var gridSize = 512
 }
 
 class Controller {
@@ -20,7 +20,7 @@ class Controller {
 
     def new(inputCanvas HTMLCanvasElement, outputCanvas HTMLCanvasElement) {
         _inputCanvas = inputCanvas
-        const paintController = PaintCanvasController.new(_inputCanvas)
+        const paintController = FishGameController.new(_inputCanvas)
         paintController.onDraw = () => {
             _simulation.setSeedsFromCanvas(_inputCanvas)
             _simulation.computeVoronoi

@@ -7,7 +7,7 @@ class Color {
     var a double
 
     def toCSS string {
-        return "rgba(\(r * 255), \(g * 255), \(b * 255), \(a))"
+        return "rgba(\((r * 255) as int), \((g * 255) as int), \((b * 255) as int), \(a))"
     }
 }
 

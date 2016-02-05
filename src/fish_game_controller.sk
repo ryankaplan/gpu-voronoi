@@ -1,0 +1,121 @@
+class Circle {
+    var center Vector
+    var radius = 2.0
+    var color = Color.new(0, 0, 1, 1)
+
+    def render(ctx CanvasRenderingContext2D) {
+        ctx.beginPath
+        ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI)
+        ctx.fillStyle = color.toCSS
+        ctx.fill
+        ctx.closePath
+    }
+}
+
+
+class FishGameController {
+    var _canvas HTMLCanvasElement
+    var _ctx CanvasRenderingContext2D
+    var _isMouseDown = false
+    var color = Color.new(1, 0, 0, 1)
+    var onDraw fn()
+    var _keysDown IntMap<bool> = {}
+
+    var _numPads = 40
+    var _pads List<Circle> = []
+    var _speeds List<double> = []
+    var _fish Circle
+
+    def new(canvas HTMLCanvasElement) {
+        _canvas = canvas
+        _styleCanvas(canvas)
+        _ctx = _canvas.getContext2D
+
+        for i in 1.._numPads {
+            _pads.append(Circle.new(Vector.new(Math.random * _canvas.width, Math.random * _canvas.height)))
+            _pads[_pads.count - 1].color.b -= Math.random * 0.5
+            _pads[_pads.count - 1].color.r += Math.random * 0.2
+            _pads[_pads.count - 1].color.g += Math.random * 0.2
+            _speeds.append(1 + Math.random * 5)
+        }
+        _fish = Circle.new(Vector.new(Math.random * _canvas.width, Math.random * _canvas.height))
+        _fish.color = Color.new(1, 0.5, 0, 1)
+
+        document.addEventListener("keydown", (e HTMLKeyboardEvent) => {
+            _keysDown[e.which] = true
+            const speed = 20
+
+            if e.which in _keysDown && _keysDown[e.which] {
+                # up
+                if e.which == 38 { _fish.center.y += speed }
+
+                # down
+                if e.which == 40 { _fish.center.y -= speed }
+
+                # left
+                if e.which == 37 { _fish.center.x -= speed }
+
+                # right
+                if e.which == 39 { _fish.center.x += speed }
+            }
+
+            _fish.center.x = _fish.center.x as int % _canvas.width
+            _fish.center.y = _fish.center.y as int % _canvas.height
+        })
+
+        document.addEventListener("keyup", (e HTMLKeyboardEvent) => {
+            _keysDown[e.which] = false
+        })
+
+        _startRenderLoop
+    }
+
+    def _drawDot(point Vector) {
+        const radius = 2
+        _ctx.beginPath
+
+        _ctx.arc(point.x, point.y, radius, 0, 2 * Math.PI)
+        _ctx.fillStyle = color.toCSS
+        _ctx.fill
+        if onDraw != null {
+            onDraw()
+        }
+    }
+
+    def _styleCanvas(canvas HTMLCanvasElement) {
+        canvas.style.backgroundColor = "white"
+        canvas.width = Controller.gridSize
+        canvas.height = Controller.gridSize
+        canvas.style.position = "absolute"
+        canvas.style.left = "0px"
+        canvas.style.top = "0px"
+    }
+
+    def _startRenderLoop {
+        var tick fn() = => {
+            self._render
+            requestAnimationFrame(tick)
+        }
+        requestAnimationFrame(tick)
+    }
+
+    def _render {
+        _ctx.clearRect(0, 0, _canvas.width, _canvas.height)
+
+        for i in 1.._pads.count {
+            var pad = _pads[i]
+            pad.center.x = (pad.center.x + _speeds[i]) as int % _canvas.width
+            pad.center.y = (pad.center.y + _speeds[i]) as int % _canvas.height
+        }
+
+        for pad in _pads {
+            pad.render(_ctx)
+        }
+
+        _fish.render(_ctx)
+
+        if onDraw != null {
+            onDraw()
+        }
+    }
+}
