@@ -1,1 +1,1 @@
-# Constant-time Voronooi generation on the GPU
+Just an experiment. Nothing to see here.
