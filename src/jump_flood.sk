@@ -82,7 +82,6 @@ class JumpFlood {
             .draw(_igloo.gl.TRIANGLE_STRIP, 4)
     }
 
-
     def _setSeeds(seeds List<Seed>) {
         # Seeds are encoded in the grid as a vec4 (seedRg, seedBa, seedLocationX, seedLocationY)
         var rgba = Float32Array.new(gridSize * gridSize * 4)

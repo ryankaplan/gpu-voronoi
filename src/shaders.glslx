@@ -130,8 +130,8 @@ export void fPrepForJFA() {
     if (approxEqual(pixel, iBackgroundColor)) {
         gl_FragColor = createInvalidCell();
     } else {
-        int rg = encodeColorValues(int(pixel.r * 256.), int(pixel.g * 256.));
-        int ba = encodeColorValues(int(pixel.b * 256.), int(pixel.a * 256.));
+        int rg = encodeColorValues(int(pixel.r * 255.), int(pixel.g * 255.));
+        int ba = encodeColorValues(int(pixel.b * 255.), int(pixel.a * 255.));
         gl_FragColor = createCell(float(rg), float(ba), gl_FragCoord.xy);
     }
 }

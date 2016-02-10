@@ -20,7 +20,7 @@ class Controller {
 
     def new(inputCanvas HTMLCanvasElement, outputCanvas HTMLCanvasElement) {
         _inputCanvas = inputCanvas
-        const paintController = FishGameController.new(_inputCanvas)
+        const paintController = PaintCanvasController.new(_inputCanvas)
         paintController.onDraw = () => {
             _simulation.setSeedsFromCanvas(_inputCanvas)
             _simulation.computeVoronoi
