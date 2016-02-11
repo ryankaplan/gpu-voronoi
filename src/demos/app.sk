@@ -22,7 +22,6 @@ def main {
         const inputCanvas = document.getElementById("paint-demo-input-canvas") as HTMLCanvasElement
         const outputCanvas = document.getElementById("paint-demo-output-canvas") as HTMLCanvasElement
         const controller = PaintDemoController.new(inputCanvas, outputCanvas)
-        controller.draw
         controller.start
         if !RELEASE {
             # Expose this for in-browser debugging

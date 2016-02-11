@@ -33,11 +33,25 @@ class JumpFlood {
     var _framebuffer Igloo.FrameBuffer
     var _simulationStepper dynamic
 
-    # Read-only properties
-    def gridTexture Igloo.Texture { return _sourceTexture }
+    var _drawOutput Igloo.Program
+    var _outputCanvas HTMLCanvasElement
 
-    def new(igloo Igloo, gridSize_ int) {
-        _igloo = igloo
+    # Read-only properties
+    def outputTexture Igloo.Texture { return _sourceTexture }
+
+    def new(canvas HTMLCanvasElement, gridSize_ int) {
+        _outputCanvas = canvas
+
+        # Igloo is a thin object-oriented WebGL library. TODO(ryan): move
+        # this initialization into `lib`.
+        _igloo = Igloo.new(canvas)
+        if _igloo.gl == null {
+            throw Error.new("Failed to initialize Igloo")
+        }
+
+        _igloo.gl.disable(_igloo.gl.DEPTH_TEST)
+        _drawOutput = Igloo.Program.new(_igloo.gl, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_GRID)
+
         gridSize = gridSize_
 
         var gl = _igloo.gl
@@ -46,12 +60,26 @@ class JumpFlood {
 
         _program = Igloo.Program.new(_igloo.gl, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_GAME_OF_LIFE)
         _prepProgram = Igloo.Program.new(_igloo.gl, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_PREP_FOR_JFA)
-        _quadBuffer = igloo.array(Igloo.QUAD2)
+        _quadBuffer = _igloo.array(Igloo.QUAD2)
         _sourceTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.FLOAT).blank(gridSize, gridSize)
         _destTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.FLOAT).blank(gridSize, gridSize)
         _tmpTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.UNSIGNED_BYTE).blank(gridSize, gridSize)
         _framebuffer = _igloo.framebuffer
         _setSeeds(Seed.random(Vector.new(PaintDemoController.gridSize, PaintDemoController.gridSize), colors, 200))
+    }
+
+    def drawToOutputCanvas {
+        _igloo.defaultFramebuffer.bind
+        _destTexture.bind(0)
+        _igloo.gl.viewport(0, 0, _outputCanvas.width, _outputCanvas.height)
+        _drawOutput
+                    .use
+                    .attrib("quad", _quadBuffer, 2)
+                    .uniformi("iCellGridTexture", 0)
+                    .uniform("iCanvasSize", Float32Array.new([_outputCanvas.width, _outputCanvas.height]))
+                    .uniform("iGridSize", Float32Array.new([gridSize, gridSize]))
+                    .uniform("iRelease", RELEASE, true)
+                    .draw(_igloo.gl.TRIANGLE_STRIP, 4)
     }
 
     # iBackgroundColor, iCellGridTexture, iCellGridSize
@@ -136,13 +164,6 @@ class JumpFlood {
     }
 
     def stepVoronoi {
-        _simulationStepper()
-    }
-
-    def userClickGridSpace(point Vector) {
-        if _simulationStepper == null {
-            resetVoronoiSteps
-        }
         _simulationStepper()
     }
 
