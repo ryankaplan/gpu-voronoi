@@ -2,37 +2,18 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <!-- From here: http://stackoverflow.com/a/4389976 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Voronoi</title>
-
+    <title>Demos</title>
     <link href='https://fonts.googleapis.com/css?family=Lato:300' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="style.css">
-    <script type="text/javascript">
-    function isTouchDevice() {
-        return 'ontouchstart' in document.documentElement;
-    }
-    </script>
-    <script src="igloo.js"></script>
-    <script src="compiled.js"></script>
   </head>
   <body>
-      <div id="app-container">
-        <div id="instructions">
-          Drag to move around. Use the scroll-wheel to zoom. <span id="compute-button">GO</span>
-        </div>
-        <!-- TODO(ryan) Find out why the z-index is necessary here -->
-        <canvas id="voronoi-input-canvas" style="z-index: 1;"></canvas>
-
-        <!-- See CSS for why the canvas-container is necessary -->
-        <div id="canvas-container">
-            <canvas id="voronoi-output-canvas"></canvas>
-        </div>
-      </div>
-      <div id="webgl-error" style="display: none;">
-        This webpage uses WebGL which isn't supported by your browser. <br />
-        </br>
-        Sorry :(
-      </div>
+    <div class="demo-page">
+      Demos...
+      <ul>
+        <li><a href="paint-demo.html">Paint Demo</a></li>
+        <li><a href="fish-demo.html">Fish Demo</a></li>
+        <li><a href="photo-demo.html">Photo Demo</a></li>
+      </ul>
+    </div>
   </body>
 </html>

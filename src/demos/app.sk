@@ -1,0 +1,33 @@
+@import
+namespace console {
+    const log dynamic
+}
+
+namespace PaintDemoController {
+    const cellSize = 1
+}
+
+class HTMLWindow {
+    var onload dynamic
+    var onresize dynamic
+}
+
+const PAINT_DEMO = false
+const FISH_DEMO = false
+const PHOTO_DEMO = false
+
+@entry if PAINT_DEMO
+def main {
+    window.onload = => {
+        const inputCanvas = document.getElementById("paint-demo-input-canvas") as HTMLCanvasElement
+        const outputCanvas = document.getElementById("paint-demo-output-canvas") as HTMLCanvasElement
+        const controller = PaintDemoController.new(inputCanvas, outputCanvas)
+        controller.draw
+        controller.start
+        if !RELEASE {
+            # Expose this for in-browser debugging
+            (window as dynamic).controller = controller
+        }
+    }
+}
+

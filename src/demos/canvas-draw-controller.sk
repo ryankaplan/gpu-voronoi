@@ -1,7 +1,7 @@
 
 # A really simple way to draw on a canvas. Useful just for testing.
 
-class PaintCanvasController {
+class CanvasDrawController {
     var _canvas HTMLCanvasElement
     var _ctx CanvasRenderingContext2D
     var _isMouseDown = false
@@ -56,8 +56,8 @@ class PaintCanvasController {
 
     def _styleCanvas(canvas HTMLCanvasElement) {
         canvas.style.backgroundColor = "white"
-        canvas.width = Controller.gridSize
-        canvas.height = Controller.gridSize
+        canvas.width = PaintDemoController.gridSize
+        canvas.height = PaintDemoController.gridSize
         canvas.style.position = "absolute"
         canvas.style.left = "0px"
         canvas.style.top = "0px"

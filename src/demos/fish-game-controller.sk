@@ -84,8 +84,8 @@ class FishGameController {
 
     def _styleCanvas(canvas HTMLCanvasElement) {
         canvas.style.backgroundColor = "white"
-        canvas.width = Controller.gridSize
-        canvas.height = Controller.gridSize
+        canvas.width = PaintDemoController.gridSize
+        canvas.height = PaintDemoController.gridSize
         canvas.style.position = "absolute"
         canvas.style.left = "0px"
         canvas.style.top = "0px"

@@ -4,8 +4,6 @@ precision highp float;
 uniform sampler2D iCellGridTexture;
 uniform vec2 iGridSize; // Width and height of iCellGridTexture
 uniform vec2 iCanvasSize; // Size of HTML canvas element
-uniform vec2 iViewportOffset; // Viewport offset in grid space
-uniform vec2 iViewportSize; // Viewport size in grid space
 uniform int iRelease; // Used for debugging
 uniform vec2 iCellGridSize;
 uniform int iStepSize;
@@ -76,7 +74,7 @@ vec2 gridPointFromFragCoord(vec2 fragCoord) {
     vec2 canvasSpaceUv = gl_FragCoord.xy / iCanvasSize;
 
     // Use that to find the grid point that we're drawing
-    return iViewportOffset + iViewportSize * canvasSpaceUv;
+    return vec2(0.0, 0.0) + iGridSize * canvasSpaceUv;
 }
 
 bool validUv(vec2 uv) {

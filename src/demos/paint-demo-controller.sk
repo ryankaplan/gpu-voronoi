@@ -1,0 +1,92 @@
+
+namespace PaintDemoController {
+    var gridSize = 256
+}
+
+class PaintDemoController {
+    var _inputCanvas HTMLCanvasElement
+    var _outputCanvas HTMLCanvasElement
+    var _voronoi JumpFlood
+    var _igloo Igloo
+
+    var _program Igloo.Program
+    var _quadBuffer Igloo.Buffer
+
+    def new(inputCanvas HTMLCanvasElement, outputCanvas HTMLCanvasElement) {
+        _inputCanvas = inputCanvas
+        _outputCanvas = outputCanvas
+        _sizeCanvas(inputCanvas)
+        _sizeCanvas(outputCanvas)
+
+        # Move the output canvas to the right of the input canvas
+        outputCanvas.style.position = "absolute"
+        outputCanvas.style.left = "\(gridSize)px"
+
+        # Igloo is a thin object-oriented WebGL library. TODO(ryan): move
+        # this initialization into `lib`.
+        _igloo = Igloo.new(_outputCanvas)
+        if _igloo.gl == null {
+            # Failed to initialize Web-GL. Display error.
+            document.getElementById("paint-demo").style.display = "none"
+            document.getElementById("webgl-error").style.display = null
+            throw Error.new("Failed to initialize Igloo")
+        }
+
+        _voronoi = JumpFlood.new(_igloo, gridSize)
+        _igloo.gl.disable(_igloo.gl.DEPTH_TEST)
+        _program = Igloo.Program.new(_igloo.gl, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_GRID)
+        _quadBuffer = _igloo.array(Igloo.QUAD2)
+
+        # A CanvasDrawController handles user draw-actions on the input canvas
+        # Whenever the user draws, we re-render the voronoi diagram for the input
+        const drawController = CanvasDrawController.new(_inputCanvas)
+        drawController.onDraw = () => {
+            _voronoi.setSeedsFromCanvas(_inputCanvas)
+            _voronoi.computeVoronoi
+        }
+    }
+
+    def _sizeCanvas(canvas HTMLCanvasElement) {
+        canvas.width = PaintDemoController.gridSize
+        canvas.height = PaintDemoController.gridSize
+    }
+
+    def setCanvasCursor(cssCursor string) {
+        _outputCanvas.style.cursor = cssCursor
+    }
+
+    def canvas HTMLCanvasElement {
+        return _outputCanvas
+    }
+
+    def canvasSize Vector {
+        return Vector.new(_outputCanvas.width, _outputCanvas.height)
+    }
+
+    def userClickGridSpace(point Vector) {
+        _voronoi.userClickGridSpace(point)
+    }
+
+    def draw {
+        # As per the comment at the top of 'step', the current grid
+        # state is stored in the 'front' texture. So we bind that to
+        # index 0 and pass that to the shader as cellGridTexture.
+        _igloo.defaultFramebuffer.bind
+        _voronoi.gridTexture.bind(0)
+        _igloo.gl.viewport(0, 0, _outputCanvas.width, _outputCanvas.height)
+        _program
+            .use
+            .attrib("quad", _quadBuffer, 2)
+            .uniformi("iCellGridTexture", 0)
+            .uniform("iCanvasSize", Float32Array.new([_outputCanvas.width, _outputCanvas.height]))
+            .uniform("iGridSize", Float32Array.new([_voronoi.gridSize, _voronoi.gridSize]))
+            .uniform("iRelease", RELEASE, true)
+            .draw(_igloo.gl.TRIANGLE_STRIP, 4)
+    }
+
+    def start {
+        setInterval(() => {
+            draw
+        }, 60)
+    }
+}

@@ -51,7 +51,7 @@ class JumpFlood {
         _destTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.FLOAT).blank(gridSize, gridSize)
         _tmpTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.UNSIGNED_BYTE).blank(gridSize, gridSize)
         _framebuffer = _igloo.framebuffer
-        _setSeeds(Seed.random(Vector.new(Controller.gridSize, Controller.gridSize), colors, 200))
+        _setSeeds(Seed.random(Vector.new(PaintDemoController.gridSize, PaintDemoController.gridSize), colors, 200))
     }
 
     # iBackgroundColor, iCellGridTexture, iCellGridSize

@@ -10,6 +10,10 @@ html, body {
     background-color: #222;
 }
 
+a {
+    color: white;
+}
+
 /*
  Why have a canvas-container that just wraps a canvas?
  canvas.width and canvas.height don't return the correct
@@ -48,4 +52,8 @@ html, body {
     height: 40px;
     line-height: 40px;
     background: #222;
+}
+
+.demo-page {
+    margin: 20px;
 }

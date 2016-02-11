@@ -2,5 +2,5 @@ node_modules/
 compiled/
 .DS_Store
 bin
-www/compiled.js
+www/*compiled.js
 www/glsl
