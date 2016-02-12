@@ -122,8 +122,9 @@ bool cellIsValid(const vec4 obj) {
 ////////////////////////////////////////////////////////////////////////
 
 export void fPrepForJFA() {
-    vec2 gridUv = gridPositionToUv(gl_FragCoord.xy, iCellGridSize);
-    vec4 pixel = texture2D(iCellGridTexture, gridUv);
+    vec2 gridUv = gl_FragCoord.xy / iCellGridSize;
+    vec2 gridUvFlippedY = vec2(gridUv.x, 1.0 - gridUv.y);
+    vec4 pixel = texture2D(iCellGridTexture, gridUvFlippedY);
 
     if (approxEqual(pixel, iBackgroundColor)) {
         gl_FragColor = createInvalidCell();
