@@ -3,7 +3,7 @@ namespace console {
     const log dynamic
 }
 
-namespace PaintDemoController {
+namespace DemoController {
     const cellSize = 1
 }
 
@@ -16,17 +16,46 @@ const PAINT_DEMO = false
 const FISH_DEMO = false
 const PHOTO_DEMO = false
 
-@entry if PAINT_DEMO
-def main {
+def demo(initDemoController fn(HTMLCanvasElement, HTMLCanvasElement, DemoController)) {
     window.onload = => {
-        const inputCanvas = document.getElementById("paint-demo-input-canvas") as HTMLCanvasElement
-        const outputCanvas = document.getElementById("paint-demo-output-canvas") as HTMLCanvasElement
-        const controller = PaintDemoController.new(inputCanvas, outputCanvas)
-        controller.start
-        if !RELEASE {
-            # Expose this for in-browser debugging
-            (window as dynamic).controller = controller
+        const inputCanvas = document.getElementById("input-canvas") as HTMLCanvasElement
+        const outputCanvas = document.getElementById("output-canvas") as HTMLCanvasElement
+        const demoController = DemoController.new(inputCanvas, outputCanvas)
+
+        initDemoController(inputCanvas, outputCanvas, demoController)
+
+        # A CanvasDrawController handles user draw-actions on the input canvas
+        # Whenever the user draws, we re-render the voronoi diagram for the input
+        const drawController = CanvasDrawController.new(inputCanvas)
+        drawController.onDraw = () => {
+            demoController.voronoi.setSeedsFromCanvas(inputCanvas)
+            demoController.voronoi.computeVoronoi
         }
+
+        demoController.start
     }
 }
 
+@entry if PAINT_DEMO
+def paintDemoMain {
+    demo((inputCanvas HTMLCanvasElement, outputCanvas HTMLCanvasElement, demoController DemoController) => {
+        # A CanvasDrawController handles user draw-actions on the input canvas
+        # Whenever the user draws, we re-render the voronoi diagram for the input
+        const drawController = CanvasDrawController.new(inputCanvas)
+        drawController.onDraw = () => {
+            demoController.voronoi.setSeedsFromCanvas(inputCanvas)
+            demoController.voronoi.computeVoronoi
+        }
+    })
+}
+
+@entry if FISH_DEMO
+def fishDemoMain {
+    demo((inputCanvas HTMLCanvasElement, outputCanvas HTMLCanvasElement, demoController DemoController) => {
+        const fishController = FishGameController.new(inputCanvas)
+        fishController.onDraw = () => {
+            demoController.voronoi.setSeedsFromCanvas(inputCanvas)
+            demoController.voronoi.computeVoronoi
+        }
+    })
+}

@@ -1,0 +1,36 @@
+def sizeCanvas(canvas HTMLCanvasElement, size int) {
+    canvas.width = size
+    canvas.height = size
+}
+
+namespace DemoController {
+    const gridSize = 256
+}
+
+class DemoController {
+    var voronoi JumpFlood
+
+    def new(inputCanvas HTMLCanvasElement, outputCanvas HTMLCanvasElement) {
+        sizeCanvas(inputCanvas, gridSize)
+        sizeCanvas(outputCanvas, gridSize)
+
+        # Move the output canvas to the right of the input canvas
+        outputCanvas.style.position = "absolute"
+        outputCanvas.style.left = "\(gridSize)px"
+
+        try {
+            voronoi = JumpFlood.new(outputCanvas, gridSize)
+        } catch {
+            # Failed to initialize Web-GL. Display error.
+            document.getElementById("demo-container").style.display = "none"
+            document.getElementById("webgl-error").style.display = null
+        }
+    }
+
+    def start {
+        setInterval(() => {
+            voronoi.drawToOutputCanvas
+        }, 60)
+    }
+}
+

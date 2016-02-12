@@ -56,8 +56,8 @@ class CanvasDrawController {
 
     def _styleCanvas(canvas HTMLCanvasElement) {
         canvas.style.backgroundColor = "white"
-        canvas.width = PaintDemoController.gridSize
-        canvas.height = PaintDemoController.gridSize
+        canvas.width = DemoController.gridSize
+        canvas.height = DemoController.gridSize
         canvas.style.position = "absolute"
         canvas.style.left = "0px"
         canvas.style.top = "0px"

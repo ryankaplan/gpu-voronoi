@@ -11,8 +11,11 @@ build-shaders: | npm-modules
 build-paint-demo: | npm-modules build-shaders
 	$(BUILD) --define:PAINT_DEMO=true --output-file=www/paint-demo-compiled.js
 
+build-fish-demo: | npm-modules build-shaders
+	$(BUILD) --define:FISH_DEMO=true --output-file=www/fish-demo-compiled.js
+
 watch: | npm-modules
-	node_modules/.bin/watch src 'clear && make build-paint-demo'
+	node_modules/.bin/watch src 'clear && make build-fish-demo && make build-paint-demo'
 
 clean:
 	rm www/compiled.js

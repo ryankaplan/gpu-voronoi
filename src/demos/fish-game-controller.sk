@@ -33,34 +33,16 @@ class FishGameController {
 
         for i in 1.._numPads {
             _pads.append(Circle.new(Vector.new(Math.random * _canvas.width, Math.random * _canvas.height)))
-            _pads[_pads.count - 1].color.b -= Math.random * 0.5
-            _pads[_pads.count - 1].color.r += Math.random * 0.2
-            _pads[_pads.count - 1].color.g += Math.random * 0.2
-            _speeds.append(1 + Math.random * 5)
+            _pads[_pads.count - 1].color.r = Math.random * 0.2
+            _pads[_pads.count - 1].color.g = 0.35 + Math.random * 0.2
+            _pads[_pads.count - 1].color.b = 0.5 + Math.random * 0.5
+            _speeds.append(1 + Math.random * 3)
         }
         _fish = Circle.new(Vector.new(Math.random * _canvas.width, Math.random * _canvas.height))
         _fish.color = Color.new(1, 0.5, 0, 1)
 
         document.addEventListener("keydown", (e HTMLKeyboardEvent) => {
             _keysDown[e.which] = true
-            const speed = 20
-
-            if e.which in _keysDown && _keysDown[e.which] {
-                # up
-                if e.which == 38 { _fish.center.y += speed }
-
-                # down
-                if e.which == 40 { _fish.center.y -= speed }
-
-                # left
-                if e.which == 37 { _fish.center.x -= speed }
-
-                # right
-                if e.which == 39 { _fish.center.x += speed }
-            }
-
-            _fish.center.x = _fish.center.x as int % _canvas.width
-            _fish.center.y = _fish.center.y as int % _canvas.height
         })
 
         document.addEventListener("keyup", (e HTMLKeyboardEvent) => {
@@ -84,8 +66,8 @@ class FishGameController {
 
     def _styleCanvas(canvas HTMLCanvasElement) {
         canvas.style.backgroundColor = "white"
-        canvas.width = PaintDemoController.gridSize
-        canvas.height = PaintDemoController.gridSize
+        canvas.width = DemoController.gridSize
+        canvas.height = DemoController.gridSize
         canvas.style.position = "absolute"
         canvas.style.left = "0px"
         canvas.style.top = "0px"
@@ -99,7 +81,32 @@ class FishGameController {
         requestAnimationFrame(tick)
     }
 
+    def _move {
+        const speed = 1
+
+        for key in _keysDown.keys {
+            if _keysDown[key] {
+                # up
+                if key == 38 { _fish.center.y -= speed }
+
+                # down
+                if key == 40 { _fish.center.y += speed }
+
+                # left
+                if key == 37 { _fish.center.x -= speed }
+
+                # right
+                if key == 39 { _fish.center.x += speed }
+            }
+        }
+
+        _fish.center.x = (_fish.center.x as int) % _canvas.width
+        _fish.center.y = (_fish.center.y as int) % _canvas.height
+    }
+
     def _render {
+        _move
+
         _ctx.clearRect(0, 0, _canvas.width, _canvas.height)
 
         for i in 1.._pads.count {
