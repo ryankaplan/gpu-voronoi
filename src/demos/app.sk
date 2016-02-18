@@ -39,11 +39,24 @@ def initializeFishDemo(container HTMLElement) {
     demoController.start
 }
 
+def initializePhotoDemo(container HTMLElement) {
+    const inputCanvas = (container as dynamic).getElementsByClassName("input-canvas")[0] as HTMLCanvasElement
+    const outputCanvas =  (container as dynamic).getElementsByClassName("output-canvas")[0] as HTMLCanvasElement
+    const demoController = DemoController.new(inputCanvas, outputCanvas)
+
+    const photoController = PhotoDemoController.new(inputCanvas)
+    photoController.onDraw = () => {
+        demoController.voronoi.setSeedsFromCanvas(inputCanvas)
+        demoController.voronoi.computeVoronoi
+    }
+    demoController.start
+}
+
 @entry
 def main {
     window.onload = => {
         initializePaintDemo(document.getElementById("paint-demo-container"))
         initializeFishDemo(document.getElementById("fish-demo-container"))
-        #initializePaintDemo(document.getElementById("paint-demo-container"))
+        initializePhotoDemo(document.getElementById("photo-demo-container"))
     }
 }

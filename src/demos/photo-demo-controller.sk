@@ -1,18 +1,7 @@
 
 # A really simple way to draw on a canvas. Useful just for testing.
 
-var paintColors = [
-    Color.fromHex(0x7500AC),
-    Color.fromHex(0xDB50FF),
-    Color.fromHex(0x4D00FF),
-    Color.fromHex(0x9346FF),
-    Color.fromHex(0x993AB2),
-    Color.fromHex(0x3F54FF),
-    Color.fromHex(0x0390FC),
-    Color.fromHex(0xFFFFFF),
-]
-
-class CanvasDrawController {
+class PhotoDemoController {
     var _canvas HTMLCanvasElement
     var _ctx CanvasRenderingContext2D
     var _isMouseDown = false
@@ -24,12 +13,10 @@ class CanvasDrawController {
         _canvas = canvas
         _styleCanvas(canvas)
         _ctx = _canvas.getContext2D
+        _drawInitialText
 
         document.addEventListener("keyup", (e HTMLKeyboardEvent) => {
-            const KEY_C = 67
-            if e.which == KEY_C {
-                colorIndex = (colorIndex + 1) % paintColors.count
-            }
+
         })
 
         _canvas.addEventListener("mousedown", (e HTMLMouseEvent) => {
@@ -52,6 +39,14 @@ class CanvasDrawController {
         })
     }
 
+    def _drawInitialText {
+        _ctx.beginPath
+        _ctx.fillStyle = "#000"
+        _ctx.textAlign = "center"
+        _ctx.font = "12pt Helvetica"
+        _ctx.fillText("Drop an image here", _canvas.width / 2, _canvas.height / 2 + 6)
+    }
+
     def _draw(point Vector) {
         _ctx.beginPath
         _ctx.rect(
@@ -60,7 +55,7 @@ class CanvasDrawController {
             radius * 2,
             radius * 2
             )
-        _ctx.fillStyle = paintColors[colorIndex].toCSS
+        _ctx.fillStyle = Color.new(1, 1, 0, 1).toCSS
         _ctx.fill
         if onDraw != null {
             onDraw()

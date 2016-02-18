@@ -8,6 +8,10 @@ html, body {
     font-weight: 300;
     color: #CCC;
     background-color: #222;
+
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
 }
 
 a {
