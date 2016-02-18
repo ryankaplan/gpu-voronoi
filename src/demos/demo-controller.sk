@@ -14,15 +14,11 @@ class DemoController {
         sizeCanvas(inputCanvas, gridSize)
         sizeCanvas(outputCanvas, gridSize)
 
-        # Move the output canvas to the right of the input canvas
-        outputCanvas.style.position = "absolute"
-        outputCanvas.style.left = "\(gridSize)px"
-
         try {
             voronoi = JumpFlood.new(outputCanvas, gridSize)
         } catch {
             # Failed to initialize Web-GL. Display error.
-            document.getElementById("demo-container").style.display = "none"
+            document.getElementById("demo-page").style.display = "none"
             document.getElementById("webgl-error").style.display = null
         }
     }

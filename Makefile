@@ -8,14 +8,11 @@ npm-modules:
 build-shaders: | npm-modules
 	node_modules/.bin/glslx src/lib/shaders.glslx --output=compiled/shaders.sk --format=skew --renaming=internal-only --pretty-print
 
-build-paint-demo: | npm-modules build-shaders
-	$(BUILD) --define:PAINT_DEMO=true --output-file=www/paint-demo-compiled.js
-
-build-fish-demo: | npm-modules build-shaders
-	$(BUILD) --define:FISH_DEMO=true --output-file=www/fish-demo-compiled.js
+build-demo: | npm-modules build-shaders
+	$(BUILD) --output-file=www/demo-compiled.js
 
 watch: | npm-modules
-	node_modules/.bin/watch src 'clear && make build-fish-demo && make build-paint-demo'
+	node_modules/.bin/watch src 'clear && make build-demo'
 
 clean:
 	rm www/compiled.js

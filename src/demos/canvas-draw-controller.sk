@@ -27,18 +27,18 @@ class CanvasDrawController {
         _canvas.addEventListener("mousedown", (e HTMLMouseEvent) => {
             _isMouseDown = true
             e.stopPropagation
-            _draw(Vector.new(e.clientX, e.clientY))
+            _draw(Vector.new(e.offsetX, e.offsetY))
         })
 
         _canvas.addEventListener("mousemove", (e HTMLMouseEvent) => {
             if _isMouseDown {
-                _draw(Vector.new(e.clientX, e.clientY))
+                _draw(Vector.new(e.offsetX, e.offsetY))
             }
             e.stopPropagation
         })
 
         _canvas.addEventListener("mouseup", (e HTMLMouseEvent) => {
-            _draw(Vector.new(e.clientX, e.clientY))
+            _draw(Vector.new(e.offsetX, e.offsetY))
             _isMouseDown = false
             e.stopPropagation
         })
@@ -58,9 +58,6 @@ class CanvasDrawController {
         canvas.style.backgroundColor = "white"
         canvas.width = DemoController.gridSize
         canvas.height = DemoController.gridSize
-        canvas.style.position = "absolute"
-        canvas.style.left = "0px"
-        canvas.style.top = "0px"
     }
 
 }

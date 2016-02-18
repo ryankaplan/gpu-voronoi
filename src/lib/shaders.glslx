@@ -61,10 +61,6 @@ bool approxEqual(vec4 a, vec4 b) {
         approxEqual(a[3], b[3]);
 }
 
-vec2 gridPositionToUv(vec2 position, vec2 iGridSize) {
-    return position / iGridSize;
-}
-
 bool between(vec2 value, vec2 bottom, vec2 top) {
     return value.x > bottom.x && value.x < top.x && value.y > bottom.y && value.y < top.y;
 }
@@ -139,7 +135,7 @@ export void fPrepForJFA() {
 ////////////////////////////////////////////////////////////////////////
 
 vec4 getCellForOffset(const vec4 self, const vec2 offset) {
-    vec2 gridUv = gridPositionToUv(gl_FragCoord.xy + offset, iCellGridSize);
+    vec2 gridUv = (gl_FragCoord.xy + offset) / iCellGridSize;
     vec4 other = validUv(gridUv) ? texture2D(iCellGridTexture, gridUv) : createInvalidCell();
 
     if (!cellIsValid(other)) {
@@ -164,9 +160,9 @@ vec4 getCellForOffset(const vec4 self, const vec2 offset) {
     return self;
 }
 
-export void fGameOfLife() {
+export void fJumpFlood() {
     // Find the object at this grid position
-    vec2 gridUv = gridPositionToUv(gl_FragCoord.xy, iCellGridSize);
+    vec2 gridUv = gl_FragCoord.xy / iCellGridSize;
 
     // We gridUv should always be valid. We run this once for every
     // cell in the grid.

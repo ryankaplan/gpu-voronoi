@@ -5,15 +5,32 @@
     <title>Demos</title>
     <link href='https://fonts.googleapis.com/css?family=Lato:300' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="style.css">
+    <script src="igloo.js"></script>
+    <script src="demo-compiled.js"></script>
   </head>
   <body>
-    <div class="demo-page">
+    <div id="demo-page">
       Demos...
-      <ul>
-        <li><a href="paint-demo.html">Paint Demo</a></li>
-        <li><a href="fish-demo.html">Fish Demo</a></li>
-        <li><a href="photo-demo.html">Photo Demo</a></li>
-      </ul>
+
+      <div id="paint-demo-container" class="demo-container">
+        <canvas class="input-canvas"></canvas>
+        <canvas class="output-canvas"></canvas>
+      </div>
+
+      <div id="fish-demo-container" class="demo-container">
+        <canvas class="input-canvas"></canvas>
+        <canvas class="output-canvas"></canvas>
+      </div>
+
+      <div id="photo-demo-container" class="demo-container">
+        <canvas class="input-canvas"></canvas>
+        <canvas class="output-canvas"></canvas>
+      </div>
+    </div>
+    <div id="webgl-error" style="display: none;">
+      This webpage uses WebGL which isn't supported by your browser. <br />
+      </br>
+      Sorry :(
     </div>
   </body>
 </html>

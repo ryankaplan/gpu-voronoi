@@ -58,7 +58,7 @@ class JumpFlood {
         getWebGLExtension(gl, "OES_texture_float")
         gl.disable(gl.DEPTH_TEST)
 
-        _program = Igloo.Program.new(_igloo.gl, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_GAME_OF_LIFE)
+        _program = Igloo.Program.new(_igloo.gl, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_JUMP_FLOOD)
         _prepProgram = Igloo.Program.new(_igloo.gl, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_PREP_FOR_JFA)
         _quadBuffer = _igloo.array(Igloo.QUAD2)
         _sourceTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.FLOAT).blank(gridSize, gridSize)

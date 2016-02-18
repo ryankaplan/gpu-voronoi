@@ -14,32 +14,7 @@ a {
     color: white;
 }
 
-/*
- Why have a canvas-container that just wraps a canvas?
- canvas.width and canvas.height don't return the correct
- value when you size a canvas with CSS. So we size
- canvas-container with CSS and, on resize, size canvas to
- canvas-contaiener in JS.
-*/
-
-#canvas-container {
-    position: absolute;
-    top: 40px;
-    left: 0;
-    width: 100%;
-    height: calc(100% - 40px);
-}
-
-#voronoi-output-canvas {
-    width: 100%;
-    height: 100%;
-}
-
-#app-container {
-    width: 100%;
-    height: 100%;
-    text-align: center;
-}
+/* Demo index page */
 
 #webgl-error {
     width: 100%;
@@ -48,12 +23,16 @@ a {
     padding-top: 100px;
 }
 
-#instructions {
-    height: 40px;
-    line-height: 40px;
-    background: #222;
+#demo-page {
+    margin: 20px;
 }
 
-.demo-page {
-    margin: 20px;
+/* Demo pages */
+
+.demo-container {
+    text-align: center;
+}
+
+canvas {
+    display: inline-block;
 }

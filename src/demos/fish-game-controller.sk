@@ -11,7 +11,7 @@ class Date {
 
 class Square {
     var center Vector
-    var size = 4.0
+    var size = 2.0
     var color = Color.new(0, 0, 1, 1)
 
     def render(ctx CanvasRenderingContext2D) {
@@ -41,9 +41,7 @@ var waterColors = [
 class FishGameController {
     var _canvas HTMLCanvasElement
     var _ctx CanvasRenderingContext2D
-    var color = Color.new(1, 0, 0, 1)
     var onDraw fn()
-    var _keysDown IntMap<bool> = {}
 
     var _numPads = 40
     var _pads List<Square> = []
@@ -52,7 +50,6 @@ class FishGameController {
 
     def new(canvas HTMLCanvasElement) {
         _canvas = canvas
-        _styleCanvas(canvas)
         _ctx = _canvas.getContext2D
 
         for i in 1.._numPads {
@@ -64,29 +61,13 @@ class FishGameController {
         _fish = Square.new(Vector.new(Math.random * _canvas.width, Math.random * _canvas.height))
         _fish.color = Color.fromHex(0xFFE911)
 
-        document.addEventListener("keydown", (e HTMLKeyboardEvent) => {
-            _keysDown[e.which] = true
-        })
-
-        document.addEventListener("keyup", (e HTMLKeyboardEvent) => {
-            _keysDown[e.which] = false
-        })
-
         canvas.addEventListener("mousemove", (e HTMLMouseEvent) => {
-            _fish.center.x = e.clientX
-            _fish.center.y = e.clientY
+            console.log(e)
+            _fish.center.x = e.offsetX
+            _fish.center.y = e.offsetY
         })
 
         _startRenderLoop
-    }
-
-    def _styleCanvas(canvas HTMLCanvasElement) {
-        canvas.style.backgroundColor = "white"
-        canvas.width = DemoController.gridSize
-        canvas.height = DemoController.gridSize
-        canvas.style.position = "absolute"
-        canvas.style.left = "0px"
-        canvas.style.top = "0px"
     }
 
     def _startRenderLoop {
@@ -103,31 +84,7 @@ class FishGameController {
         requestAnimationFrame(tick)
     }
 
-    def _move {
-        const speed = 1
-
-        for key in _keysDown.keys {
-            if _keysDown[key] {
-                # up
-                if key == 38 { _fish.center.y -= speed }
-
-                # down
-                if key == 40 { _fish.center.y += speed }
-
-                # left
-                if key == 37 { _fish.center.x -= speed }
-
-                # right
-                if key == 39 { _fish.center.x += speed }
-            }
-        }
-
-        _fish.center %= Vector.new(_canvas.width, _canvas.height)
-    }
-
     def _render(timeElapsed double) {
-        _move
-
         _ctx.clearRect(0, 0, _canvas.width, _canvas.height)
 
         for i in 1.._pads.count {
