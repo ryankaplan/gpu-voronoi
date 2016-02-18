@@ -1,30 +1,54 @@
-class Circle {
+@import
+class Date {
+    def new
+}
+
+class Date {
+    def toMilliseconds double {
+        return + (self as dynamic)
+    }
+}
+
+class Square {
     var center Vector
-    var radius = 2.0
+    var size = 4.0
     var color = Color.new(0, 0, 1, 1)
 
     def render(ctx CanvasRenderingContext2D) {
         ctx.beginPath
-        ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI)
+        ctx.rect(
+            (center.x - size / 2.0) as int,
+            (center.y - size / 2.0) as int,
+            size as int,
+            size as int
+            )
         ctx.fillStyle = color.toCSS
         ctx.fill
         ctx.closePath
     }
 }
 
+var waterColors = [
+    Color.fromHex(0x6B99F2),
+    Color.fromHex(0x4976CF),
+    Color.fromHex(0x809AF5),
+    Color.fromHex(0x7EBCE6),
+    Color.fromHex(0x8980F5),
+    Color.fromHex(0x0ECDFF),
+    Color.fromHex(0x559FF9)
+]
 
 class FishGameController {
     var _canvas HTMLCanvasElement
     var _ctx CanvasRenderingContext2D
-    var _isMouseDown = false
     var color = Color.new(1, 0, 0, 1)
     var onDraw fn()
     var _keysDown IntMap<bool> = {}
 
     var _numPads = 40
-    var _pads List<Circle> = []
+    var _pads List<Square> = []
     var _speeds List<double> = []
-    var _fish Circle
+    var _fish Square
 
     def new(canvas HTMLCanvasElement) {
         _canvas = canvas
@@ -32,14 +56,13 @@ class FishGameController {
         _ctx = _canvas.getContext2D
 
         for i in 1.._numPads {
-            _pads.append(Circle.new(Vector.new(Math.random * _canvas.width, Math.random * _canvas.height)))
-            _pads[_pads.count - 1].color.r = Math.random * 0.2
-            _pads[_pads.count - 1].color.g = 0.35 + Math.random * 0.2
-            _pads[_pads.count - 1].color.b = 0.5 + Math.random * 0.5
-            _speeds.append(1 + Math.random * 3)
+            _pads.append(Square.new(Vector.new(Math.random * _canvas.width, Math.random * _canvas.height)))
+            _pads[_pads.count - 1].color = waterColors[i % waterColors.count]
+            _speeds.append(10.0 + Math.random * 4.0)
         }
-        _fish = Circle.new(Vector.new(Math.random * _canvas.width, Math.random * _canvas.height))
-        _fish.color = Color.new(1, 0.5, 0, 1)
+
+        _fish = Square.new(Vector.new(Math.random * _canvas.width, Math.random * _canvas.height))
+        _fish.color = Color.fromHex(0xFFE911)
 
         document.addEventListener("keydown", (e HTMLKeyboardEvent) => {
             _keysDown[e.which] = true
@@ -49,19 +72,12 @@ class FishGameController {
             _keysDown[e.which] = false
         })
 
+        canvas.addEventListener("mousemove", (e HTMLMouseEvent) => {
+            _fish.center.x = e.clientX
+            _fish.center.y = e.clientY
+        })
+
         _startRenderLoop
-    }
-
-    def _drawDot(point Vector) {
-        const radius = 2
-        _ctx.beginPath
-
-        _ctx.arc(point.x, point.y, radius, 0, 2 * Math.PI)
-        _ctx.fillStyle = color.toCSS
-        _ctx.fill
-        if onDraw != null {
-            onDraw()
-        }
     }
 
     def _styleCanvas(canvas HTMLCanvasElement) {
@@ -74,8 +90,14 @@ class FishGameController {
     }
 
     def _startRenderLoop {
+        var lastFrame Date = null
+
         var tick fn() = => {
-            self._render
+            const now = Date.new
+            const timeElapsed = lastFrame == null ? 1.0 / 30.0 : now.toMilliseconds - lastFrame.toMilliseconds
+            self._render(timeElapsed / 1000.0)
+            lastFrame = now
+
             requestAnimationFrame(tick)
         }
         requestAnimationFrame(tick)
@@ -100,19 +122,18 @@ class FishGameController {
             }
         }
 
-        _fish.center.x = (_fish.center.x as int) % _canvas.width
-        _fish.center.y = (_fish.center.y as int) % _canvas.height
+        _fish.center %= Vector.new(_canvas.width, _canvas.height)
     }
 
-    def _render {
+    def _render(timeElapsed double) {
         _move
 
         _ctx.clearRect(0, 0, _canvas.width, _canvas.height)
 
         for i in 1.._pads.count {
             var pad = _pads[i]
-            pad.center.x = (pad.center.x + _speeds[i]) as int % _canvas.width
-            pad.center.y = (pad.center.y + _speeds[i]) as int % _canvas.height
+            pad.center += _speeds[i] * timeElapsed
+            pad.center %= Vector.new(_canvas.width, _canvas.height)
         }
 
         for pad in _pads {

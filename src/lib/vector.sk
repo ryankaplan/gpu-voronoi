@@ -6,6 +6,10 @@ enum Axis {
     Y
 }
 
+def fmod(a double, b double) double {
+    return a - b * Math.floor(a / b)
+}
+
 class Vector {
 	var x double
 	var y double
@@ -21,11 +25,13 @@ class Vector {
 	def -(v Vector) Vector { return new(x - v.x, y - v.y) }
 	def *(v Vector) Vector { return new(x * v.x, y * v.y) }
 	def /(v Vector) Vector { return new(x / v.x, y / v.y) }
+    def %(v Vector) Vector { return new(fmod(x, v.x), fmod(y, v.y)) }
 
 	def +(d double) Vector { return new(x + d, y + d) }
 	def -(d double) Vector { return new(x - d, y - d) }
 	def *(d double) Vector { return new(x * d, y * d) }
 	def /(d double) Vector { return new(x / d, y / d) }
+    def %(d double) Vector { return new(fmod(x, d), fmod(y, d)) }
 
 	def +=(v Vector) {
 		x += v.x
@@ -47,6 +53,11 @@ class Vector {
 		y /= v.y
 	}
 
+    def %=(v Vector) {
+        x = fmod(x, v.x)
+        y = fmod(y, v.y)
+    }
+
 	def +=(d double) {
 		x += d
 		y += d
@@ -66,6 +77,11 @@ class Vector {
 		x /= d
 		y /= d
 	}
+
+    def %=(d double) {
+        x = fmod(x, d)
+        y = fmod(y, d)
+    }
 
     def set(x double, y double) Vector {
 		self.x = x
