@@ -14,8 +14,9 @@ class PhotoDemoController {
     var _sourcePattern CanvasPattern
 
     var _isMouseDown = false
-    var colorIndex = 0
     var radius = 1
+
+    # Set by someone else to hear when we draw
     var onDraw fn()
 
     def new(canvas HTMLCanvasElement) {
@@ -87,9 +88,5 @@ class PhotoDemoController {
         if onDraw != null {
             onDraw()
         }
-    }
-
-    def _styleCanvas(canvas HTMLCanvasElement) {
-
     }
 }
