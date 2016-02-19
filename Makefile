@@ -12,6 +12,9 @@ build-shaders: | npm-modules
 build-demo: | npm-modules build-shaders
 	$(BUILD) --output-file=www/demo-compiled.js
 
+build-release: | npm-modules build-shaders
+	$(BUILD) --release --output-file=www/demo-compiled.js
+
 watch: | npm-modules
 	node_modules/.bin/watch src 'clear && make build-demo'
 
