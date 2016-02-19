@@ -1,5 +1,5 @@
 node_modules/
-compiled/
+compiled/*
 .DS_Store
 bin
 www/*compiled.js

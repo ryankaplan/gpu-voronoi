@@ -6,6 +6,7 @@ npm-modules:
 	npm install
 
 build-shaders: | npm-modules
+	mkdir -p compiled
 	node_modules/.bin/glslx src/lib/shaders.glslx --output=compiled/shaders.sk --format=skew --renaming=internal-only --pretty-print
 
 build-demo: | npm-modules build-shaders
