@@ -46,7 +46,7 @@ def initializePhotoDemo(container HTMLElement) {
 
     const photoController = PhotoDemoController.new(inputCanvas)
     photoController.onDraw = () => {
-        demoController.voronoi.setSeedsFromCanvas(inputCanvas)
+        demoController.voronoi.setSeedsFromCanvas(photoController.seedCanvas)
         demoController.voronoi.computeVoronoi
     }
     demoController.start

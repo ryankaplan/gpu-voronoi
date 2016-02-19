@@ -62,7 +62,6 @@ class FishGameController {
         _fish.color = Color.fromHex(0xFFE911)
 
         canvas.addEventListener("mousemove", (e HTMLMouseEvent) => {
-            console.log(e)
             _fish.center.x = e.offsetX
             _fish.center.y = e.offsetY
         })
