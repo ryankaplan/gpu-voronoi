@@ -172,6 +172,7 @@ class JumpFlood {
             .uniformi("iCellGridTexture", 0)
             .uniformi("iStepSize", stepSize)
             .uniform("iCellGridSize", Float32Array.new([_canvasSize, _canvasSize]))
+            .uniformi("iUseTorusDistanceForSeeds", 0)
             .draw(_igloo.gl.TRIANGLE_STRIP, 4)
 
         self._swapBuffers

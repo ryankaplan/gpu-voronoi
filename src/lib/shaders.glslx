@@ -7,6 +7,7 @@ uniform vec2 iCanvasSize; // Size of HTML canvas element
 uniform int iRelease; // Used for debugging
 uniform vec2 iCellGridSize;
 uniform int iStepSize;
+uniform bool iUseTorusDistanceForSeeds;
 
 // The color that is *not* to be counted as seed.
 uniform vec4 iBackgroundColor;
@@ -145,8 +146,11 @@ float torusDistance(vec2 a, vec2 b, vec2 torusSize) {
 
 vec4 getCellForOffset(const vec4 self, const vec2 offset) {
     vec2 gridUv = (gl_FragCoord.xy + offset) / iCellGridSize;
-    //vec4 other = validUv(gridUv) ? texture2D(iCellGridTexture, gridUv) : createInvalidCell();
     vec4 other = texture2D(iCellGridTexture, gridUv);
+
+    if (!validUv(gridUv) && !iUseTorusDistanceForSeeds) {
+        other = createInvalidCell();
+    }
 
     if (!cellIsValid(other)) {
         // Other is invalid. This means that 'offset' is off the grid or
@@ -162,11 +166,21 @@ vec4 getCellForOffset(const vec4 self, const vec2 offset) {
     else {
         vec2 selfSeedLocation = cellSeedLocation(self);
         vec2 otherSeedLocation = cellSeedLocation(other);
-        if (
-            torusDistance(selfSeedLocation, gl_FragCoord.xy, iCellGridSize) >
-            torusDistance(otherSeedLocation, gl_FragCoord.xy, iCellGridSize)
-           ) {
-            return other;
+
+        if (iUseTorusDistanceForSeeds) {
+            if (
+                torusDistance(selfSeedLocation, gl_FragCoord.xy, iCellGridSize) >
+                torusDistance(otherSeedLocation, gl_FragCoord.xy, iCellGridSize)
+            ) {
+                return other;
+            }
+        } else {
+            if (
+                distance(selfSeedLocation, gl_FragCoord.xy) >
+                distance(otherSeedLocation, gl_FragCoord.xy)
+            ) {
+                return other;
+            }
         }
     }
 
