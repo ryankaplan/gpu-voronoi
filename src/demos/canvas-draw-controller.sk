@@ -15,7 +15,6 @@ var paintColors = [
 class CanvasDrawController {
     var _canvas HTMLCanvasElement
     var _ctx CanvasRenderingContext2D
-    var _isMouseDown = false
     var _color Color = null
     var colorIndex = 0
     var radius = 1
@@ -34,28 +33,36 @@ class CanvasDrawController {
         })
 
         const changeColorAndDraw = (point Vector) => {
-            _color = Color.new(
-                0.5 + Math.random * 0.4,
-                0.2,
-                0.3 + Math.random * 0.5,
-                1.0
-            )
-            _draw(point)
+            if point.x > 0 && point.y > 0 && point.x < _canvas.width && point.y < _canvas.height {
+                _color = Color.new(
+                    0.5 + Math.random * 0.4,
+                    0.2,
+                    0.3 + Math.random * 0.5,
+                    1.0
+                )
+                _draw(point)
+            }
         }
 
-        _canvas.addEventListener("mousedown", (e HTMLMouseEvent) => {
-            _isMouseDown = true
+        var isMouseDown = false
+
+        document.addEventListener("mousedown", (e HTMLMouseEvent) => {
+            isMouseDown = true
             changeColorAndDraw(Vector.new(e.offsetX, e.offsetY))
         })
 
         _canvas.addEventListener("mousemove", (e HTMLMouseEvent) => {
-            if _isMouseDown {
+            if isMouseDown {
                 changeColorAndDraw(Vector.new(e.offsetX, e.offsetY))
             }
         })
 
-        _canvas.addEventListener("mouseup", (e HTMLMouseEvent) => {
-            _isMouseDown = false
+        document.addEventListener("mouseup", (e HTMLMouseEvent) => {
+            isMouseDown = false
+        })
+
+        document.addEventListener("mouseleave", (e HTMLMouseEvent) => {
+            isMouseDown = false
         })
     }
 
