@@ -22,19 +22,21 @@ a {
 }
 
 #demo-page {
-    max-width: 518px;
+    max-width: 700px;
     margin: 20px auto;
     line-height: 120%;
 }
 
 #demo-page h1 {
     font-size: 30px;
-    margin: 40px auto;
+    line-height: 30px;
+    margin: 40px 20px;
 }
 
 #demo-page h2 {
     font-size: 20px;
-    margin: 30px auto;
+    line-height: 20px;
+    margin: 30px 20px;
 }
 
 #demo-page h1, h2 {
@@ -43,7 +45,7 @@ a {
 }
 
 #demo-page p {
-    margin: 30px auto;
+    margin: 30px 20px;
     line-height: 150%;
     letter-spacing: 0.3px;
 }
