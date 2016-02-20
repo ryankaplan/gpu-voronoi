@@ -110,30 +110,6 @@ class JumpFlood {
                     .draw(_igloo.gl.TRIANGLE_STRIP, 4)
     }
 
-    def _setSeeds(seeds List<Seed>) {
-        # Seeds are encoded in the grid as a vec4 (seedRg, seedBa, seedLocationX, seedLocationY)
-        var rgba = Float32Array.new(_canvasSize * _canvasSize * 4)
-
-        # Set all values to -1 to that it's clear that they're all uninitialized
-        for i in 0..rgba.length {
-            rgba[i] = -1.0
-        }
-
-        # Initialize the seeds
-        for i in 0..seeds.count {
-            const seed = seeds[i]
-            const coord = ((seed.position.y * _canvasSize + seed.position.x) * 4) as int
-            const rg = Color.encodeColorValues((seed.color.r * 255) as int, (seed.color.g * 255) as int)
-            const ba = Color.encodeColorValues((seed.color.b * 255) as int, (seed.color.a * 255) as int)
-
-            rgba[coord] = rg
-            rgba[coord + 1] = ba
-            rgba[coord + 2] = seed.position.x
-            rgba[coord + 3] = seed.position.y
-        }
-        _sourceTexture.subset(rgba, 0, 0, _canvasSize, _canvasSize)
-    }
-
     # Useful if you want to compute Voronoi in one step.
     def computeVoronoi {
         var stepSize int = _canvasSize / 2
@@ -206,26 +182,5 @@ class JumpFlood {
         const tmp = _sourceTexture
         _sourceTexture = _destTexture
         _destTexture = tmp
-    }
-
-    # # Example use - Draw a single pixel at point
-    # point = point.clone
-    # point.x = Math.max(Math.min(point.x, gridSize), 0)
-    # point.y = Math.max(Math.min(point.y, gridSize), 0)
-    # const sample = Float32Array.new([1])
-    # _drawOntoGrid(sample, point.x as int, point.y as int)
-    #
-    def _drawOntoGrid(inputGrid Float32Array, offsetX int, offsetY int) {
-        const textureWidth = (Math.sqrt(inputGrid.length) as int)
-        const textureHeight = textureWidth
-        var rgba = Float32Array.new(textureWidth * textureWidth * 4)
-        for i in 0..inputGrid.length {
-            var j = i * 4
-            rgba[j + 0] = inputGrid[i] > 0.5 ? 1.0 : 0.0
-            rgba[j + 1] = inputGrid[i] > 0.5 ? 1.0 : 0.0
-            rgba[j + 2] = inputGrid[i] > 0.5 ? 1.0 : 0.0
-            rgba[j + 3] = 1.0
-        }
-        _sourceTexture.subset(rgba, offsetX, offsetY, textureWidth, textureHeight)
     }
 }
