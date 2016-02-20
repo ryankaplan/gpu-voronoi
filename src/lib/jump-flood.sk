@@ -6,24 +6,18 @@ def getWebGLExtension(gl WebGLRenderingContext, name string) dynamic {
     return ext
 }
 
-const colors List<Color> = [
-    Color.fromHex(0x6C88FF),
-    Color.fromHex(0x42D1FF),
-    Color.fromHex(0xB841D7),
-    Color.fromHex(0x9825FF),
-    Color.fromHex(0x5EFFFC),
-    Color.fromHex(0x49FFA9),
-    Color.fromHex(0x7E6EFF),
-    Color.fromHex(0xA0FFCE),
-    Color.fromHex(0xE854FF),
-]
+# See here to understand how this works:
+# http://www.skorks.com/2010/10/write-a-function-to-determine-if-a-number-is-a-power-of-2/
+def isPowerOfTwo(number int) bool {
+    return number != 0 && ((number & (number - 1)) == 0)
+}
 
 class JumpFlood {
     var _igloo Igloo
 
-    # Width and height of the grid that we run JFA on. Always a square
-    # and a power of two since it's the size of a WebGL texture.
-    var _gridSize int
+    # Width and height of the JFA canvas. Must be a power of two becuase
+    # its the size of a WebGL texture.
+    var _canvasSize int
 
     var _program Igloo.Program
     var _prepProgram Igloo.Program
@@ -40,8 +34,16 @@ class JumpFlood {
     # Read-only properties
     def outputTexture Igloo.Texture { return _sourceTexture }
 
-    def new(canvas HTMLCanvasElement, gridSize int) {
-        _gridSize = gridSize
+    def new(canvas HTMLCanvasElement) {
+        if canvas.width != canvas.height {
+            throw Error.new("JumpFlood canvas parameter must be square. Size is (\(canvas.width), \(canvas.height))")
+        }
+
+        if !isPowerOfTwo(canvas.width) {
+            throw Error.new("JumpFlood canvas size must be a power of two. Size is \(canvas.width)")
+        }
+
+        _canvasSize = canvas.width
         _outputCanvas = canvas
 
         # Igloo is a thin object-oriented WebGL library. TODO(ryan): move
@@ -61,11 +63,10 @@ class JumpFlood {
         _program = Igloo.Program.new(_igloo.gl, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_JUMP_FLOOD)
         _prepProgram = Igloo.Program.new(_igloo.gl, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_PREP_FOR_JFA)
         _quadBuffer = _igloo.array(Igloo.QUAD2)
-        _sourceTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.FLOAT).blank(gridSize, gridSize)
-        _destTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.FLOAT).blank(gridSize, gridSize)
-        _tmpTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.UNSIGNED_BYTE).blank(gridSize, gridSize)
+        _sourceTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.FLOAT).blank(_canvasSize, _canvasSize)
+        _destTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.FLOAT).blank(_canvasSize, _canvasSize)
+        _tmpTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.UNSIGNED_BYTE).blank(_canvasSize, _canvasSize)
         _framebuffer = _igloo.framebuffer
-        _setSeeds(Seed.random(Vector.new(DemoController.gridSize, DemoController.gridSize), colors, 200))
     }
 
     def drawToOutputCanvas {
@@ -77,7 +78,7 @@ class JumpFlood {
                     .attrib("quad", _quadBuffer, 2)
                     .uniformi("iCellGridTexture", 0)
                     .uniform("iCanvasSize", Float32Array.new([_outputCanvas.width, _outputCanvas.height]))
-                    .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
+                    .uniform("iGridSize", Float32Array.new([_canvasSize, _canvasSize]))
                     .uniform("iRelease", RELEASE, true)
                     .draw(_igloo.gl.TRIANGLE_STRIP, 4)
     }
@@ -99,19 +100,19 @@ class JumpFlood {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, inputCanvas)
         _tmpTexture.bind(0)
 
-        _igloo.gl.viewport(0, 0, _gridSize, _gridSize)
+        _igloo.gl.viewport(0, 0, _canvasSize, _canvasSize)
         _prepProgram
                     .use
                     .attrib("quad", _quadBuffer, 2)
                     .uniformi("iCellGridTexture", 0)
-                    .uniform("iCellGridSize", Float32Array.new([_gridSize, _gridSize]))
+                    .uniform("iCellGridSize", Float32Array.new([_canvasSize, _canvasSize]))
                     .uniform("iBackgroundColor", Float32Array.new([0, 0, 0, 0]))
                     .draw(_igloo.gl.TRIANGLE_STRIP, 4)
     }
 
     def _setSeeds(seeds List<Seed>) {
         # Seeds are encoded in the grid as a vec4 (seedRg, seedBa, seedLocationX, seedLocationY)
-        var rgba = Float32Array.new(_gridSize * _gridSize * 4)
+        var rgba = Float32Array.new(_canvasSize * _canvasSize * 4)
 
         # Set all values to -1 to that it's clear that they're all uninitialized
         for i in 0..rgba.length {
@@ -121,7 +122,7 @@ class JumpFlood {
         # Initialize the seeds
         for i in 0..seeds.count {
             const seed = seeds[i]
-            const coord = ((seed.position.y * _gridSize + seed.position.x) * 4) as int
+            const coord = ((seed.position.y * _canvasSize + seed.position.x) * 4) as int
             const rg = Color.encodeColorValues((seed.color.r * 255) as int, (seed.color.g * 255) as int)
             const ba = Color.encodeColorValues((seed.color.b * 255) as int, (seed.color.a * 255) as int)
 
@@ -130,12 +131,12 @@ class JumpFlood {
             rgba[coord + 2] = seed.position.x
             rgba[coord + 3] = seed.position.y
         }
-        _sourceTexture.subset(rgba, 0, 0, _gridSize, _gridSize)
+        _sourceTexture.subset(rgba, 0, 0, _canvasSize, _canvasSize)
     }
 
     # Useful if you want to compute Voronoi in one step.
     def computeVoronoi {
-        var stepSize int = _gridSize / 2
+        var stepSize int = _canvasSize / 2
         while stepSize >= 1 {
             _runJumpFloodStep(stepSize)
             stepSize /= 2
@@ -149,7 +150,7 @@ class JumpFlood {
     # example, if you're showing an explanation of the
     # algorithm.
     def resetVoronoiSteps {
-        var stepSize int = _gridSize / 2
+        var stepSize int = _canvasSize / 2
         _simulationStepper = () => {
             if stepSize >= 1 {
                 _runJumpFloodStep(stepSize)
@@ -188,13 +189,13 @@ class JumpFlood {
         }
 
         _sourceTexture.bind(0)
-        _igloo.gl.viewport(0, 0, _gridSize, _gridSize)
+        _igloo.gl.viewport(0, 0, _canvasSize, _canvasSize)
         _program
             .use
             .attrib("quad", _quadBuffer, 2)
             .uniformi("iCellGridTexture", 0)
             .uniformi("iStepSize", stepSize)
-            .uniform("iCellGridSize", Float32Array.new([_gridSize, _gridSize]))
+            .uniform("iCellGridSize", Float32Array.new([_canvasSize, _canvasSize]))
             .draw(_igloo.gl.TRIANGLE_STRIP, 4)
 
         self._swapBuffers

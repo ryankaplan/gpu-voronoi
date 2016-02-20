@@ -3,32 +3,22 @@ namespace console {
     const log dynamic
 }
 
-namespace DemoController {
-    const cellSize = 1
-}
-
 class HTMLWindow {
     var onload dynamic
 }
 
-# TODO(ryan): A bunch of stuff depends on this constant. Name
-# it something more sensible and have less stuff depend on it
-# directly.
-namespace DemoController {
-    const gridSize = 256
-}
-
 def getCanvas(container HTMLElement, className string) HTMLCanvasElement {
+    const gridSize = 256
     const canvas = (container as dynamic).getElementsByClassName(className)[0] as HTMLCanvasElement
-    canvas.width = DemoController.gridSize
-    canvas.height = DemoController.gridSize
+    canvas.width = gridSize
+    canvas.height = gridSize
     return canvas
 }
 
-def createJumpFlood(outputCanvas HTMLCanvasElement, size int) JumpFlood {
+def createJumpFlood(outputCanvas HTMLCanvasElement) JumpFlood {
     var jumpFlood JumpFlood = null
     try {
-        jumpFlood = JumpFlood.new(outputCanvas, size)
+        jumpFlood = JumpFlood.new(outputCanvas)
     } catch temp dynamic {
         # Failed to initialize Web-GL. Display error.
         document.getElementById("demo-page").style.display = "none"
@@ -41,7 +31,7 @@ def createJumpFlood(outputCanvas HTMLCanvasElement, size int) JumpFlood {
 def initializePaintDemo(container HTMLElement) {
     const inputCanvas = getCanvas(container, "input-canvas")
     const outputCanvas = getCanvas(container, "output-canvas")
-    const jfa = createJumpFlood(outputCanvas, DemoController.gridSize)
+    const jfa = createJumpFlood(outputCanvas)
 
     # A CanvasDrawController handles user draw-actions on the input canvas
     # Whenever the user draws, we re-render the voronoi diagram for the input
@@ -56,7 +46,7 @@ def initializePaintDemo(container HTMLElement) {
 def initializeFishDemo(container HTMLElement) {
     const inputCanvas = getCanvas(container, "input-canvas")
     const outputCanvas = getCanvas(container, "output-canvas")
-    const jfa = createJumpFlood(outputCanvas, DemoController.gridSize)
+    const jfa = createJumpFlood(outputCanvas)
 
     const fishController = FishGameController.new(inputCanvas)
     fishController.onDraw = () => {
@@ -69,7 +59,7 @@ def initializeFishDemo(container HTMLElement) {
 def initializePhotoDemo(container HTMLElement) {
     const inputCanvas = getCanvas(container, "input-canvas")
     const outputCanvas = getCanvas(container, "output-canvas")
-    const jfa = createJumpFlood(outputCanvas, DemoController.gridSize)
+    const jfa = createJumpFlood(outputCanvas)
 
     const photoController = PhotoDemoController.new(inputCanvas)
     photoController.onDraw = () => {
