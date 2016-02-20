@@ -134,7 +134,6 @@ class PhotoDemoController {
     var sourcePattern CanvasPattern
 
     var _isMouseDown = false
-    var radius = 1
 
     # Set by someone else to hear when we draw
     var onDraw fn()
@@ -176,13 +175,13 @@ class PhotoDemoController {
 
     def seedCanvas HTMLCanvasElement { return _seedCanvas }
 
-    def _drawAtPoint(ctx CanvasRenderingContext2D, point Vector, fillStyle dynamic) {
+    def _drawAtPoint(ctx CanvasRenderingContext2D, point Vector, fillStyle dynamic, size int) {
         ctx.beginPath
         ctx.rect(
-            (point.x - radius) as int,
-            (point.y - radius) as int,
-            radius * 2,
-            radius * 2
+            point.x as int,
+            point.y as int,
+            size,
+            size
         )
         # TODO(ryan): Talk to Evan about this
         (ctx as dynamic).fillStyle = fillStyle
@@ -202,10 +201,10 @@ class PhotoDemoController {
     }
 
     def drawAtPoint(point Vector) {
-        _drawAtPoint(_ctx, point, "rgba(255, 255, 255, 0.5)")
+        _drawAtPoint(_ctx, point, "rgba(255, 255, 255, 0.5)", 2)
 
         # Pin the sourceImage pixels down onto the seed canvas
         # where the user is drawing
-        _drawAtPoint(_seedCtx, point, sourcePattern)
+        _drawAtPoint(_seedCtx, point, sourcePattern, 1)
     }
 }

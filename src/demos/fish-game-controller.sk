@@ -17,8 +17,8 @@ class Square {
     def render(ctx CanvasRenderingContext2D) {
         ctx.beginPath
         ctx.rect(
-            (center.x - size / 2.0) as int,
-            (center.y - size / 2.0) as int,
+            (center.x - size / 2) as int,
+            (center.y - size / 2) as int,
             size as int,
             size as int
             )
@@ -55,7 +55,7 @@ class FishGameController {
         for i in 1.._numPads {
             _pads.append(Square.new(Vector.new(Math.random * _canvas.width, Math.random * _canvas.height)))
             _pads[_pads.count - 1].color = waterColors[i % waterColors.count]
-            _speeds.append(10.0 + Math.random * 4.0)
+            _speeds.append(15.0 + Math.random * 8.0)
         }
 
         _fish = Square.new(Vector.new(Math.random * _canvas.width, Math.random * _canvas.height))
@@ -88,7 +88,8 @@ class FishGameController {
 
         for i in 1.._pads.count {
             var pad = _pads[i]
-            pad.center += _speeds[i] * timeElapsed
+            pad.center.x += _speeds[i] * timeElapsed
+            pad.center.y -= _speeds[i] * timeElapsed
             pad.center %= Vector.new(_canvas.width, _canvas.height)
         }
 
