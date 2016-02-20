@@ -121,7 +121,8 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
 
 class PhotoDemoController {
     # Canvas that user sees
-    var _canvas HTMLCanvasElement
+    var _inputCanvas HTMLCanvasElement
+    var _outputCanvas HTMLCanvasElement
     var _ctx CanvasRenderingContext2D
 
     # Canvas that isn't displayed to user. We pass this to the
@@ -140,31 +141,34 @@ class PhotoDemoController {
 
     var _mouseBehaviors List<MouseBehavior> = []
 
-    def new(canvas HTMLCanvasElement) {
-        _canvas = canvas
-        _ctx = _canvas.getContext2D
+    def new(inputCanvas HTMLCanvasElement, outputCanvas HTMLCanvasElement) {
+        _inputCanvas = inputCanvas
+        _outputCanvas = outputCanvas
+        _ctx = _inputCanvas.getContext2D
 
         _seedCanvas = document.createElement("canvas") as HTMLCanvasElement
         _seedCtx = _seedCanvas.getContext2D
-        _seedCanvas.width = _canvas.width
-        _seedCanvas.height = _canvas.height
+        _seedCanvas.width = _inputCanvas.width
+        _seedCanvas.height = _inputCanvas.height
 
         sourceImg = document.getElementById("eye") as HTMLImageElement
         sourcePattern = _seedCtx.createPattern(sourceImg, "repeat")
 
         drawImage
 
-        _canvas.addEventListener("mousedown", (e HTMLMouseEvent) => {
-            for behavior in _mouseBehaviors { behavior.down(e) }
-        })
+        for canvas in [_inputCanvas, _outputCanvas] {
+            canvas.addEventListener("mousedown", (e HTMLMouseEvent) => {
+                for behavior in _mouseBehaviors { behavior.down(e) }
+            })
 
-        _canvas.addEventListener("mousemove", (e HTMLMouseEvent) => {
-            for behavior in _mouseBehaviors { behavior.move(e) }
-        })
+            canvas.addEventListener("mousemove", (e HTMLMouseEvent) => {
+                for behavior in _mouseBehaviors { behavior.move(e) }
+            })
 
-        _canvas.addEventListener("mouseup", (e HTMLMouseEvent) => {
-            for behavior in _mouseBehaviors { behavior.up(e) }
-        })
+            canvas.addEventListener("mouseup", (e HTMLMouseEvent) => {
+                for behavior in _mouseBehaviors { behavior.up(e) }
+            })
+        }
 
         _mouseBehaviors = [
             SeedSpiralMouseBehavior.new(self)
