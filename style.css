@@ -1,5 +1,4 @@
 html, body {
-    margin: 0;
     width: 100%;
     height: 100%;
 
@@ -23,7 +22,7 @@ a {
 }
 
 #demo-page {
-    width: 518px;
+    max-width: 518px;
     margin: 20px auto;
     line-height: 120%;
 }
