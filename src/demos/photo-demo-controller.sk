@@ -1,4 +1,95 @@
 
+interface MouseBehavior {
+    def down(e HTMLMouseEvent)
+    def move(e HTMLMouseEvent)
+    def up(e HTMLMouseEvent)
+
+}
+
+class DrawSeedMouseBehavior :: MouseBehavior {
+    var _controller PhotoDemoController
+    var _isMouseDown = false
+
+    def down(e HTMLMouseEvent) {
+        _isMouseDown = true
+        e.stopPropagation
+        _controller.drawAtPoint(Vector.new(e.offsetX, e.offsetY))
+        _controller.onDraw()
+    }
+
+    def move(e HTMLMouseEvent) {
+        if _isMouseDown {
+            _controller.drawAtPoint(Vector.new(e.offsetX, e.offsetY))
+            _controller.onDraw()
+        }
+        e.stopPropagation
+    }
+
+    def up(e HTMLMouseEvent) {
+        _controller.drawAtPoint(Vector.new(e.offsetX, e.offsetY))
+        _controller.onDraw()
+        _isMouseDown = false
+        e.stopPropagation
+    }
+}
+
+class SeedSpiralMouseBehavior :: MouseBehavior {
+    var _controller PhotoDemoController
+    var _isMouseDown = false
+
+    def _onMove(e HTMLMouseEvent) {
+        _controller.clearSeedCanvas
+        _controller.drawImage
+        _drawSeeds(Vector.new(e.offsetX, e.offsetY))
+        _controller.onDraw()
+    }
+
+    def down(e HTMLMouseEvent) {
+        _isMouseDown = true
+        e.stopPropagation
+        _onMove(e)
+    }
+
+    def move(e HTMLMouseEvent) {
+        if _isMouseDown {
+            _onMove(e)
+        }
+        e.stopPropagation
+    }
+
+    def up(e HTMLMouseEvent) {
+        _controller.drawAtPoint(Vector.new(e.offsetX, e.offsetY))
+        _isMouseDown = false
+        e.stopPropagation
+    }
+
+    def _drawIfOnCanvas(point Vector) {
+        const maxWidth = _controller.seedCanvas.width
+        if point.x > 0 && point.y > 0 && point.x < maxWidth && point.y < maxWidth {
+            _controller.drawAtPoint(point)
+        }
+    }
+
+    def _drawCircle(location Vector, radius double, numPoints int) {
+        for i = 0.0; i < numPoints; i++ {
+            const x = radius * Math.cos((i / numPoints) * Math.PI * 2)
+            const y = radius * Math.sin((i / numPoints) * Math.PI * 2)
+            _drawIfOnCanvas(location + Vector.new(x, y))
+        }
+    }
+
+    def _drawSeeds(mouseLocation Vector) {
+        for radiusIndex = 0; radiusIndex < 100; radiusIndex++ {
+            # Need more and more points as we get further out
+            const numPoints = radiusIndex
+
+            const radius = radiusIndex * radiusIndex * 3 / 10
+
+            _drawCircle(mouseLocation, radius, numPoints)
+        }
+    }
+}
+
 class PhotoDemoController {
     # Canvas that user sees
     var _canvas HTMLCanvasElement
@@ -10,14 +101,16 @@ class PhotoDemoController {
     var _seedCtx CanvasRenderingContext2D
 
     # Cached for performance since we use these on every draw
-    var _sourceImg HTMLImageElement
-    var _sourcePattern CanvasPattern
+    var sourceImg HTMLImageElement
+    var sourcePattern CanvasPattern
 
     var _isMouseDown = false
     var radius = 1
 
     # Set by someone else to hear when we draw
     var onDraw fn()
+
+    var _mouseBehaviors List<MouseBehavior> = []
 
     def new(canvas HTMLCanvasElement) {
         _canvas = canvas
@@ -30,63 +123,60 @@ class PhotoDemoController {
         _seedCanvas.width = _canvas.width
         _seedCanvas.height = _canvas.height
 
-        _sourceImg = document.getElementById("eye") as HTMLImageElement
-        _sourcePattern = _seedCtx.createPattern(_sourceImg, "repeat")
+        sourceImg = document.getElementById("eye") as HTMLImageElement
+        sourcePattern = _seedCtx.createPattern(sourceImg, "repeat")
 
-        # Start out by drawing the source image in the canvas displayed
-        # to the user
-        _ctx.drawImage(_sourceImg, 0.0, 0.0)
+        drawImage
 
         _canvas.addEventListener("mousedown", (e HTMLMouseEvent) => {
-            _isMouseDown = true
-            e.preventDefault
-            e.stopPropagation
-            _draw(Vector.new(e.offsetX, e.offsetY))
+            for behavior in _mouseBehaviors { behavior.down(e) }
         })
 
         _canvas.addEventListener("mousemove", (e HTMLMouseEvent) => {
-            if _isMouseDown {
-                _draw(Vector.new(e.offsetX, e.offsetY))
-            }
-            e.stopPropagation
+            for behavior in _mouseBehaviors { behavior.move(e) }
         })
 
         _canvas.addEventListener("mouseup", (e HTMLMouseEvent) => {
-            _draw(Vector.new(e.offsetX, e.offsetY))
-            _isMouseDown = false
-            e.stopPropagation
+            for behavior in _mouseBehaviors { behavior.up(e) }
         })
+
+        _mouseBehaviors = [
+            SeedSpiralMouseBehavior.new(self)
+        ]
     }
 
     def seedCanvas HTMLCanvasElement { return _seedCanvas }
 
-    def _draw(point Vector) {
-        _ctx.beginPath
-        _ctx.rect(
+    def _drawAtPoint(ctx CanvasRenderingContext2D, point Vector, fillStyle dynamic) {
+        ctx.beginPath
+        ctx.rect(
             (point.x - radius) as int,
             (point.y - radius) as int,
             radius * 2,
             radius * 2
         )
-        _ctx.fillStyle = "#FFFFFF"
-        _ctx.fill
+        # TODO(ryan): Talk to Evan about this
+        (ctx as dynamic).fillStyle = fillStyle
+        ctx.fill
+    }
+
+    # Called by mouse behaviors
+
+    def clearSeedCanvas {
+        _seedCtx.clearRect(0, 0, _seedCanvas.width, _seedCanvas.height)
+    }
+
+    def drawImage {
+        # Start out by drawing the source image in the canvas displayed
+        # to the user
+        _ctx.drawImage(sourceImg, 0.0, 0.0)
+    }
+
+    def drawAtPoint(point Vector) {
+        _drawAtPoint(_ctx, point, "rgba(255, 255, 255, 0.5)")
 
         # Pin the sourceImage pixels down onto the seed canvas
         # where the user is drawing
-        _seedCtx.beginPath
-        _seedCtx.rect(
-            (point.x - radius) as int,
-            (point.y - radius) as int,
-            radius * 2,
-            radius * 2
-        )
-
-        const img = document.getElementById("eye") as HTMLImageElement
-        const pattern = _seedCtx.createPattern(img, "repeat")
-        _seedCtx.fillStyle = pattern
-        _seedCtx.fill
-        if onDraw != null {
-            onDraw()
-        }
+        _drawAtPoint(_seedCtx, point, sourcePattern)
     }
 }
