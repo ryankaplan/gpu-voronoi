@@ -188,7 +188,7 @@
     for (var i = 1, count = self._numPads; i < count; i = i + 1 | 0) {
       self._pads.push(new Square(new Vector(Math.random() * self._canvas.width, Math.random() * self._canvas.height)));
       in_List.get(self._pads, in_List.count(self._pads) - 1 | 0).color = in_List.get(waterColors, i % in_List.count(waterColors) | 0);
-      self._speeds.push(10 + Math.random() * 4);
+      self._speeds.push(15 + Math.random() * 8);
     }
 
     self._fish = new Square(new Vector(Math.random() * self._canvas.width, Math.random() * self._canvas.height));
@@ -218,7 +218,8 @@
 
     for (var i = 1, count = in_List.count(this._pads); i < count; i = i + 1 | 0) {
       var pad = in_List.get(this._pads, i);
-      pad.center.addUpdate1(in_List.get(this._speeds, i) * timeElapsed);
+      pad.center.x += in_List.get(this._speeds, i) * timeElapsed;
+      pad.center.y -= in_List.get(this._speeds, i) * timeElapsed;
       pad.center.remainderUpdate(new Vector(this._canvas.width, this._canvas.height));
     }
 
@@ -322,7 +323,6 @@
     self.sourceImg = null;
     self.sourcePattern = null;
     self._isMouseDown = false;
-    self.radius = 1;
     self.onDraw = null;
     self._mouseBehaviors = [];
     self._canvas = canvas;
@@ -361,9 +361,9 @@
     return this._seedCanvas;
   };
 
-  PhotoDemoController.prototype._drawAtPoint = function(ctx, point, fillStyle) {
+  PhotoDemoController.prototype._drawAtPoint = function(ctx, point, fillStyle, size) {
     ctx.beginPath();
-    ctx.rect(point.x - this.radius | 0, point.y - this.radius | 0, __imul(this.radius, 2), __imul(this.radius, 2));
+    ctx.rect(point.x | 0, point.y | 0, size, size);
 
     // TODO(ryan): Talk to Evan about this
     ctx.fillStyle = fillStyle;
@@ -381,11 +381,11 @@
   };
 
   PhotoDemoController.prototype.drawAtPoint = function(point) {
-    this._drawAtPoint(this._ctx, point, 'rgba(255, 255, 255, 0.5)');
+    this._drawAtPoint(this._ctx, point, 'rgba(255, 255, 255, 0.5)', 2);
 
     // Pin the sourceImage pixels down onto the seed canvas
     // where the user is drawing
-    this._drawAtPoint(this._seedCtx, point, this.sourcePattern);
+    this._drawAtPoint(this._seedCtx, point, this.sourcePattern, 1);
   };
 
   function Color(r, g, b, a) {
@@ -587,11 +587,6 @@
   Vector.prototype.remainderUpdate = function(v) {
     this.x = fmod(this.x, v.x);
     this.y = fmod(this.y, v.y);
-  };
-
-  Vector.prototype.addUpdate1 = function(d) {
-    this.x += d;
-    this.y += d;
   };
 
   Vector.prototype.rotate = function(angleRad) {
