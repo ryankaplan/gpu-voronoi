@@ -48,19 +48,15 @@ class CanvasDrawController {
 
         var isMouseDown = false
 
-        var onDraw = (e HTMLMouseEvent) => {
-            changeColorAndDraw(canvasMouseLocation(_inputCanvas, e))
-        }
-
         document.addEventListener("mousedown", (e HTMLMouseEvent) => {
             isMouseDown = true
-            onDraw(e)
+             changeColorAndDraw(canvasMouseLocation(_inputCanvas, e))
         })
 
         for canvas in [_inputCanvas, _outputCanvas] {
             canvas.addEventListener("mousemove", (e HTMLMouseEvent) => {
                 if isMouseDown {
-                    onDraw(e)
+                    changeColorAndDraw(canvasMouseLocation(_inputCanvas, e))
                 }
             })
         }
