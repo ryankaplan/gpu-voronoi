@@ -39,7 +39,7 @@ def canvasMouseLocation(canvas HTMLCanvasElement, event HTMLMouseEvent) Vector {
 
 def initializePaintDemo(container HTMLElement) {
     const inputCanvas = getCanvas(container, "input-canvas", 512, 256)
-    const outputCanvas = getCanvas(container, "output-canvas", 4096, 256)
+    const outputCanvas = getCanvas(container, "output-canvas", 512, 256)
     const jfa = createJumpFlood(outputCanvas)
 
     # A CanvasDrawController handles user draw-actions on the input canvas
