@@ -227,7 +227,17 @@ if TARGET == .JAVASCRIPT {
       const deltaZ double
     }
 
+    class BoundingRect {
+      const left int
+      const right int
+      const top int
+      const bottom int
+      const width int
+      const height int
+    }
+
     class HTMLElement {
+      def getBoundingClientRect BoundingRect
       def appendChild(node HTMLElement)
       def insertBefore(node HTMLElement, child HTMLElement)
       def replaceChild(node HTMLElement, child HTMLElement)

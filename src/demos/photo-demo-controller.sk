@@ -3,7 +3,6 @@ interface MouseBehavior {
     def down(e HTMLMouseEvent)
     def move(e HTMLMouseEvent)
     def up(e HTMLMouseEvent)
-
 }
 
 class DrawSeedMouseBehavior :: MouseBehavior {
@@ -13,20 +12,20 @@ class DrawSeedMouseBehavior :: MouseBehavior {
     def down(e HTMLMouseEvent) {
         _isMouseDown = true
         e.stopPropagation
-        _controller.drawAtPoint(Vector.new(e.offsetX, e.offsetY))
+        _controller.drawAtPoint(canvasMouseLocation(_controller.inputCanvas, e))
         _controller.onDraw()
     }
 
     def move(e HTMLMouseEvent) {
         if _isMouseDown {
-            _controller.drawAtPoint(Vector.new(e.offsetX, e.offsetY))
+            _controller.drawAtPoint(canvasMouseLocation(_controller.inputCanvas, e))
             _controller.onDraw()
         }
         e.stopPropagation
     }
 
     def up(e HTMLMouseEvent) {
-        _controller.drawAtPoint(Vector.new(e.offsetX, e.offsetY))
+        _controller.drawAtPoint(canvasMouseLocation(_controller.inputCanvas, e))
         _controller.onDraw()
         _isMouseDown = false
         e.stopPropagation
@@ -53,7 +52,7 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
             const numPoints = 10
 
             # Radius gets bigger as we get further out
-            const radius = radiusIndex * radiusIndex / 2
+            const radius = radiusIndex * radiusIndex
 
             for i = 0.0; i < numPoints; i++ {
                 var x = radius * Math.cos((i / numPoints) * Math.PI * 2)
@@ -78,7 +77,7 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
     }
 
     def _onMove(e HTMLMouseEvent) {
-        _center = Vector.new(e.offsetX, e.offsetY)
+        _center = canvasMouseLocation(_controller.inputCanvas, e)
 
         _controller.clearSeedCanvas
         _controller.drawImage
@@ -100,7 +99,7 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
     }
 
     def up(e HTMLMouseEvent) {
-        _controller.drawAtPoint(Vector.new(e.offsetX, e.offsetY))
+        _controller.drawAtPoint(canvasMouseLocation(_controller.inputCanvas, e))
         _isMouseDown = false
         e.stopPropagation
     }
@@ -121,8 +120,8 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
 
 class PhotoDemoController {
     # Canvas that user sees
-    var _inputCanvas HTMLCanvasElement
-    var _outputCanvas HTMLCanvasElement
+    var inputCanvas HTMLCanvasElement
+    var outputCanvas HTMLCanvasElement
     var _ctx CanvasRenderingContext2D
 
     # Canvas that isn't displayed to user. We pass this to the
@@ -141,22 +140,22 @@ class PhotoDemoController {
 
     var _mouseBehaviors List<MouseBehavior> = []
 
-    def new(inputCanvas HTMLCanvasElement, outputCanvas HTMLCanvasElement) {
-        _inputCanvas = inputCanvas
-        _outputCanvas = outputCanvas
-        _ctx = _inputCanvas.getContext2D
+    def new(inputCanvas_ HTMLCanvasElement, outputCanvas_ HTMLCanvasElement) {
+        inputCanvas = inputCanvas_
+        outputCanvas = outputCanvas_
+        _ctx = inputCanvas.getContext2D
 
         _seedCanvas = document.createElement("canvas") as HTMLCanvasElement
         _seedCtx = _seedCanvas.getContext2D
-        _seedCanvas.width = _inputCanvas.width
-        _seedCanvas.height = _inputCanvas.height
+        _seedCanvas.width = inputCanvas.width
+        _seedCanvas.height = inputCanvas.height
 
         sourceImg = document.getElementById("eye") as HTMLImageElement
         sourcePattern = _seedCtx.createPattern(sourceImg, "repeat")
 
         drawImage
 
-        for canvas in [_inputCanvas, _outputCanvas] {
+        for canvas in [inputCanvas, outputCanvas] {
             canvas.addEventListener("mousedown", (e HTMLMouseEvent) => {
                 for behavior in _mouseBehaviors { behavior.down(e) }
             })
@@ -171,6 +170,7 @@ class PhotoDemoController {
         }
 
         _mouseBehaviors = [
+            #DrawSeedMouseBehavior.new(self)
             SeedSpiralMouseBehavior.new(self)
         ]
     }
@@ -203,7 +203,7 @@ class PhotoDemoController {
     }
 
     def drawAtPoint(point Vector) {
-        _drawAtPoint(_ctx, point, "rgba(255, 255, 255, 0.5)", 2)
+        _drawAtPoint(_ctx, point, "rgba(255, 255, 255, 0.5)", 4)
 
         # Pin the sourceImage pixels down onto the seed canvas
         # where the user is drawing

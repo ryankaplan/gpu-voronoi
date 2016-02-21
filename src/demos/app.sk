@@ -7,11 +7,12 @@ class HTMLWindow {
     var onload dynamic
 }
 
-def getCanvas(container HTMLElement, className string) HTMLCanvasElement {
-    const gridSize = 256
+def getCanvas(container HTMLElement, className string, gridSize int, canvasSize int) HTMLCanvasElement {
     const canvas = (container as dynamic).getElementsByClassName(className)[0] as HTMLCanvasElement
     canvas.width = gridSize
     canvas.height = gridSize
+    canvas.style.width = "\(canvasSize)px"
+    canvas.style.height = "\(canvasSize)px"
     return canvas
 }
 
@@ -28,9 +29,17 @@ def createJumpFlood(outputCanvas HTMLCanvasElement) JumpFlood {
     return jumpFlood
 }
 
+def canvasMouseLocation(canvas HTMLCanvasElement, event HTMLMouseEvent) Vector {
+    const rect = canvas.getBoundingClientRect
+    return Vector.new(
+        (event.offsetX as double / rect.width) * canvas.width,
+        (event.offsetY as double / rect.height) * canvas.height
+    )
+}
+
 def initializePaintDemo(container HTMLElement) {
-    const inputCanvas = getCanvas(container, "input-canvas")
-    const outputCanvas = getCanvas(container, "output-canvas")
+    const inputCanvas = getCanvas(container, "input-canvas", 512, 256)
+    const outputCanvas = getCanvas(container, "output-canvas", 4096, 256)
     const jfa = createJumpFlood(outputCanvas)
 
     # A CanvasDrawController handles user draw-actions on the input canvas
@@ -44,8 +53,8 @@ def initializePaintDemo(container HTMLElement) {
 }
 
 def initializeFishDemo(container HTMLElement) {
-    const inputCanvas = getCanvas(container, "input-canvas")
-    const outputCanvas = getCanvas(container, "output-canvas")
+    const inputCanvas = getCanvas(container, "input-canvas", 512, 256)
+    const outputCanvas = getCanvas(container, "output-canvas", 512, 256)
     const jfa = createJumpFlood(outputCanvas)
 
     const fishController = FishGameController.new(inputCanvas, outputCanvas)
@@ -57,8 +66,8 @@ def initializeFishDemo(container HTMLElement) {
 }
 
 def initializePhotoDemo(container HTMLElement) {
-    const inputCanvas = getCanvas(container, "input-canvas")
-    const outputCanvas = getCanvas(container, "output-canvas")
+    const inputCanvas = getCanvas(container, "input-canvas", 512, 256)
+    const outputCanvas = getCanvas(container, "output-canvas", 512, 256)
     const jfa = createJumpFlood(outputCanvas)
 
     const photoController = PhotoDemoController.new(inputCanvas, outputCanvas)

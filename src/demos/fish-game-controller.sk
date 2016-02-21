@@ -11,7 +11,7 @@ class Date {
 
 class Square {
     var center Vector
-    var size = 2.0
+    var size = 4
     var color = Color.new(0, 0, 1, 1)
 
     def render(ctx CanvasRenderingContext2D) {
@@ -19,8 +19,8 @@ class Square {
         ctx.rect(
             (center.x - size / 2) as int,
             (center.y - size / 2) as int,
-            size as int,
-            size as int
+            size,
+            size
             )
         ctx.fillStyle = color.toCSS
         ctx.fill
@@ -65,8 +65,7 @@ class FishGameController {
 
         for canvas in [_inputCanvas, _outputCanvas] {
             canvas.addEventListener("mousemove", (e HTMLMouseEvent) => {
-                _fish.center.x = e.offsetX
-                _fish.center.y = e.offsetY
+                _fish.center = canvasMouseLocation(canvas, e)
             })
         }
 

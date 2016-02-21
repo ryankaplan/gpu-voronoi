@@ -18,7 +18,7 @@ class CanvasDrawController {
     var _ctx CanvasRenderingContext2D
     var _color Color = null
     var colorIndex = 0
-    var radius = 1
+    var radius = 2
     var onDraw fn()
 
     def new(inputCanvas HTMLCanvasElement, outputCanvas HTMLCanvasElement) {
@@ -48,15 +48,19 @@ class CanvasDrawController {
 
         var isMouseDown = false
 
+        var onDraw = (e HTMLMouseEvent) => {
+            changeColorAndDraw(canvasMouseLocation(_inputCanvas, e))
+        }
+
         document.addEventListener("mousedown", (e HTMLMouseEvent) => {
             isMouseDown = true
-            changeColorAndDraw(Vector.new(e.offsetX, e.offsetY))
+            onDraw(e)
         })
 
         for canvas in [_inputCanvas, _outputCanvas] {
             canvas.addEventListener("mousemove", (e HTMLMouseEvent) => {
                 if isMouseDown {
-                    changeColorAndDraw(Vector.new(e.offsetX, e.offsetY))
+                    onDraw(e)
                 }
             })
         }
