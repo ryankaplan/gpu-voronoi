@@ -10,6 +10,6 @@
   "devDependencies": {
     "skew": "^0.7.16",
     "fast-watch": "^1.0.0",
-    "glslx": "^0.1.17"
+    "glslx": "^0.1.19"
   }
 }
