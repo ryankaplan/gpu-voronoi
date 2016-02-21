@@ -42,16 +42,17 @@ class FishGameController {
     var _inputCanvas HTMLCanvasElement
     var _outputCanvas HTMLCanvasElement
     var _ctx CanvasRenderingContext2D
-    var onDraw fn()
+    var _onDraw fn()
 
     var _numPads = 40
     var _pads List<Square> = []
     var _speeds List<double> = []
     var _fish Square
 
-    def new(inputCanvas HTMLCanvasElement, outputCanvas HTMLCanvasElement) {
+    def new(inputCanvas HTMLCanvasElement, outputCanvas HTMLCanvasElement, onDraw fn()) {
         _inputCanvas = inputCanvas
         _outputCanvas = outputCanvas
+        _onDraw = onDraw
         _ctx = _inputCanvas.getContext2D
 
         for i in 1.._numPads {
@@ -102,8 +103,8 @@ class FishGameController {
 
         _fish.render(_ctx)
 
-        if onDraw != null {
-            onDraw()
+        if _onDraw != null {
+            _onDraw()
         }
     }
 }

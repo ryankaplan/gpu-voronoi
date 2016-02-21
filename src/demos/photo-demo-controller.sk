@@ -13,20 +13,20 @@ class DrawSeedMouseBehavior :: MouseBehavior {
         _isMouseDown = true
         e.stopPropagation
         _controller.drawAtPoint(canvasMouseLocation(_controller.inputCanvas, e))
-        _controller.onDraw()
+        _controller.onDraw(_controller)
     }
 
     def move(e HTMLMouseEvent) {
         if _isMouseDown {
             _controller.drawAtPoint(canvasMouseLocation(_controller.inputCanvas, e))
-            _controller.onDraw()
+            _controller.onDraw(_controller)
         }
         e.stopPropagation
     }
 
     def up(e HTMLMouseEvent) {
         _controller.drawAtPoint(canvasMouseLocation(_controller.inputCanvas, e))
-        _controller.onDraw()
+        _controller.onDraw(_controller)
         _isMouseDown = false
         e.stopPropagation
     }
@@ -72,7 +72,7 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
             _controller.clearSeedCanvas
             _controller.drawImage
             _drawSeeds
-            _controller.onDraw()
+            _controller.onDraw(_controller)
         }, 1000 / 60)
     }
 
@@ -82,7 +82,7 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
         _controller.clearSeedCanvas
         _controller.drawImage
         _drawSeeds
-        _controller.onDraw()
+        _controller.onDraw(_controller)
     }
 
     def down(e HTMLMouseEvent) {
@@ -136,13 +136,14 @@ class PhotoDemoController {
     var _isMouseDown = false
 
     # Set by someone else to hear when we draw
-    var onDraw fn()
+    var onDraw fn(PhotoDemoController)
 
     var _mouseBehaviors List<MouseBehavior> = []
 
-    def new(inputCanvas_ HTMLCanvasElement, outputCanvas_ HTMLCanvasElement) {
+    def new(inputCanvas_ HTMLCanvasElement, outputCanvas_ HTMLCanvasElement, onDraw_ fn(PhotoDemoController)) {
         inputCanvas = inputCanvas_
         outputCanvas = outputCanvas_
+        onDraw = onDraw_
         _ctx = inputCanvas.getContext2D
 
         _seedCanvas = document.createElement("canvas") as HTMLCanvasElement

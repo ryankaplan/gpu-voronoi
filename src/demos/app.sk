@@ -44,12 +44,11 @@ def initializePaintDemo(container HTMLElement) {
 
     # A CanvasDrawController handles user draw-actions on the input canvas
     # Whenever the user draws, we re-render the voronoi diagram for the input
-    const drawController = CanvasDrawController.new(inputCanvas, outputCanvas)
-    drawController.onDraw = () => {
+    CanvasDrawController.new(inputCanvas, outputCanvas, => {
         jfa.setSeedsFromCanvas(inputCanvas)
         jfa.computeVoronoi
         jfa.drawToOutputCanvas
-    }
+    })
 }
 
 def initializeFishDemo(container HTMLElement) {
@@ -57,12 +56,11 @@ def initializeFishDemo(container HTMLElement) {
     const outputCanvas = getCanvas(container, "output-canvas", 512, 256)
     const jfa = createJumpFlood(outputCanvas)
 
-    const fishController = FishGameController.new(inputCanvas, outputCanvas)
-    fishController.onDraw = () => {
+    FishGameController.new(inputCanvas, outputCanvas, => {
         jfa.setSeedsFromCanvas(inputCanvas)
         jfa.computeVoronoi
         jfa.drawToOutputCanvas
-    }
+    })
 }
 
 def initializePhotoDemo(container HTMLElement) {
@@ -70,12 +68,11 @@ def initializePhotoDemo(container HTMLElement) {
     const outputCanvas = getCanvas(container, "output-canvas", 512, 256)
     const jfa = createJumpFlood(outputCanvas)
 
-    const photoController = PhotoDemoController.new(inputCanvas, outputCanvas)
-    photoController.onDraw = () => {
+    PhotoDemoController.new(inputCanvas, outputCanvas, (photoController PhotoDemoController) => {
         jfa.setSeedsFromCanvas(photoController.seedCanvas)
         jfa.computeVoronoi
         jfa.drawToOutputCanvas
-    }
+    })
 }
 
 @entry
