@@ -16,10 +16,10 @@ def getCanvas(container HTMLElement, className string, gridSize int, canvasSize 
     return canvas
 }
 
-def createJumpFlood(outputCanvas HTMLCanvasElement) JumpFlood {
+def createJumpFlood(outputCanvas HTMLCanvasElement, options JumpFlood.Options) JumpFlood {
     var jumpFlood JumpFlood = null
     try {
-        jumpFlood = JumpFlood.new(outputCanvas)
+        jumpFlood = JumpFlood.new(outputCanvas, options)
     } catch temp dynamic {
         # Failed to initialize Web-GL. Display error.
         document.getElementById("demo-page").style.display = "none"
@@ -40,7 +40,8 @@ def canvasMouseLocation(canvas HTMLCanvasElement, event HTMLMouseEvent) Vector {
 def initializePaintDemo(container HTMLElement) {
     const inputCanvas = getCanvas(container, "input-canvas", 512, 256)
     const outputCanvas = getCanvas(container, "output-canvas", 512, 256)
-    const jfa = createJumpFlood(outputCanvas)
+    const opts = JumpFlood.Options.new
+    const jfa = createJumpFlood(outputCanvas, opts)
 
     # A CanvasDrawController handles user draw-actions on the input canvas
     # Whenever the user draws, we re-render the voronoi diagram for the input
@@ -54,7 +55,9 @@ def initializePaintDemo(container HTMLElement) {
 def initializeFishDemo(container HTMLElement) {
     const inputCanvas = getCanvas(container, "input-canvas", 512, 256)
     const outputCanvas = getCanvas(container, "output-canvas", 512, 256)
-    const jfa = createJumpFlood(outputCanvas)
+    const opts = JumpFlood.Options.new
+    opts.wrap = true
+    const jfa = createJumpFlood(outputCanvas, opts)
 
     FishGameController.new(inputCanvas, outputCanvas, => {
         jfa.setSeedsFromCanvas(inputCanvas)
@@ -66,7 +69,8 @@ def initializeFishDemo(container HTMLElement) {
 def initializePhotoDemo(container HTMLElement) {
     const inputCanvas = getCanvas(container, "input-canvas", 512, 256)
     const outputCanvas = getCanvas(container, "output-canvas", 512, 256)
-    const jfa = createJumpFlood(outputCanvas)
+    const opts = JumpFlood.Options.new
+    const jfa = createJumpFlood(outputCanvas, opts)
 
     PhotoDemoController.new(inputCanvas, outputCanvas, (photoController PhotoDemoController) => {
         jfa.setSeedsFromCanvas(photoController.seedCanvas)

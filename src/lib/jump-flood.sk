@@ -12,7 +12,14 @@ def isPowerOfTwo(number int) bool {
     return number != 0 && ((number & (number - 1)) == 0)
 }
 
+namespace JumpFlood {
+    class Options {
+        var wrap = false
+    }
+}
+
 class JumpFlood {
+    const _options Options
     var _igloo Igloo
 
     # Width and height of the JFA canvas. Must be a power of two becuase
@@ -34,7 +41,7 @@ class JumpFlood {
     # Read-only properties
     def outputTexture Igloo.Texture { return _sourceTexture }
 
-    def new(canvas HTMLCanvasElement) {
+    def new(canvas HTMLCanvasElement, options Options) {
         if canvas.width != canvas.height {
             throw Error.new("JumpFlood canvas parameter must be square. Size is (\(canvas.width), \(canvas.height))")
         }
@@ -43,6 +50,7 @@ class JumpFlood {
             throw Error.new("JumpFlood canvas size must be a power of two. Size is \(canvas.width)")
         }
 
+        _options = options
         _canvasSize = canvas.width
         _outputCanvas = canvas
 
@@ -172,7 +180,7 @@ class JumpFlood {
             .uniformi("iCellGridTexture", 0)
             .uniformi("iStepSize", stepSize)
             .uniform("iCellGridSize", Float32Array.new([_canvasSize, _canvasSize]))
-            .uniformi("iUseTorusDistanceForSeeds", 0)
+            .uniformi("iUseTorusDistanceForSeeds", _options.wrap ? 1 : 0)
             .draw(_igloo.gl.TRIANGLE_STRIP, 4)
 
         self._swapBuffers
