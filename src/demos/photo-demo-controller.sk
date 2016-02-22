@@ -70,7 +70,6 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
         setInterval(=> {
             _angle += 0.005
             _controller.clearSeedCanvas
-            _controller.drawImage
             _drawSeeds
             _controller.onDraw(_controller)
         }, 1000 / 60)
@@ -80,7 +79,6 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
         _center = canvasMouseLocation(_controller.inputCanvas, e)
 
         _controller.clearSeedCanvas
-        _controller.drawImage
         _drawSeeds
         _controller.onDraw(_controller)
     }
@@ -154,8 +152,6 @@ class PhotoDemoController {
         sourceImg = document.getElementById("eye") as HTMLImageElement
         sourcePattern = _seedCtx.createPattern(sourceImg, "repeat")
 
-        drawImage
-
         for canvas in [inputCanvas, outputCanvas] {
             canvas.addEventListener("mousedown", (e HTMLMouseEvent) => {
                 for behavior in _mouseBehaviors { behavior.down(e) }
@@ -194,13 +190,8 @@ class PhotoDemoController {
     # Called by mouse behaviors
 
     def clearSeedCanvas {
+        _ctx.clearRect(0, 0, inputCanvas.width, inputCanvas.height)
         _seedCtx.clearRect(0, 0, _seedCanvas.width, _seedCanvas.height)
-    }
-
-    def drawImage {
-        # Start out by drawing the source image in the canvas displayed
-        # to the user
-        _ctx.drawImage(sourceImg, 0.0, 0.0)
     }
 
     def drawAtPoint(point Vector) {

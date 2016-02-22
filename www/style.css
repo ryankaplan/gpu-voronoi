@@ -59,3 +59,21 @@ a {
 canvas {
     display: inline-block;
 }
+
+/* Photo demo */
+
+.input-canvas-container {
+    display: inline-block;
+    position: relative;
+    width: 256px;
+    height: 256px;
+}
+
+.input-canvas-container #eye,
+.input-canvas-container .input-canvas {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
