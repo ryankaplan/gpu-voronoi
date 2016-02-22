@@ -3,8 +3,23 @@ namespace console {
     const log dynamic
 }
 
+@import
+def parseInt(toParse string, base int) int
+
 class HTMLWindow {
     var onload dynamic
+}
+
+def getQueryVariable(variable string) string {
+    var query = (window as dynamic).location.search.substring(1)
+    var vars = query.split("&")
+    for i=0; i < vars.length; i++ {
+        var pair = vars[i].split("=")
+        if pair[0] == variable {
+            return pair[1]
+        }
+    }
+    return null
 }
 
 def getCanvas(container HTMLElement, className string, gridSize int, canvasSize int) HTMLCanvasElement {
@@ -41,9 +56,9 @@ def canvasMouseLocation(canvas HTMLCanvasElement, event HTMLMouseEvent) Vector {
     return canvasMouseLocation(canvas, Vector.new(event.offsetX, event.offsetY))
 }
 
-def initializePaintDemo(container HTMLElement) {
-    const inputCanvas = getCanvas(container, "input-canvas", 512, 256)
-    const outputCanvas = getCanvas(container, "output-canvas", 512, 256)
+def initializePaintDemo(container HTMLElement, antialiasingFactor int) {
+    const inputCanvas = getCanvas(container, "input-canvas", antialiasingFactor * 256, 256)
+    const outputCanvas = getCanvas(container, "output-canvas", antialiasingFactor * 256, 256)
     const opts = JumpFlood.Options.new
     const jfa = createJumpFlood(outputCanvas, opts)
 
@@ -56,9 +71,9 @@ def initializePaintDemo(container HTMLElement) {
     })
 }
 
-def initializeFishDemo(container HTMLElement) {
-    const inputCanvas = getCanvas(container, "input-canvas", 512, 256)
-    const outputCanvas = getCanvas(container, "output-canvas", 512, 256)
+def initializeFishDemo(container HTMLElement, antialiasingFactor int) {
+    const inputCanvas = getCanvas(container, "input-canvas", antialiasingFactor * 256, 256)
+    const outputCanvas = getCanvas(container, "output-canvas", antialiasingFactor * 256, 256)
     const opts = JumpFlood.Options.new
     opts.wrap = true
     const jfa = createJumpFlood(outputCanvas, opts)
@@ -70,9 +85,9 @@ def initializeFishDemo(container HTMLElement) {
     })
 }
 
-def initializePhotoDemo(container HTMLElement) {
-    const inputCanvas = getCanvas(container, "input-canvas", 512, 256)
-    const outputCanvas = getCanvas(container, "output-canvas", 512, 256)
+def initializePhotoDemo(container HTMLElement, antialiasingFactor int) {
+    const inputCanvas = getCanvas(container, "input-canvas", antialiasingFactor * 256, 256)
+    const outputCanvas = getCanvas(container, "output-canvas", antialiasingFactor * 256, 256)
     const opts = JumpFlood.Options.new
     const jfa = createJumpFlood(outputCanvas, opts)
 
@@ -86,8 +101,18 @@ def initializePhotoDemo(container HTMLElement) {
 @entry
 def main {
     window.onload = => {
-        initializePaintDemo(document.getElementById("paint-demo-container"))
-        initializeFishDemo(document.getElementById("fish-demo-container"))
-        initializePhotoDemo(document.getElementById("photo-demo-container"))
+        var antialiasingFactor = 2
+
+        try {
+            const antialiasingFactorParam = getQueryVariable("antialiasingFactor")
+            if antialiasingFactorParam != null {
+                antialiasingFactor = parseInt(antialiasingFactorParam, 10)
+            }
+        }
+
+        initializePaintDemo(document.getElementById("paint-demo-container"), antialiasingFactor)
+        initializeFishDemo(document.getElementById("fish-demo-container"), antialiasingFactor)
+        initializePhotoDemo(document.getElementById("photo-demo-container"), antialiasingFactor)
     }
 }
+
