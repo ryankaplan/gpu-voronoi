@@ -295,9 +295,9 @@ Igloo.Program.prototype.draw = function(mode, count, type) {
     } else {
         gl.drawElements(mode, count, type, 0);
     }
-    if (gl.getError() !== gl.NO_ERROR) {
-        throw new Error('WebGL rendering error');
-    }
+    //if (gl.getError() !== gl.NO_ERROR) {
+    //    throw new Error('WebGL rendering error');
+    //}
     return this;
 };
 
@@ -421,7 +421,7 @@ Igloo.Texture.prototype.blank = function(width, height) {
  * @returns {Igloo.Texture}
  */
 // TODO(ryan): This fails when source is an HTMLCanvasElement, I think because
-// gl.textImage2D doesn't like to have width and height passed in.
+// gl.texImage2D doesn't like to have width and height passed in.
 Igloo.Texture.prototype.set = function(source, width, height) {
     var gl = this.gl;
     this.bind();
