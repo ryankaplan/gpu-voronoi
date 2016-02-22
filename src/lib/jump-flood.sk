@@ -20,26 +20,26 @@ namespace JumpFlood {
 
 class JumpFlood {
     const _options Options
-    var _igloo Igloo
+    var _wham Wham
 
     # Width and height of the JFA canvas. Must be a power of two becuase
     # its the size of a WebGL texture.
     var _canvasSize int
 
-    var _program Igloo.Program
-    var _prepProgram Igloo.Program
-    var _quadBuffer Igloo.Buffer
-    var _sourceTexture Igloo.Texture
-    var _destTexture Igloo.Texture
-    var _tmpTexture Igloo.Texture
-    var _framebuffer Igloo.FrameBuffer
+    var _program Wham.Program
+    var _prepProgram Wham.Program
+    var _quadBuffer Wham.Buffer
+    var _sourceTexture Wham.Texture
+    var _destTexture Wham.Texture
+    var _tmpTexture Wham.Texture
+    var _framebuffer Wham.Framebuffer
     var _simulationStepper dynamic
 
-    var _drawOutput Igloo.Program
+    var _drawOutput Wham.Program
     var _outputCanvas HTMLCanvasElement
 
     # Read-only properties
-    def outputTexture Igloo.Texture { return _sourceTexture }
+    def outputTexture Wham.Texture { return _sourceTexture }
 
     def new(canvas HTMLCanvasElement, options Options) {
         if canvas.width != canvas.height {
@@ -54,50 +54,62 @@ class JumpFlood {
         _canvasSize = canvas.width
         _outputCanvas = canvas
 
-        # Igloo is a thin object-oriented WebGL library. TODO(ryan): move
-        # this initialization into `lib`.
-        _igloo = Igloo.new(canvas)
-        if _igloo.gl == null {
-            throw Error.new("Failed to initialize Igloo")
+        _wham = Wham.new(canvas)
+        if _wham.ctx == null {
+            throw Error.new("Failed to initialize Wham")
         }
 
-        _igloo.gl.disable(_igloo.gl.DEPTH_TEST)
-        _drawOutput = Igloo.Program.new(_igloo.gl, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_GRID)
+        _wham.ctx.disable(_wham.ctx.DEPTH_TEST)
+        _drawOutput = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_GRID)
 
-        var gl = _igloo.gl
+        var gl = _wham.ctx
         getWebGLExtension(gl, "OES_texture_float")
         gl.disable(gl.DEPTH_TEST)
 
-        _program = Igloo.Program.new(_igloo.gl, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_JUMP_FLOOD)
-        _prepProgram = Igloo.Program.new(_igloo.gl, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_PREP_FOR_JFA)
-        _quadBuffer = _igloo.array(Igloo.QUAD2)
-        _sourceTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.FLOAT).blank(_canvasSize, _canvasSize)
-        _destTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.FLOAT).blank(_canvasSize, _canvasSize)
-        _tmpTexture = _igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST, gl.UNSIGNED_BYTE).blank(_canvasSize, _canvasSize)
-        _framebuffer = _igloo.framebuffer
+        _program = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_JUMP_FLOOD)
+        _prepProgram = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_PREP_FOR_JFA)
+        _quadBuffer = Wham.Buffer.createWithData(gl, Wham.QUAD2)
+
+        const opts = Wham.TextureOptions.new(gl)
+        opts.format = gl.RGBA
+        opts.wrap = gl.REPEAT
+        opts.filter = gl.NEAREST
+        opts.dataType = gl.FLOAT
+
+        _sourceTexture = Wham.Texture.new(gl, opts)
+        _sourceTexture.clear(_canvasSize, _canvasSize)
+        _destTexture = Wham.Texture.new(gl, opts)
+        _destTexture.clear(_canvasSize, _canvasSize)
+
+        const otherOpts = opts.clone
+        otherOpts.dataType = gl.UNSIGNED_BYTE
+        _tmpTexture = Wham.Texture.new(gl, otherOpts)
+        _tmpTexture.clear(_canvasSize, _canvasSize)
+
+        _framebuffer = Wham.Framebuffer.new(gl)
     }
 
     def drawToOutputCanvas {
-        _igloo.defaultFramebuffer.bind
+        _wham.defaultFramebuffer.bind
         _destTexture.bind(0)
-        _igloo.gl.viewport(0, 0, _outputCanvas.width, _outputCanvas.height)
+        _wham.ctx.viewport(0, 0, _outputCanvas.width, _outputCanvas.height)
         _drawOutput
                     .use
                     .attrib("quad", _quadBuffer, 2)
-                    .uniformi("iCellGridTexture", 0)
+                    .uniform("iCellGridTexture", 0)
                     .uniform("iCanvasSize", Float32Array.new([_outputCanvas.width, _outputCanvas.height]))
                     .uniform("iGridSize", Float32Array.new([_canvasSize, _canvasSize]))
-                    .uniform("iRelease", RELEASE, true)
-                    .draw(_igloo.gl.TRIANGLE_STRIP, 4)
+                    .uniform("iRelease", RELEASE as int)
+                    .draw(_wham.ctx.TRIANGLE_STRIP, 4)
     }
 
     def setSeedsFromCanvas(inputCanvas HTMLCanvasElement) {
         _framebuffer.attach(_sourceTexture)
 
         if !RELEASE {
-            const gl = _igloo.gl
-            var check = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
-            if check != gl.FRAMEBUFFER_COMPLETE {
+            const ctx = _wham.ctx
+            var check = ctx.checkFramebufferStatus(ctx.FRAMEBUFFER)
+            if check != ctx.FRAMEBUFFER_COMPLETE {
                 throw Error.new("Framebuffer completion issue")
             }
         }
@@ -106,14 +118,14 @@ class JumpFlood {
         _tmpTexture.set(inputCanvas)
         _tmpTexture.bind(0)
 
-        _igloo.gl.viewport(0, 0, _canvasSize, _canvasSize)
+        _wham.ctx.viewport(0, 0, _canvasSize, _canvasSize)
         _prepProgram
                     .use
                     .attrib("quad", _quadBuffer, 2)
-                    .uniformi("iCellGridTexture", 0)
+                    .uniform("iCellGridTexture", 0)
                     .uniform("iCellGridSize", Float32Array.new([_canvasSize, _canvasSize]))
                     .uniform("iBackgroundColor", Float32Array.new([0, 0, 0, 0]))
-                    .draw(_igloo.gl.TRIANGLE_STRIP, 4)
+                    .draw(_wham.ctx.TRIANGLE_STRIP, 4)
     }
 
     # Useful if you want to compute Voronoi in one step.
@@ -163,23 +175,23 @@ class JumpFlood {
         _framebuffer.attach(_destTexture)
 
         if !RELEASE {
-            const gl = _igloo.gl
-            var check = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
-            if check != gl.FRAMEBUFFER_COMPLETE {
+            const ctx = _wham.ctx
+            var check = ctx.checkFramebufferStatus(ctx.FRAMEBUFFER)
+            if check != ctx.FRAMEBUFFER_COMPLETE {
                 throw Error.new("Framebuffer completion issue")
             }
         }
 
         _sourceTexture.bind(0)
-        _igloo.gl.viewport(0, 0, _canvasSize, _canvasSize)
+        _wham.ctx.viewport(0, 0, _canvasSize, _canvasSize)
         _program
             .use
             .attrib("quad", _quadBuffer, 2)
-            .uniformi("iCellGridTexture", 0)
-            .uniformi("iStepSize", stepSize)
+            .uniform("iCellGridTexture", 0)
+            .uniform("iStepSize", stepSize)
             .uniform("iCellGridSize", Float32Array.new([_canvasSize, _canvasSize]))
-            .uniformi("iUseTorusDistanceForSeeds", _options.wrap ? 1 : 0)
-            .draw(_igloo.gl.TRIANGLE_STRIP, 4)
+            .uniform("iUseTorusDistanceForSeeds", _options.wrap ? 1 : 0)
+            .draw(_wham.ctx.TRIANGLE_STRIP, 4)
 
         self._swapBuffers
     }

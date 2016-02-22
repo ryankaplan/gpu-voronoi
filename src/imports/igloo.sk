@@ -1,78 +1,78 @@
-# Skew ambient header for igloo.js v0.1.2
+# # Skew ambient header for igloo.js v0.1.2
 
-@import
-class Igloo {
-    var gl WebGLRenderingContext
-    var defaultFramebuffer Igloo.FrameBuffer
+# @import
+# class Igloo {
+#     var gl WebGLRenderingContext
+#     var defaultFramebuffer Igloo.FrameBuffer
 
-    def new(canvas HTMLElement)
-    def new(canvas HTMLElement, options dynamic)
+#     def new(canvas HTMLElement)
+#     def new(canvas HTMLElement, options dynamic)
 
-    def program(vert string, frag string) Program
-    def program(vert string, frag string, transform fn(string)string) Program
-    def array(arr Float32Array) Buffer
-    def array(arr Float32Array, usage GLenum) Buffer
-    def elements(array dynamic, usage GLenum) Buffer
-    def texture(source dynamic, format GLenum, wrap GLenum, filter GLenum, type GLenum) Texture
-    def framebuffer(texture Texture) FrameBuffer
-    def framebuffer FrameBuffer
-}
+#     def program(vert string, frag string) Program
+#     def program(vert string, frag string, transform fn(string)string) Program
+#     def array(arr Float32Array) Buffer
+#     def array(arr Float32Array, usage GLenum) Buffer
+#     def elements(array dynamic, usage GLenum) Buffer
+#     def texture(source dynamic, format GLenum, wrap GLenum, filter GLenum, type GLenum) Texture
+#     def framebuffer(texture Texture) FrameBuffer
+#     def framebuffer FrameBuffer
+# }
 
-namespace Igloo {
-    const QUAD2 Float32Array
+# namespace Igloo {
+#     const QUAD2 Float32Array
 
-    def fetch(url string, callback fn()) string
-    def getContext(canvas HTMLElement, options dynamic, noerror bool) WebGLRenderingContext
-    def looksLikeUrl(maybeUrl string) bool
-    def isArray(obj dynamic) bool
+#     def fetch(url string, callback fn()) string
+#     def getContext(canvas HTMLElement, options dynamic, noerror bool) WebGLRenderingContext
+#     def looksLikeUrl(maybeUrl string) bool
+#     def isArray(obj dynamic) bool
 
-    class Program {
-        def new(gl WebGLRenderingContext, vertex string, fragment string)
-        def makeShader(type GLenum, source string) WebGLShader
-        def use Program
+#     class Program {
+#         def new(gl WebGLRenderingContext, vertex string, fragment string)
+#         def makeShader(type GLenum, source string) WebGLShader
+#         def use Program
 
-        def uniform(name string, value dynamic) Program
-        def uniform(name string, value dynamic, i bool) Program
-        def matrix(name string, array dynamic, transpose bool) Program
-        def uniformi(name string, value int) Program
-        def attrib(name string, value dynamic, size int) Program
-        def attrib(name string, value dynamic, size int, stride int) Program
+#         def uniform(name string, value dynamic) Program
+#         def uniform(name string, value dynamic, i bool) Program
+#         def matrix(name string, array dynamic, transpose bool) Program
+#         def uniformi(name string, value int) Program
+#         def attrib(name string, value dynamic, size int) Program
+#         def attrib(name string, value dynamic, size int, stride int) Program
 
-        def draw(mode GLenum, count int) Program
-        def draw(mode GLenum, count int, type GLenum) Program
+#         def draw(mode GLenum, count int) Program
+#         def draw(mode GLenum, count int, type GLenum) Program
 
-        def disable Program
-    }
+#         def disable Program
+#     }
 
-    class Buffer {
-        def new(gl WebGLRenderingContext, target GLenum)
-        def bind Buffer
-        def update(array dynamic, usage GLenum) Buffer
-    }
+#     class Buffer {
+#         def new(gl WebGLRenderingContext, target GLenum)
+#         def bind Buffer
+#         def update(array dynamic, usage GLenum) Buffer
+#     }
 
-    class Texture {
-        var texture WebGLTexture
+#     class Texture {
+#         var texture WebGLTexture
 
-        def new(gl WebGLRenderingContext, format GLenum, wrap GLenum, filter GLenum, type GLenum)
-        def new(gl WebGLRenderingContext, format GLenum, wrap GLenum, filter GLenum)
-        def new(gl WebGLRenderingContext, format GLenum, wrap GLenum)
-        def new(gl WebGLRenderingContext, format GLenum)
-        def new(gl WebGLRenderingContext)
+#         def new(gl WebGLRenderingContext, format GLenum, wrap GLenum, filter GLenum, type GLenum)
+#         def new(gl WebGLRenderingContext, format GLenum, wrap GLenum, filter GLenum)
+#         def new(gl WebGLRenderingContext, format GLenum, wrap GLenum)
+#         def new(gl WebGLRenderingContext, format GLenum)
+#         def new(gl WebGLRenderingContext)
 
-        def bind(unit int) Texture
-        def blank(width int, height int) Texture
-        def set(source dynamic, width int, height int) Texture
-        def set(source dynamic) Texture { return (self as dynamic).set(source, null, null) }
-        def subset(source dynamic, xoff int, yoff int, width int, height int) Texture
-        def copy(x int, y int, width int, height int) Texture
-    }
+#         def bind(unit int) Texture
+#         def blank(width int, height int) Texture
+#         def set(source dynamic, width int, height int) Texture
+#         def set(source dynamic) Texture { return (self as dynamic).set(source, null, null) }
+#         def subset(source dynamic, xoff int, yoff int, width int, height int) Texture
+#         def copy(x int, y int, width int, height int) Texture
+#     }
 
-    class FrameBuffer {
-        def new(gl WebGLRenderingContext, frameBuffer WebGLFramebuffer)
+#     class FrameBuffer {
+#         def new(gl WebGLRenderingContext, frameBuffer WebGLFramebuffer)
 
-        def bind FrameBuffer
-        def unbind FrameBuffer
-        def attach(texture Texture) FrameBuffer
-        def attachDepth(width int, height int) FrameBuffer
-    }
-}
+#         def bind FrameBuffer
+#         def unbind FrameBuffer
+#         def attach(texture Texture) FrameBuffer
+#         def attachDepth(width int, height int) FrameBuffer
+#     }
+# }

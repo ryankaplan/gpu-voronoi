@@ -1,0 +1,309 @@
+# Skew WebGL library based off of Igloo.js
+#
+# https://github.com/skeeto/igloojs
+
+namespace console {
+    const error dynamic
+}
+
+class Wham {
+    const _canvas HTMLCanvasElement
+    const _ctx WebGLRenderingContext
+    const _defaultFrameBuffer Framebuffer
+
+    def new(canvas HTMLCanvasElement) {
+        _canvas = canvas
+        _ctx = _canvas.getContextWebGL
+        _defaultFrameBuffer = Wham.Framebuffer.new(_ctx)
+    }
+
+    def ctx WebGLRenderingContext {
+        return _ctx
+    }
+
+    def defaultFramebuffer Framebuffer {
+        return _defaultFrameBuffer
+    }
+}
+
+namespace Wham {
+    const QUAD2 = Float32Array.new([-1, -1, 1, -1, -1, 1, 1, 1])
+
+    class Program {
+        const _ctx WebGLRenderingContext
+        const _program WebGLProgram
+        const _uniformLocationByName StringMap<WebGLUniformLocation> = {}
+        const _attribLocationByName StringMap<int> = {}
+
+        def new(ctx WebGLRenderingContext, vertexShaderSource string, fragmentShaderSource string) {
+            _ctx = ctx
+            _program = _ctx.createProgram
+            _ctx.attachShader(_program, _makeShader(_ctx.VERTEX_SHADER, vertexShaderSource))
+            _ctx.attachShader(_program, _makeShader(_ctx.FRAGMENT_SHADER, fragmentShaderSource))
+            _ctx.linkProgram(_program)
+            if !_ctx.getProgramParameter(_program, _ctx.LINK_STATUS) {
+                throw Error.new(_ctx.getProgramInfoLog(_program))
+            }
+        }
+
+        def _makeShader(shaderType GLenum, source string) WebGLShader {
+            const shader = _ctx.createShader(shaderType)
+            _ctx.shaderSource(shader, source)
+            _ctx.compileShader(shader)
+            if !_ctx.getShaderParameter(shader, _ctx.COMPILE_STATUS) {
+                console.error(_ctx.getShaderInfoLog(shader))
+                throw Error.new("Failed to create shader")
+            }
+            return shader
+        }
+
+        def use Program {
+            _ctx.useProgram(_program)
+            return self
+        }
+
+        def uniform(name string, value int) Program {
+            const location = _uniformLocation(name)
+            _ctx.uniform1i(location, value)
+            return self
+        }
+
+        def uniform(name string, value double) Program {
+            const location = _uniformLocation(name)
+            _ctx.uniform1f(location, value)
+            return self
+        }
+
+        def uniform(name string, value List<int>) Program {
+            const location = _uniformLocation(name)
+            if value.count == 2 {
+                _ctx.uniform2iv(location, value)
+            } else if value.count == 3 {
+                _ctx.uniform3iv(location, value)
+            } else if value.count == 4 {
+                _ctx.uniform4iv(location, value)
+            } else {
+                throw Error.new("Invalid size of value: \(value.count)")
+            }
+            return self
+        }
+
+        def uniform(name string, value Float32Array) Program {
+            const location = _uniformLocation(name)
+            if value.length == 2 {
+                _ctx.uniform2fv(location, value)
+            } else if value.length == 3 {
+                _ctx.uniform3fv(location, value)
+            } else if value.length == 4 {
+                _ctx.uniform4fv(location, value)
+            } else {
+                throw Error.new("Invalid size of value: \(value.length)")
+            }
+            return self
+        }
+
+        def attrib(name string, value Buffer, size int) Program {
+            return attrib(name, value, size, 0)
+        }
+
+        def attrib(name string, value Buffer, size int, stride int) Program {
+            const location = _attribLocation(name)
+            value.bind
+            _ctx.enableVertexAttribArray(location)
+            _ctx.vertexAttribPointer(location, size, _ctx.FLOAT, false, stride, 0)
+            return self
+        }
+
+        def draw(mode GLenum, count int) {
+            _ctx.drawArrays(mode, 0, count)
+
+            if !RELEASE {
+                if _ctx.getError as int != _ctx.NO_ERROR {
+                    throw Error.new("WebGL Rendering error")
+                }
+            }
+        }
+
+        def _attribLocation(name string) int {
+            if !(name in _attribLocationByName) {
+                _attribLocationByName[name] = _ctx.getAttribLocation(_program, name)
+            }
+            return _attribLocationByName[name]
+        }
+
+        def _uniformLocation(name string) WebGLUniformLocation {
+            if !(name in _uniformLocationByName) {
+                _uniformLocationByName[name] = _ctx.getUniformLocation(_program, name)
+            }
+            return _uniformLocationByName[name]
+        }
+    }
+
+    namespace Buffer {
+        def createWithData(ctx WebGLRenderingContext, data ArrayBufferView) Buffer {
+            const buf = Buffer.new(ctx)
+            buf.update(data, ctx.STATIC_DRAW)
+            return buf
+        }
+    }
+
+    class Buffer {
+        const _ctx WebGLRenderingContext
+        const _buffer WebGLBuffer
+        const _target GLenum
+        var _size = -1
+
+        def new(ctx WebGLRenderingContext) {
+            _ctx = ctx
+            _buffer = _ctx.createBuffer
+            _target = _ctx.ARRAY_BUFFER
+        }
+
+        def bind {
+            _ctx.bindBuffer(_target, _buffer)
+        }
+
+        def update(data ArrayBufferView, usage GLenum) {
+            bind
+            if _size != data.byteLength {
+                _ctx.bufferData(_target, data, usage)
+                _size = data.byteLength
+            } else {
+                _ctx.bufferSubData(_target, 0, data)
+            }
+        }
+
+        def update(data ArrayBufferView) {
+            update(data, _ctx.DYNAMIC_DRAW)
+        }
+    }
+
+    namespace Framebuffer {
+        def createWithTexture(ctx WebGLRenderingContext, texture Texture) Framebuffer {
+            const fb = Framebuffer.new(ctx)
+            fb.attach(texture)
+            return fb
+        }
+    }
+
+    class Framebuffer {
+        const _ctx WebGLRenderingContext
+        const _framebuffer WebGLFramebuffer
+        var _renderbuffer WebGLRenderbuffer
+
+        def new(ctx WebGLRenderingContext) {
+            _ctx = ctx
+            _framebuffer = _ctx.createFramebuffer
+            _renderbuffer = null
+        }
+
+        def bind {
+            _ctx.bindFramebuffer(_ctx.FRAMEBUFFER, _framebuffer)
+        }
+
+        def unbind {
+            _ctx.bindFramebuffer(_ctx.FRAMEBUFFER, null)
+        }
+
+        def attach(texture Texture) {
+            bind
+            _ctx.framebufferTexture2D(
+                _ctx.FRAMEBUFFER, _ctx.COLOR_ATTACHMENT0, _ctx.TEXTURE_2D, texture.texture, 0)
+        }
+    }
+
+    class TextureOptions {
+        const _ctx WebGLRenderingContext
+
+        var format GLenum
+        var wrap GLenum
+        var filter GLenum
+        var dataType GLenum
+
+        def new(ctx WebGLRenderingContext) {
+            _ctx = ctx
+            wrap = ctx.CLAMP_TO_EDGE
+            filter = ctx.LINEAR
+            format = ctx.RGBA
+            dataType = ctx.UNSIGNED_BYTE
+        }
+
+        def clone TextureOptions {
+            const opts = TextureOptions.new(_ctx)
+            opts.wrap = wrap
+            opts.filter = filter
+            opts.format = format
+            opts.dataType = dataType
+            return opts
+        }
+    }
+
+    namespace Texture {
+        def createWithSource(ctx WebGLRenderingContext, options TextureOptions, source dynamic) Texture {
+            const tex = Texture.new(ctx, options)
+            tex.set(source)
+            return tex
+        }
+    }
+
+    class Texture {
+        const _ctx WebGLRenderingContext
+        const _options TextureOptions
+        const _texture WebGLTexture
+
+        def new(ctx WebGLRenderingContext, options TextureOptions) {
+            _ctx = ctx
+            _options = options
+            _texture = _ctx.createTexture
+            _ctx.bindTexture(_ctx.TEXTURE_2D, _texture)
+            _ctx.texParameteri(_ctx.TEXTURE_2D, _ctx.TEXTURE_WRAP_S, _options.wrap)
+            _ctx.texParameteri(_ctx.TEXTURE_2D, _ctx.TEXTURE_WRAP_T, _options.wrap)
+            _ctx.texParameteri(_ctx.TEXTURE_2D, _ctx.TEXTURE_MIN_FILTER, _options.filter)
+            _ctx.texParameteri(_ctx.TEXTURE_2D, _ctx.TEXTURE_MAG_FILTER, _options.filter)
+        }
+
+        def texture WebGLTexture {
+            return _texture
+        }
+
+        def bind {
+            _ctx.bindTexture(_ctx.TEXTURE_2D, _texture)
+        }
+
+        def bind(unit int) {
+            _ctx.activeTexture((_ctx.TEXTURE0 as dynamic) + unit)
+            bind
+        }
+
+        def clear(width int, height int) {
+            bind
+            _ctx.texImage2D(_ctx.TEXTURE_2D, 0, _options.format,
+                width, height, 0, _options.format, _options.dataType, null)
+        }
+
+        def set(canvas HTMLCanvasElement) {
+            bind
+            _ctx.texImage2D(
+                _ctx.TEXTURE_2D, 0, _options.format,
+                _options.format, _options.dataType, canvas
+            )
+        }
+
+        def set(source ArrayBufferView, width int, height int) {
+            bind
+            _ctx.texImage2D(
+                _ctx.TEXTURE_2D, 0, _options.format,
+                width, height, 0, _options.format,
+                _options.dataType, source
+            )
+        }
+
+        # Copy part of the current framebuffer to this texture
+        def copyFromFramebuffer(x int, y int, width int, height int) {
+            _ctx.copyTexImage2D(_ctx.TEXTURE_2D, 0, _options.format, x, y, width, height, 0)
+        }
+    }
+
+
+}
+

@@ -33,14 +33,14 @@ def getCanvas(container HTMLElement, className string, gridSize int, canvasSize 
 
 def createJumpFlood(outputCanvas HTMLCanvasElement, options JumpFlood.Options) JumpFlood {
     var jumpFlood JumpFlood = null
-    try {
+    # try {
         jumpFlood = JumpFlood.new(outputCanvas, options)
-    } catch temp dynamic {
-        # Failed to initialize Web-GL. Display error.
-        document.getElementById("demo-page").style.display = "none"
-        document.getElementById("webgl-error").style.display = null
-        throw temp
-    }
+    # } catch temp dynamic {
+    #     # Failed to initialize Web-GL. Display error.
+    #     document.getElementById("demo-page").style.display = "none"
+    #     document.getElementById("webgl-error").style.display = null
+    #     throw temp
+    # }
     return jumpFlood
 }
 
