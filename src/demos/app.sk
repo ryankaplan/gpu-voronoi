@@ -29,12 +29,16 @@ def createJumpFlood(outputCanvas HTMLCanvasElement, options JumpFlood.Options) J
     return jumpFlood
 }
 
-def canvasMouseLocation(canvas HTMLCanvasElement, event HTMLMouseEvent) Vector {
+def canvasMouseLocation(canvas HTMLCanvasElement, domMouseLocation Vector) Vector {
     const rect = canvas.getBoundingClientRect
     return Vector.new(
-        (event.offsetX as double / rect.width) * canvas.width,
-        (event.offsetY as double / rect.height) * canvas.height
+        (domMouseLocation.x / rect.width) * canvas.width,
+        (domMouseLocation.y / rect.height) * canvas.height
     )
+}
+
+def canvasMouseLocation(canvas HTMLCanvasElement, event HTMLMouseEvent) Vector {
+    return canvasMouseLocation(canvas, Vector.new(event.offsetX, event.offsetY))
 }
 
 def initializePaintDemo(container HTMLElement) {

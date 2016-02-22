@@ -32,20 +32,48 @@ class DrawSeedMouseBehavior :: MouseBehavior {
     }
 }
 
+namespace SeedSpiralMouseBehavior {
+    enum DragType {
+        CENTER
+        HANDLE
+    }
+
+    class DragContext {
+        var type DragType
+    }
+}
+
+namespace SeedSpiralMouseBehavior {
+    const centerRadius = 15
+    const handleRadius = 8
+    const initialCenterHandleDistance = 50.0
+}
+
 class SeedSpiralMouseBehavior :: MouseBehavior {
     var _controller PhotoDemoController
-    var _isMouseDown = false
+
     var _relativeSeedLocations List<Vector> = []
 
-    var _angle = 0.0
+    var _dragContext DragContext = null
+
+    # Locations in HTML space
+    var _handle Vector = Vector.new(0, 0)
     var _center Vector = Vector.new(0, 0)
 
     def new(controller PhotoDemoController) {
         _controller = controller
+
+        const canvasElementRect = (_controller.inputCanvas as HTMLElement).getBoundingClientRect
+        const canvasElementSize = Vector.new(canvasElementRect.width, canvasElementRect.height)
+
         _center = Vector.new(
-            controller.seedCanvas.width / 2,
-            controller.seedCanvas.height / 2
+            canvasElementSize.x / 2,
+            canvasElementSize.y / 2
         )
+
+        # Position the handle above the center
+        _handle = _center.clone
+        _handle.y -= initialCenterHandleDistance
 
         for radiusIndex = 0; radiusIndex < 20; radiusIndex++ {
             # Need more and more points as we get further out
@@ -65,32 +93,84 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
             }
         }
 
-        _drawSeeds
-
-        setInterval(=> {
-            _angle += 0.005
-            _controller.clearSeedCanvas
-            _drawSeeds
-            _controller.onDraw(_controller)
-        }, 1000 / 60)
+        _render
     }
 
-    def _onMove(e HTMLMouseEvent) {
-        _center = canvasMouseLocation(_controller.inputCanvas, e)
-
+    def _render {
+        # Clear the controller so we can start drawing
         _controller.clearSeedCanvas
-        _drawSeeds
+
+        # Draw the new seeds via the controller
+        const angle = (_handle - _center).toAngleRad
+        for seedLocation in _relativeSeedLocations {
+            var location = seedLocation.clone
+
+            # Scale according to how far handle is from center
+            location *= Math.max(
+                (_center.distanceTo(_handle) / initialCenterHandleDistance) * 2.0,
+                0.5
+            )
+
+            # Rotate by the angle between _center and _handle
+            location = location.rotate(angle)
+            console.log(angle)
+
+            # Move according to where the center is
+            location += canvasMouseLocation(_controller.inputCanvas, _center)
+
+            _drawIfOnCanvas(location)
+        }
+
+        _drawButtonOnInputCanvas(_handle, "#EEEEEE", handleRadius)
+        _drawButtonOnInputCanvas(_center, "#EEEEEE", centerRadius)
+
         _controller.onDraw(_controller)
     }
 
+    def _drawButtonOnInputCanvas(mouseEventLocation Vector, fillStyle string, size int) {
+        const location = canvasMouseLocation(_controller.inputCanvas, mouseEventLocation)
+        const ctx = _controller.inputContext
+        ctx.beginPath
+        ctx.arc(location.x, location.y, size, 0, Math.PI * 2)
+        ctx.fillStyle = fillStyle
+        ctx.fill
+
+        ctx.lineWidth = 4
+        ctx.strokeStyle = "#222222"
+        ctx.stroke
+    }
+
+    def _onMove(e HTMLMouseEvent) {
+        switch _dragContext.type {
+            case DragType.CENTER {
+                # Move both handle and center
+                const handleRelativeToCenter = _handle - _center
+                _center = Vector.new(e.offsetX, e.offsetY)
+                _handle = _center + handleRelativeToCenter
+            }
+            case DragType.HANDLE {
+                # Move just the handle
+                _handle = Vector.new(e.offsetX, e.offsetY)
+            }
+        }
+
+        _render
+    }
+
     def down(e HTMLMouseEvent) {
-        _isMouseDown = true
+        const mouseDown = Vector.new(e.offsetX, e.offsetY)
+        if _handle.distanceTo(mouseDown) < handleRadius {
+            _dragContext = DragContext.new(DragType.HANDLE)
+        } else {
+            _dragContext = DragContext.new(DragType.CENTER)
+        }
+
         e.stopPropagation
         _onMove(e)
     }
 
     def move(e HTMLMouseEvent) {
-        if _isMouseDown {
+        if _dragContext != null {
             _onMove(e)
         }
         e.stopPropagation
@@ -98,7 +178,7 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
 
     def up(e HTMLMouseEvent) {
         _controller.drawAtPoint(canvasMouseLocation(_controller.inputCanvas, e))
-        _isMouseDown = false
+        _dragContext = null
         e.stopPropagation
     }
 
@@ -108,19 +188,13 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
             _controller.drawAtPoint(point)
         }
     }
-
-    def _drawSeeds {
-        for location in _relativeSeedLocations {
-            _drawIfOnCanvas(_center + location.rotate(_angle))
-        }
-    }
 }
 
 class PhotoDemoController {
     # Canvas that user sees
     var inputCanvas HTMLCanvasElement
     var outputCanvas HTMLCanvasElement
-    var _ctx CanvasRenderingContext2D
+    var inputContext CanvasRenderingContext2D
 
     # Canvas that isn't displayed to user. We pass this to the
     # Voronoi generator.
@@ -142,7 +216,7 @@ class PhotoDemoController {
         inputCanvas = inputCanvas_
         outputCanvas = outputCanvas_
         onDraw = onDraw_
-        _ctx = inputCanvas.getContext2D
+        inputContext = inputCanvas.getContext2D
 
         _seedCanvas = document.createElement("canvas") as HTMLCanvasElement
         _seedCtx = _seedCanvas.getContext2D
@@ -190,12 +264,12 @@ class PhotoDemoController {
     # Called by mouse behaviors
 
     def clearSeedCanvas {
-        _ctx.clearRect(0, 0, inputCanvas.width, inputCanvas.height)
+        inputContext.clearRect(0, 0, inputCanvas.width, inputCanvas.height)
         _seedCtx.clearRect(0, 0, _seedCanvas.width, _seedCanvas.height)
     }
 
     def drawAtPoint(point Vector) {
-        _drawAtPoint(_ctx, point, "rgba(255, 255, 255, 0.5)", 4)
+        _drawAtPoint(inputContext, point, "rgba(255, 255, 255, 0.5)", 4)
 
         # Pin the sourceImage pixels down onto the seed canvas
         # where the user is drawing
