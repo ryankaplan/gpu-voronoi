@@ -5,7 +5,7 @@
     <!-- From here: http://stackoverflow.com/a/4389976 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Demos</title>
-    <link href='https://fonts.googleapis.com/css?family=Lato:300' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Lato:300,700italic' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="style.css">
     <script src="igloo.js"></script>
     <script src="demo-compiled.js"></script>
@@ -14,30 +14,40 @@
     <div id="demo-page">
       <h1>Voronoi Diagrams on the GPU</h1>
 
-      <h2>An example</h2>
-      <p>
-        ajsdkljklajs dfkl asjdfk lajs dfkl asjdfk lasj dfklasjdfk
-        lajsdf klajs dfkl asjdfk lasdjfkals djfk lasd fklasjd fklasjdf
-        klasdj fklasd fklsad fjsak lfj sakdlfj askldf jksald fjklsa
-        jakls djka lsdjf klasd jfklas djfklsa dfjkas dflj sadklf
-        ajskdlf ajsd fklajs dfkl sadjfkl sadjf klsadj
-        fksaldjfklsadj fk
+      <hr>
+
+
+      <p class="disclaimer">
+        Disclaimer: this page uses WebGL Extensions that aren't available on many mobile devices. So the demos won't work on your phone.
       </p>
 
+      <hr>
+
+      <p>
+        Voronoi diagrams are what you get when you have a few colored points on a page and you fill in every other point with the color of the closest point. Below is a demo with two canvases - the canvas on the left shows the starting points (or "seeds") and the canvas on the right has filled in every pixel with the color of the closest seed.
+      </p>
+
+      <p>
+        Right now there's just a single seed in the center of the canvas. Click to create more.
+        Or drag to create a line of differently colored seeds.
+      </p>
 
       <div id="paint-demo-container" class="demo-container">
         <canvas class="input-canvas"></canvas>
         <canvas class="output-canvas"></canvas>
       </div>
 
-      <h2>Another example</h2>
       <p>
-        ajsdkljklajs dfkl asjdfk lajs dfkl asjdfk lasj dfklasjdfk
-        lajsdf klajs dfkl asjdfk lasdjfkals djfk lasd fklasjd fklasjdf
-        klasdj fklasd fklsad fjsak lfj sakdlfj askldf jksald fjklsa
-        jakls djka lsdjf klasd jfklas djfklsa dfjkas dflj sadklf
-        ajskdlf ajsd fklajs dfkl sadjfkl sadjf klsadj
-        fksaldjfklsadj fk
+        If you were computing a Voronoi diagram by hand, you might plan to look at every pixel, find the closest seed to that pixel, and then color in the pixel with the color of that seed. That would work, but as the number of seeds grows, so does the work that you do for every pixel.
+      </p>
+
+      <p>
+        There are a few other popular algorithms for computing Voronoi diagrams, and I won't go into all of them. But I was recently showed one that I thought was particularly cool. It's performance doesn't depend on how many seeds you start with - and it's well suited to running on the GPU. It ends up pretty fast, and it's possible to compute Voronoi diagrams
+        in real time. Here's another demo similar to the one above. In the left canvas, there are seeds flying around. In the right canvas is the resulting Voronoi diagram.
+      </p>
+
+      <p>
+        Move your mouse over the canvas to move the yellow seed.
       </p>
 
       <div id="fish-demo-container" class="demo-container">
@@ -45,23 +55,19 @@
         <canvas class="output-canvas"></canvas>
       </div>
 
-      <h2>A third example</h2>
       <p>
-        ajsdkljklajs dfkl asjdfk lajs dfkl asjdfk lasj dfklasjdfk
-        lajsdf klajs dfkl asjdfk lasdjfkals djfk lasd fklasjd fklasjdf
-        klasdj fklasd fklsad fjsak lfj sakdlfj askldf jksald fjklsa
-        jakls djka lsdjf klasd jfklas djfklsa dfjkas dflj sadklf
-        ajskdlf ajsd fklajs dfkl sadjfkl sadjf klsadj
-        fksaldjfklsadj fk
+        Here's one more example. In the left canvas there are light grey seeds in a radial pattern overlaid on top of a photo. When we run the Voronoi diagram computation, each seed takes the color of the underlying pixel in the photo.
+      </p>
+
+      <p>
+        Move the big dot around to translate the seeds and move the small dot to rotate them.
       </p>
 
       <div id="photo-demo-container" class="demo-container">
-
         <div class="input-canvas-container">
           <img id="eye" src="eye.jpg"></img>
           <canvas class="input-canvas"></canvas>
         </div>
-
         <canvas class="output-canvas"></canvas>
       </div>
 

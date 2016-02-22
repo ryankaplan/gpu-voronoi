@@ -420,12 +420,17 @@ Igloo.Texture.prototype.blank = function(width, height) {
  * @param {number} [height]
  * @returns {Igloo.Texture}
  */
-// TODO(ryan): This fails when source is an HTMLCanvasElement, I think because
-// gl.texImage2D doesn't like to have width and height passed in.
 Igloo.Texture.prototype.set = function(source, width, height) {
     var gl = this.gl;
     this.bind();
     if (source instanceof Array) source = new Uint8Array(source);
+    if (source instanceof HTMLCanvasElement) {
+        if (width != null || height != null) {
+            width = null;
+            height = null;
+            console.warn('Ignoring width and height in set because source is an HTMLCanvasElement');
+        }
+    }
     if (width != null || height != null) {
         gl.texImage2D(gl.TEXTURE_2D, 0, this.format,
                       width, height, 0, this.format,
