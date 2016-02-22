@@ -62,7 +62,7 @@ namespace Igloo {
         def bind(unit int) Texture
         def blank(width int, height int) Texture
         def set(source dynamic, width int, height int) Texture
-        def set(source dynamic, width dynamic, height dynamic) Texture
+        def set(source dynamic) Texture { return (self as dynamic).set(source, null, null) }
         def subset(source dynamic, xoff int, yoff int, width int, height int) Texture
         def copy(x int, y int, width int, height int) Texture
     }
