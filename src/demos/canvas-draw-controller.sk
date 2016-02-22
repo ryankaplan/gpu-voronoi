@@ -36,29 +36,17 @@ class CanvasDrawController {
             }
         })
 
-        const changeColorAndDraw = (point Vector) => {
-            if point.x > 0 && point.y > 0 && point.x < _inputCanvas.width && point.y < _inputCanvas.height {
-                _color = Color.new(
-                    0.5 + Math.random * 0.4,
-                    0.2,
-                    0.3 + Math.random * 0.5,
-                    1.0
-                )
-                _draw(point)
-            }
-        }
-
         var isMouseDown = false
 
         document.addEventListener("mousedown", (e HTMLMouseEvent) => {
             isMouseDown = true
-             changeColorAndDraw(canvasMouseLocation(_inputCanvas, e))
+             _changeColorAndDraw(canvasMouseLocation(_inputCanvas, e))
         })
 
         for canvas in [_inputCanvas, _outputCanvas] {
             canvas.addEventListener("mousemove", (e HTMLMouseEvent) => {
                 if isMouseDown {
-                    changeColorAndDraw(canvasMouseLocation(_inputCanvas, e))
+                    _changeColorAndDraw(canvasMouseLocation(_inputCanvas, e))
                 }
             })
         }
@@ -71,21 +59,30 @@ class CanvasDrawController {
             isMouseDown = false
         })
 
-        changeColorAndDraw(Vector.new(_inputCanvas.width / 2, _inputCanvas.height / 2))
+        _changeColorAndDraw(Vector.new(_inputCanvas.width / 2, _inputCanvas.height / 2))
     }
 
-    def _draw(point Vector) {
-        _ctx.beginPath
-        _ctx.rect(
-            (point.x - radius) as int,
-            (point.y - radius) as int,
-            radius * 2,
-            radius * 2
-        )
-        _ctx.fillStyle = _color.toCSS
-        _ctx.fill
-        if _onDraw != null {
-            _onDraw()
+    def _changeColorAndDraw(point Vector) {
+        if point.x > 0 && point.y > 0 && point.x < _inputCanvas.width && point.y < _inputCanvas.height {
+            _color = Color.new(
+                0.5 + Math.random * 0.4,
+                0.2,
+                0.3 + Math.random * 0.5,
+                1.0
+            )
+
+            _ctx.beginPath
+            _ctx.rect(
+                (point.x - radius) as int,
+                (point.y - radius) as int,
+                radius * 2,
+                radius * 2
+            )
+            _ctx.fillStyle = _color.toCSS
+            _ctx.fill
+            if _onDraw != null {
+                _onDraw()
+            }
         }
     }
 }

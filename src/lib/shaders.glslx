@@ -144,15 +144,15 @@ float torusDistance(vec2 a, vec2 b, vec2 torusSize) {
     );
 }
 
-vec4 getCellForOffset(const vec4 self, const vec2 offset) {
+vec4 compareCellWithCellAtOffset(const vec4 self, const vec2 offset) {
     vec2 gridUv = (gl_FragCoord.xy + offset) / iCellGridSize;
-    vec4 other = texture2D(iCellGridTexture, gridUv);
+    vec4 otherCell = texture2D(iCellGridTexture, gridUv);
 
     if (!validUv(gridUv) && !iUseTorusDistanceForSeeds) {
-        other = createInvalidCell();
+        otherCell = createInvalidCell();
     }
 
-    if (!cellIsValid(other)) {
+    if (!cellIsValid(otherCell)) {
         // Other is invalid. This means that 'offset' is off the grid or
         // 'otherCell' doesn't have any seed info yet.
         return self;
@@ -160,26 +160,26 @@ vec4 getCellForOffset(const vec4 self, const vec2 offset) {
 
     else if (!cellIsValid(self)) {
         // Our seed location hasn't been set but other's has.
-        return other;
+        return otherCell;
     }
 
     else {
         vec2 selfSeedLocation = cellSeedLocation(self);
-        vec2 otherSeedLocation = cellSeedLocation(other);
+        vec2 otherSeedLocation = cellSeedLocation(otherCell);
 
         if (iUseTorusDistanceForSeeds) {
             if (
                 torusDistance(selfSeedLocation, gl_FragCoord.xy, iCellGridSize) >
                 torusDistance(otherSeedLocation, gl_FragCoord.xy, iCellGridSize)
             ) {
-                return other;
+                return otherCell;
             }
         } else {
             if (
                 distance(selfSeedLocation, gl_FragCoord.xy) >
                 distance(otherSeedLocation, gl_FragCoord.xy)
             ) {
-                return other;
+                return otherCell;
             }
         }
     }
@@ -190,25 +190,18 @@ vec4 getCellForOffset(const vec4 self, const vec2 offset) {
 export void fJumpFlood() {
     // Find the object at this grid position
     vec2 gridUv = gl_FragCoord.xy / iCellGridSize;
+    vec4 thisCell = texture2D(iCellGridTexture, gridUv);
 
-    // We gridUv should always be valid. We run this once for every
-    // cell in the grid.
-    if (!validUv(gridUv)) {
-        discard;
-    }
+    thisCell = compareCellWithCellAtOffset(thisCell, vec2(0, iStepSize));
+    thisCell = compareCellWithCellAtOffset(thisCell, vec2(iStepSize, iStepSize));
+    thisCell = compareCellWithCellAtOffset(thisCell, vec2(iStepSize, 0));
+    thisCell = compareCellWithCellAtOffset(thisCell, vec2(iStepSize, - iStepSize));
+    thisCell = compareCellWithCellAtOffset(thisCell, vec2(0, - iStepSize));
+    thisCell = compareCellWithCellAtOffset(thisCell, vec2(- iStepSize, - iStepSize));
+    thisCell = compareCellWithCellAtOffset(thisCell, vec2(- iStepSize, 0));
+    thisCell = compareCellWithCellAtOffset(thisCell, vec2(- iStepSize, iStepSize));
 
-    vec4 object = texture2D(iCellGridTexture, gridUv);
-
-    object = getCellForOffset(object, vec2(0, iStepSize));
-    object = getCellForOffset(object, vec2(iStepSize, iStepSize));
-    object = getCellForOffset(object, vec2(iStepSize, 0));
-    object = getCellForOffset(object, vec2(iStepSize, - iStepSize));
-    object = getCellForOffset(object, vec2(0, - iStepSize));
-    object = getCellForOffset(object, vec2(- iStepSize, - iStepSize));
-    object = getCellForOffset(object, vec2(- iStepSize, 0));
-    object = getCellForOffset(object, vec2(- iStepSize, iStepSize));
-
-    gl_FragColor = object;
+    gl_FragColor = thisCell;
 }
 
 // Fragment shader for drawing the result of the Jump Flood algorithm
