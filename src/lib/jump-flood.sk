@@ -103,9 +103,7 @@ class JumpFlood {
         }
 
         # Create a texture for the canvas. Bind it to texture position 0.
-        const gl = _igloo.gl
-        gl.bindTexture(gl.TEXTURE_2D, _tmpTexture.texture)
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, inputCanvas)
+        _tmpTexture.set(inputCanvas, null, null)
         _tmpTexture.bind(0)
 
         _igloo.gl.viewport(0, 0, _canvasSize, _canvasSize)

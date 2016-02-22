@@ -46,6 +46,7 @@ namespace SeedSpiralMouseBehavior {
 namespace SeedSpiralMouseBehavior {
     const centerRadius = 15
     const handleRadius = 8
+    const clickBlur = 3
     const initialCenterHandleDistance = 50.0
 }
 
@@ -59,6 +60,7 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
     # Locations in HTML space
     var _handle Vector = Vector.new(0, 0)
     var _center Vector = Vector.new(0, 0)
+    var _lastKnownMouse = Vector.new(0, 0)
 
     def new(controller PhotoDemoController) {
         _controller = controller
@@ -120,14 +122,38 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
             _drawIfOnCanvas(location)
         }
 
-        _drawButtonOnInputCanvas(_handle, "#EEEEEE", handleRadius)
-        _drawButtonOnInputCanvas(_center, "#EEEEEE", centerRadius)
-
+        _drawHandleAndCenter
         _controller.onDraw(_controller)
     }
 
-    def _drawButtonOnInputCanvas(mouseEventLocation Vector, fillStyle string, size int) {
-        const location = canvasMouseLocation(_controller.inputCanvas, mouseEventLocation)
+    def _drawHandleAndCenter {
+        const canvasHandle = canvasMouseLocation(_controller.inputCanvas, _handle)
+        const canvasCenter = canvasMouseLocation(_controller.inputCanvas, _center)
+
+        _controller.inputContext.beginPath
+        _controller.inputContext.moveTo(canvasHandle.x as int, canvasHandle.y as int)
+        _controller.inputContext.lineTo(canvasCenter.x as int, canvasCenter.y as int)
+        _controller.inputContext.strokeStyle = "#8AC7F5"
+        _controller.inputContext.stroke
+
+        # Figure out hover state
+        const normalColor = "#DDD"
+        const hoverColor = "#FFF"
+        const downColor = "#999"
+
+        var centerColor = normalColor
+        var handleColor = normalColor
+        if _lastKnownMouse.distanceTo(_handle) < handleRadius + clickBlur {
+            handleColor = _dragContext != null ? downColor : hoverColor
+        } else if _lastKnownMouse.distanceTo(_center) < centerRadius + clickBlur {
+            centerColor = _dragContext != null ? downColor : hoverColor
+        }
+
+        _drawButtonCircle(canvasHandle, handleColor, handleRadius)
+        _drawButtonCircle(canvasCenter, centerColor, centerRadius)
+    }
+
+    def _drawButtonCircle(location Vector, fillStyle string, size int) {
         const ctx = _controller.inputContext
         ctx.beginPath
         ctx.arc(location.x, location.y, size, 0, Math.PI * 2)
@@ -135,7 +161,7 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
         ctx.fill
 
         ctx.lineWidth = 4
-        ctx.strokeStyle = "#222222"
+        ctx.strokeStyle = "#4763FF"
         ctx.stroke
     }
 
@@ -157,8 +183,10 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
     }
 
     def down(e HTMLMouseEvent) {
+        _lastKnownMouse = Vector.new(e.offsetX, e.offsetY)
+
         const mouseDown = Vector.new(e.offsetX, e.offsetY)
-        if _handle.distanceTo(mouseDown) < handleRadius {
+        if _handle.distanceTo(mouseDown) < handleRadius + clickBlur {
             _dragContext = DragContext.new(DragType.HANDLE)
         } else {
             _dragContext = DragContext.new(DragType.CENTER)
@@ -169,8 +197,13 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
     }
 
     def move(e HTMLMouseEvent) {
+        _lastKnownMouse = Vector.new(e.offsetX, e.offsetY)
         if _dragContext != null {
             _onMove(e)
+        } else {
+            # Just re-draw handle and center since their hover state
+            # might have changed
+            _drawHandleAndCenter
         }
         e.stopPropagation
     }
@@ -178,6 +211,8 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
     def up(e HTMLMouseEvent) {
         _controller.drawAtPoint(canvasMouseLocation(_controller.inputCanvas, e))
         _dragContext = null
+        _lastKnownMouse = Vector.new(e.offsetX, e.offsetY)
+        _drawHandleAndCenter
         e.stopPropagation
     }
 
