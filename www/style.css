@@ -14,6 +14,15 @@ a {
 
 /* Demo index page */
 
+hr {
+    border: 1px solid #D3D3FF;
+}
+
+.disclaimer {
+    font-weight: bold;
+    font-style: italic;
+}
+
 #webgl-error {
     width: 100%;
     height: 100%;
@@ -45,9 +54,9 @@ a {
 }
 
 #demo-page p {
-    margin: 30px 20px;
-    line-height: 150%;
-    letter-spacing: 0.3px;
+    margin: 35px 20px;
+    line-height: 200%;
+    letter-spacing: 0.5px;
 }
 
 /* Demo pages */
