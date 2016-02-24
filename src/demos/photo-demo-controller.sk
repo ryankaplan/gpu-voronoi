@@ -46,7 +46,7 @@ namespace SeedSpiralMouseBehavior {
 namespace SeedSpiralMouseBehavior {
     const centerRadius = 6
     const handleRadius = 4
-    const clickBlur = 3
+    const clickBlur = 6
     const initialCenterHandleDistance = 50.0
 }
 
@@ -194,7 +194,7 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
         _lastKnownMouse = Vector.new(e.offsetX, e.offsetY)
 
         const mouseDown = Vector.new(e.offsetX, e.offsetY)
-        if _handle.distanceTo(mouseDown) < handleRadius + clickBlur {
+        if _handle.distanceTo(mouseDown) < _center.distanceTo(mouseDown) {
             _dragContext = DragContext.new(DragType.HANDLE)
         } else {
             _dragContext = DragContext.new(DragType.CENTER)

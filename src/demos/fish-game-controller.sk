@@ -44,7 +44,7 @@ class FishGameController {
     var _ctx CanvasRenderingContext2D
     var _onDraw fn()
 
-    var _numPads = 40
+    var _numPads = 15
     var _pads List<Square> = []
     var _speeds List<double> = []
     var _fish Square
@@ -94,6 +94,15 @@ class FishGameController {
             var pad = _pads[i]
             pad.center.x += _speeds[i] * timeElapsed
             pad.center.y -= _speeds[i] * timeElapsed
+
+            # Walk through the other pads and make sure that we're not too close
+            # to any of them.
+            for j in 1.._pads.count {
+                if i != j && pad.center.distanceTo(_pads[j].center) < 40 {
+                    pad.center += (pad.center - _pads[j].center).normalize * timeElapsed * 5
+                }
+            }
+
             pad.center %= Vector.new(_inputCanvas.width, _inputCanvas.height)
         }
 
