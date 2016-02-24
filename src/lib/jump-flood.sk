@@ -38,9 +38,6 @@ class JumpFlood {
     var _drawOutput Wham.Program
     var _outputCanvas HTMLCanvasElement
 
-    # Read-only properties
-    def outputTexture Wham.Texture { return _sourceTexture }
-
     def new(canvas HTMLCanvasElement, options Options) {
         if canvas.width != canvas.height {
             throw Error.new("JumpFlood canvas parameter must be square. Size is (\(canvas.width), \(canvas.height))")
@@ -62,31 +59,27 @@ class JumpFlood {
         _wham.ctx.disable(_wham.ctx.DEPTH_TEST)
         _drawOutput = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_GRID)
 
-        var gl = _wham.ctx
-        getWebGLExtension(gl, "OES_texture_float")
-        gl.disable(gl.DEPTH_TEST)
+        const ctx = _wham.ctx
+        getWebGLExtension(ctx, "OES_texture_float")
+        ctx.disable(ctx.DEPTH_TEST)
 
         _program = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_JUMP_FLOOD)
         _prepProgram = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_PREP_FOR_JFA)
-        _quadBuffer = Wham.Buffer.createWithData(gl, Wham.QUAD2)
 
-        const opts = Wham.TextureOptions.new(gl)
-        opts.format = gl.RGBA
-        opts.wrap = gl.REPEAT
-        opts.filter = gl.NEAREST
-        opts.dataType = gl.FLOAT
+        _quadBuffer = Wham.Buffer.new(ctx)
+        _quadBuffer.update(Wham.QUAD2, ctx.STATIC_DRAW)
 
-        _sourceTexture = Wham.Texture.new(gl, opts)
+        var opts = Wham.TextureOptions.new(ctx, ctx.RGBA, ctx.REPEAT, ctx.NEAREST, ctx.FLOAT)
+        _sourceTexture = Wham.Texture.new(ctx, opts)
         _sourceTexture.clear(_canvasSize, _canvasSize)
-        _destTexture = Wham.Texture.new(gl, opts)
+        _destTexture = Wham.Texture.new(ctx, opts)
         _destTexture.clear(_canvasSize, _canvasSize)
 
-        const otherOpts = opts.clone
-        otherOpts.dataType = gl.UNSIGNED_BYTE
-        _tmpTexture = Wham.Texture.new(gl, otherOpts)
+        opts = Wham.TextureOptions.new(ctx, ctx.RGBA, ctx.REPEAT, ctx.NEAREST, ctx.UNSIGNED_BYTE)
+        _tmpTexture = Wham.Texture.new(ctx, opts)
         _tmpTexture.clear(_canvasSize, _canvasSize)
 
-        _framebuffer = Wham.Framebuffer.new(gl)
+        _framebuffer = Wham.Framebuffer.create(ctx)
     }
 
     def drawToOutputCanvas {
@@ -99,7 +92,7 @@ class JumpFlood {
                     .uniform("iCellGridTexture", 0)
                     .uniform("iCanvasSize", Float32Array.new([_outputCanvas.width, _outputCanvas.height]))
                     .uniform("iGridSize", Float32Array.new([_canvasSize, _canvasSize]))
-                    .uniform("iRelease", RELEASE as int)
+                    .uniform("iRelease", RELEASE ? 1 : 0)
                     .draw(_wham.ctx.TRIANGLE_STRIP, 4)
     }
 
@@ -175,9 +168,9 @@ class JumpFlood {
         _framebuffer.attach(_destTexture)
 
         if !RELEASE {
-            const ctx = _wham.ctx
-            var check = ctx.checkFramebufferStatus(ctx.FRAMEBUFFER)
-            if check != ctx.FRAMEBUFFER_COMPLETE {
+            const gl = _wham.ctx
+            var check = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
+            if check != gl.FRAMEBUFFER_COMPLETE {
                 throw Error.new("Framebuffer completion issue")
             }
         }

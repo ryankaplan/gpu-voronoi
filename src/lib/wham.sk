@@ -7,22 +7,12 @@ namespace console {
 }
 
 class Wham {
-    const _canvas HTMLCanvasElement
-    const _ctx WebGLRenderingContext
-    const _defaultFrameBuffer Framebuffer
+    const ctx WebGLRenderingContext
+    const defaultFramebuffer Framebuffer
 
     def new(canvas HTMLCanvasElement) {
-        _canvas = canvas
-        _ctx = _canvas.getContextWebGL
-        _defaultFrameBuffer = Wham.Framebuffer.new(_ctx)
-    }
-
-    def ctx WebGLRenderingContext {
-        return _ctx
-    }
-
-    def defaultFramebuffer Framebuffer {
-        return _defaultFrameBuffer
+        ctx = canvas.getContextWebGL
+        defaultFramebuffer = Wham.Framebuffer.getDefault(ctx)
     }
 }
 
@@ -179,8 +169,16 @@ namespace Wham {
     }
 
     namespace Framebuffer {
+        def getDefault(ctx WebGLRenderingContext) Framebuffer {
+            return Framebuffer.new(ctx, null)
+        }
+
+        def create(ctx WebGLRenderingContext) Framebuffer {
+            return Framebuffer.new(ctx, ctx.createFramebuffer)
+        }
+
         def createWithTexture(ctx WebGLRenderingContext, texture Texture) Framebuffer {
-            const fb = Framebuffer.new(ctx)
+            const fb = Framebuffer.new(ctx, ctx.createFramebuffer)
             fb.attach(texture)
             return fb
         }
@@ -189,12 +187,10 @@ namespace Wham {
     class Framebuffer {
         const _ctx WebGLRenderingContext
         const _framebuffer WebGLFramebuffer
-        var _renderbuffer WebGLRenderbuffer
 
-        def new(ctx WebGLRenderingContext) {
+        def new(ctx WebGLRenderingContext, framebuffer WebGLFramebuffer) {
             _ctx = ctx
-            _framebuffer = _ctx.createFramebuffer
-            _renderbuffer = null
+            _framebuffer = framebuffer
         }
 
         def bind {
@@ -220,21 +216,16 @@ namespace Wham {
         var filter GLenum
         var dataType GLenum
 
-        def new(ctx WebGLRenderingContext) {
+        def new(ctx WebGLRenderingContext, format_ GLenum, wrap_ GLenum, filter_ GLenum, dataType_ GLenum) {
             _ctx = ctx
-            wrap = ctx.CLAMP_TO_EDGE
-            filter = ctx.LINEAR
-            format = ctx.RGBA
-            dataType = ctx.UNSIGNED_BYTE
+            format = format_
+            wrap = wrap_
+            filter = filter_
+            dataType = dataType_
         }
 
         def clone TextureOptions {
-            const opts = TextureOptions.new(_ctx)
-            opts.wrap = wrap
-            opts.filter = filter
-            opts.format = format
-            opts.dataType = dataType
-            return opts
+            return TextureOptions.new(_ctx, format, wrap, filter, dataType)
         }
     }
 
@@ -253,7 +244,7 @@ namespace Wham {
 
         def new(ctx WebGLRenderingContext, options TextureOptions) {
             _ctx = ctx
-            _options = options
+            _options = options.clone
             _texture = _ctx.createTexture
             _ctx.bindTexture(_ctx.TEXTURE_2D, _texture)
             _ctx.texParameteri(_ctx.TEXTURE_2D, _ctx.TEXTURE_WRAP_S, _options.wrap)
