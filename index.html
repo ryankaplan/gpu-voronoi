@@ -15,7 +15,6 @@
 
       <hr>
 
-
       <p class="disclaimer">
         Disclaimer: the demos on this page use WebGL features that aren't available on many mobile devices. For the best experience, read this on a Desktop computer.
       </p>
@@ -23,11 +22,7 @@
       <hr>
 
       <p>
-        Voronoi diagrams are what you get when you start out with a few colored points on a page - called seeds - and you fill in every other point with the color of the closest seed. Below is a demo to explain things visually. The canvas on the left shows the starting points (or "seeds") and the canvas on the right has filled in every pixel with the color of the closest seed.
-      </p>
-
-      <p>
-        Right now it's pretty boring. There's just a single seed at the center of the canvas. Go ahead and click around to create more seeds. Drag to create a line of differently colored seeds.
+        What is a Voronoi diagram? Try the demo below to find out. When you click in the left canvas, you plant a colored 'seed'. In the right canvas, every pixel takes the color of the closest seed.
       </p>
 
       <div id="paint-demo-container" class="demo-container">
@@ -36,16 +31,7 @@
       </div>
 
       <p>
-        If you were trying to compute a Voronoi diagram in the simplest way possible, you'd probably do it as follows. For every pixel, you would look at every seed to find the closest one. Once you've found the closest one, you'd use its color and move on. The problem with this is that it gets slower as you draw more and more seeds.
-      </p>
-
-      <p>
-        There are a few other popular algorithms for computing Voronoi diagrams, and I won't go into all of them. But I was recently showed one that I thought was particularly cool. It's performance doesn't depend on how many seeds you start with - and it's well suited to running on the GPU. It ends up pretty fast, and it's possible to compute Voronoi diagrams
-        in real time. Here's another demo similar to the one above. In the left canvas, there are seeds flying around. In the right canvas is the resulting Voronoi diagram.
-      </p>
-
-      <p>
-        Move your mouse over the canvas to move the yellow seed.
+        Here's another demo that's slightly more interactive. Try moving over the canvasses below.
       </p>
 
       <div id="fish-demo-container" class="demo-container">
@@ -54,7 +40,7 @@
       </div>
 
       <p>
-        Here's one more example. In the left canvas there are light grey seeds in a radial pattern overlaid on top of a photo. When we run the Voronoi diagram computation, each seed takes the color of the underlying pixel in the photo.
+        Here's one more example. In the left canvas there are seeds in a radial pattern overlaid on top of a photo. Each seed takes the color of the underlying pixel in the image.
       </p>
 
       <p>
@@ -68,6 +54,22 @@
         </div>
         <canvas class="output-canvas"></canvas>
       </div>
+
+      <h2>
+        How does this work?
+      </h2>
+
+      <p>
+        There's a really simple way of computing Voronoi diagrams: for every pixel in an image, look through every seed and take the color of the closest one. This gets pretty slow as you add a lot of seeds.
+      </p>
+
+      <p>
+        There are a few other popular algorithms for computing Voronoi diagrams, and I won't go into all of them. But I was recently showed one that I thought was particularly cool. It's performance doesn't depend on how many seeds you start with - and it's well suited to running on the GPU. It ends up pretty fast, and it's possible to compute Voronoi diagrams in real time.
+      </p>
+
+      <p>
+        Bla bla bla...
+      </p>
 
     </div>
     <div id="webgl-error" style="display: none;">
