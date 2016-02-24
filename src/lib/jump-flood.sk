@@ -15,6 +15,7 @@ def isPowerOfTwo(number int) bool {
 namespace JumpFlood {
     class Options {
         var wrap = false
+        var antialiasingFactor = 1
     }
 }
 
@@ -31,7 +32,7 @@ class JumpFlood {
     var _quadBuffer Wham.Buffer
     var _sourceTexture Wham.Texture
     var _destTexture Wham.Texture
-    var _tmpTexture Wham.Texture
+    var _seedInputTexture Wham.Texture
     var _framebuffer Wham.Framebuffer
     var _simulationStepper dynamic
 
@@ -71,29 +72,19 @@ class JumpFlood {
 
         var opts = Wham.TextureOptions.new(ctx, ctx.RGBA, ctx.REPEAT, ctx.NEAREST, ctx.FLOAT)
         _sourceTexture = Wham.Texture.new(ctx, opts)
-        _sourceTexture.clear(_canvasSize, _canvasSize)
+        _sourceTexture.clear(_gridSize, _gridSize)
         _destTexture = Wham.Texture.new(ctx, opts)
-        _destTexture.clear(_canvasSize, _canvasSize)
+        _destTexture.clear(_gridSize, _gridSize)
 
         opts = Wham.TextureOptions.new(ctx, ctx.RGBA, ctx.REPEAT, ctx.NEAREST, ctx.UNSIGNED_BYTE)
-        _tmpTexture = Wham.Texture.new(ctx, opts)
-        _tmpTexture.clear(_canvasSize, _canvasSize)
+        _seedInputTexture = Wham.Texture.new(ctx, opts)
+        _seedInputTexture.clear(_canvasSize, _canvasSize)
 
         _framebuffer = Wham.Framebuffer.create(ctx)
     }
 
-    def drawToOutputCanvas {
-        _wham.defaultFramebuffer.bind
-        _destTexture.bind(0)
-        _wham.ctx.viewport(0, 0, _outputCanvas.width, _outputCanvas.height)
-        _drawOutput
-                    .use
-                    .attrib("quad", _quadBuffer, 2)
-                    .uniform("iCellGridTexture", 0)
-                    .uniform("iCanvasSize", Float32Array.new([_outputCanvas.width, _outputCanvas.height]))
-                    .uniform("iGridSize", Float32Array.new([_canvasSize, _canvasSize]))
-                    .uniform("iRelease", RELEASE ? 1 : 0)
-                    .draw(_wham.ctx.TRIANGLE_STRIP, 4)
+    def _gridSize int {
+        return _canvasSize * _options.antialiasingFactor
     }
 
     def setSeedsFromCanvas(inputCanvas HTMLCanvasElement) {
@@ -108,22 +99,37 @@ class JumpFlood {
         }
 
         # Create a texture for the canvas. Bind it to texture position 0.
-        _tmpTexture.set(inputCanvas)
-        _tmpTexture.bind(0)
+        _seedInputTexture.set(inputCanvas)
+        _seedInputTexture.bind(0)
 
-        _wham.ctx.viewport(0, 0, _canvasSize, _canvasSize)
+        _wham.ctx.viewport(0, 0, _gridSize, _gridSize)
         _prepProgram
                     .use
                     .attrib("quad", _quadBuffer, 2)
-                    .uniform("iCellGridTexture", 0)
-                    .uniform("iCellGridSize", Float32Array.new([_canvasSize, _canvasSize]))
+                    .uniform("iSeedInputTexture", 0)
+                    .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
                     .uniform("iBackgroundColor", Float32Array.new([0, 0, 0, 0]))
+                    .draw(_wham.ctx.TRIANGLE_STRIP, 4)
+    }
+
+    def drawToOutputCanvas {
+        _wham.defaultFramebuffer.bind
+        _destTexture.bind(0)
+        _wham.ctx.viewport(0, 0, _outputCanvas.width, _outputCanvas.height)
+        _drawOutput
+                    .use
+                    .attrib("quad", _quadBuffer, 2)
+                    .uniform("iCellGridTexture", 0)
+                    .uniform("iCanvasSize", Float32Array.new([_outputCanvas.width, _outputCanvas.height]))
+                    .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
+                    .uniform("iRelease", RELEASE ? 1 : 0)
+                    .uniform("iAntialiasingFactor", _options.antialiasingFactor)
                     .draw(_wham.ctx.TRIANGLE_STRIP, 4)
     }
 
     # Useful if you want to compute Voronoi in one step.
     def computeVoronoi {
-        var stepSize int = _canvasSize / 2
+        var stepSize int = _gridSize / 2
         while stepSize >= 1 {
             _runJumpFloodStep(stepSize)
             stepSize /= 2
@@ -137,7 +143,7 @@ class JumpFlood {
     # example, if you're showing an explanation of the
     # algorithm.
     def resetVoronoiSteps {
-        var stepSize int = _canvasSize / 2
+        var stepSize int = _gridSize / 2
         _simulationStepper = () => {
             if stepSize >= 1 {
                 _runJumpFloodStep(stepSize)
@@ -176,13 +182,13 @@ class JumpFlood {
         }
 
         _sourceTexture.bind(0)
-        _wham.ctx.viewport(0, 0, _canvasSize, _canvasSize)
+        _wham.ctx.viewport(0, 0, _gridSize, _gridSize)
         _program
             .use
             .attrib("quad", _quadBuffer, 2)
             .uniform("iCellGridTexture", 0)
             .uniform("iStepSize", stepSize)
-            .uniform("iCellGridSize", Float32Array.new([_canvasSize, _canvasSize]))
+            .uniform("iCellGridSize", Float32Array.new([_gridSize, _gridSize]))
             .uniform("iUseTorusDistanceForSeeds", _options.wrap ? 1 : 0)
             .draw(_wham.ctx.TRIANGLE_STRIP, 4)
 

@@ -11,7 +11,7 @@ class Date {
 
 class Square {
     var center Vector
-    var size = 4
+    var size = 2
     var color = Color.new(0, 0, 1, 1)
 
     def render(ctx CanvasRenderingContext2D) {
@@ -21,7 +21,7 @@ class Square {
             (center.y - size / 2) as int,
             size,
             size
-            )
+        )
         ctx.fillStyle = color.toCSS
         ctx.fill
         ctx.closePath

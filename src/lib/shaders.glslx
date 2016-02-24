@@ -2,11 +2,13 @@
 precision highp float;
 
 uniform sampler2D iCellGridTexture;
+uniform sampler2D iSeedInputTexture;
 uniform vec2 iGridSize; // Width and height of iCellGridTexture
 uniform vec2 iCanvasSize; // Size of HTML canvas element
 uniform int iRelease; // Used for debugging
 uniform vec2 iCellGridSize;
 uniform int iStepSize;
+uniform int iAntialiasingFactor;
 uniform bool iUseTorusDistanceForSeeds;
 
 // The color that is *not* to be counted as seed.
@@ -119,9 +121,9 @@ bool cellIsValid(const vec4 obj) {
 ////////////////////////////////////////////////////////////////////////
 
 export void fPrepForJFA() {
-    vec2 gridUv = gl_FragCoord.xy / iCellGridSize;
+    vec2 gridUv = gl_FragCoord.xy / iGridSize;
     vec2 gridUvFlippedY = vec2(gridUv.x, 1.0 - gridUv.y);
-    vec4 pixel = texture2D(iCellGridTexture, gridUvFlippedY);
+    vec4 pixel = texture2D(iSeedInputTexture, gridUvFlippedY);
 
     if (approxEqual(pixel, iBackgroundColor)) {
         gl_FragColor = createInvalidCell();
@@ -245,7 +247,23 @@ export void fDrawGrid() {
     vec4 object = texture2D(iCellGridTexture, gridUv);
     if (!cellIsValid(object)) {
         discard;
-    } else {
+    } else if (iAntialiasingFactor == 1) {
         gl_FragColor = cellColor(object);
+    } else {
+        gl_FragColor = (
+            cellColor(object) +
+
+            // top, right, left, bottom
+            cellColor(texture2D(iCellGridTexture, (gridPoint + vec2(1.0, 0.0)) / iGridSize)) +
+            cellColor(texture2D(iCellGridTexture, (gridPoint + vec2(0.0, 1.0)) / iGridSize)) +
+            cellColor(texture2D(iCellGridTexture, (gridPoint + vec2(-1.0, 0.0)) / iGridSize)) +
+            cellColor(texture2D(iCellGridTexture, (gridPoint + vec2(0.0, -1.0)) / iGridSize)) +
+
+            // top right, top left, bottom right, bottom left
+            cellColor(texture2D(iCellGridTexture, (gridPoint + vec2(1.0, 1.0)) / iGridSize)) +
+            cellColor(texture2D(iCellGridTexture, (gridPoint + vec2(-1.0, 1.0)) / iGridSize)) +
+            cellColor(texture2D(iCellGridTexture, (gridPoint + vec2(1.0, -1.0)) / iGridSize)) +
+            cellColor(texture2D(iCellGridTexture, (gridPoint + vec2(-1.0, -1.0)) / iGridSize))
+        ) / 9.0;
     }
 }

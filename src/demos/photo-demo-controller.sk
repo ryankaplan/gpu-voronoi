@@ -44,8 +44,8 @@ namespace SeedSpiralMouseBehavior {
 }
 
 namespace SeedSpiralMouseBehavior {
-    const centerRadius = 15
-    const handleRadius = 8
+    const centerRadius = 6
+    const handleRadius = 4
     const clickBlur = 3
     const initialCenterHandleDistance = 50.0
 }
@@ -127,19 +127,22 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
     }
 
     def _drawHandleAndCenter {
+        const ctx = _controller.inputContext
         const canvasHandle = canvasMouseLocation(_controller.inputCanvas, _handle)
         const canvasCenter = canvasMouseLocation(_controller.inputCanvas, _center)
 
-        _controller.inputContext.beginPath
-        _controller.inputContext.moveTo(canvasHandle.x as int, canvasHandle.y as int)
-        _controller.inputContext.lineTo(canvasCenter.x as int, canvasCenter.y as int)
-        _controller.inputContext.strokeStyle = "#8AC7F5"
-        _controller.inputContext.stroke
+        # Draw line between the center and anchor
+        ctx.beginPath
+        ctx.lineWidth = 1
+        ctx.moveTo(canvasHandle.x as int, canvasHandle.y as int)
+        ctx.lineTo(canvasCenter.x as int, canvasCenter.y as int)
+        ctx.strokeStyle = "#A5A3A3"
+        ctx.stroke
 
         # Figure out hover state
-        const normalColor = "#DDD"
-        const hoverColor = "#FFF"
-        const downColor = "#999"
+        const normalColor = "#46C9FF"
+        const hoverColor = "#ACE7FF"
+        const downColor = "#0F86B7"
 
         var centerColor = normalColor
         var handleColor = normalColor
@@ -149,19 +152,24 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
             centerColor = _dragContext != null ? downColor : hoverColor
         }
 
-        _drawButtonCircle(canvasHandle, handleColor, handleRadius)
-        _drawButtonCircle(canvasCenter, centerColor, centerRadius)
-    }
-
-    def _drawButtonCircle(location Vector, fillStyle string, size int) {
-        const ctx = _controller.inputContext
+        # Draw the center
         ctx.beginPath
-        ctx.arc(location.x, location.y, size, 0, Math.PI * 2)
-        ctx.fillStyle = fillStyle
+        ctx.arc(canvasCenter.x, canvasCenter.y, centerRadius, 0, Math.PI * 2)
+        ctx.fillStyle = "#FFF"
         ctx.fill
+        ctx.lineWidth = 2
+        ctx.strokeStyle = centerColor
+        ctx.stroke
 
-        ctx.lineWidth = 4
-        ctx.strokeStyle = "#4763FF"
+        # Draw the anchor
+
+        const topLeft = canvasHandle - handleRadius
+        ctx.beginPath
+        ctx.rect(topLeft.x, topLeft.y, handleRadius * 2, handleRadius * 2)
+        ctx.fillStyle = "#FFF"
+        ctx.fill
+        ctx.lineWidth = 2
+        ctx.strokeStyle = handleColor
         ctx.stroke
     }
 
@@ -303,7 +311,7 @@ class PhotoDemoController {
     }
 
     def drawAtPoint(point Vector) {
-        _drawAtPoint(inputContext, point, "rgba(255, 255, 255, 0.5)", 4)
+        _drawAtPoint(inputContext, point, "rgba(255, 255, 255, 0.7)", 2)
 
         # Pin the sourceImage pixels down onto the seed canvas
         # where the user is drawing

@@ -22,10 +22,10 @@ def getQueryVariable(variable string) string {
     return null
 }
 
-def getCanvas(container HTMLElement, className string, gridSize int, canvasSize int) HTMLCanvasElement {
+def getCanvas(container HTMLElement, className string, canvasSize int) HTMLCanvasElement {
     const canvas = (container as dynamic).getElementsByClassName(className)[0] as HTMLCanvasElement
-    canvas.width = gridSize
-    canvas.height = gridSize
+    canvas.width = canvasSize
+    canvas.height = canvasSize
     canvas.style.width = "\(canvasSize)px"
     canvas.style.height = "\(canvasSize)px"
     return canvas
@@ -57,9 +57,10 @@ def canvasMouseLocation(canvas HTMLCanvasElement, event HTMLMouseEvent) Vector {
 }
 
 def initializePaintDemo(container HTMLElement, antialiasingFactor int) {
-    const inputCanvas = getCanvas(container, "input-canvas", antialiasingFactor * 256, 256)
-    const outputCanvas = getCanvas(container, "output-canvas", antialiasingFactor * 256, 256)
+    const inputCanvas = getCanvas(container, "input-canvas", 256)
+    const outputCanvas = getCanvas(container, "output-canvas", 256)
     const opts = JumpFlood.Options.new
+    opts.antialiasingFactor = antialiasingFactor
     const jfa = createJumpFlood(outputCanvas, opts)
 
     # A CanvasDrawController handles user draw-actions on the input canvas
@@ -72,10 +73,11 @@ def initializePaintDemo(container HTMLElement, antialiasingFactor int) {
 }
 
 def initializeFishDemo(container HTMLElement, antialiasingFactor int) {
-    const inputCanvas = getCanvas(container, "input-canvas", antialiasingFactor * 256, 256)
-    const outputCanvas = getCanvas(container, "output-canvas", antialiasingFactor * 256, 256)
+    const inputCanvas = getCanvas(container, "input-canvas", 256)
+    const outputCanvas = getCanvas(container, "output-canvas", 256)
     const opts = JumpFlood.Options.new
     opts.wrap = true
+    opts.antialiasingFactor = antialiasingFactor
     const jfa = createJumpFlood(outputCanvas, opts)
 
     FishGameController.new(inputCanvas, outputCanvas, => {
@@ -86,9 +88,10 @@ def initializeFishDemo(container HTMLElement, antialiasingFactor int) {
 }
 
 def initializePhotoDemo(container HTMLElement, antialiasingFactor int) {
-    const inputCanvas = getCanvas(container, "input-canvas", antialiasingFactor * 256, 256)
-    const outputCanvas = getCanvas(container, "output-canvas", antialiasingFactor * 256, 256)
+    const inputCanvas = getCanvas(container, "input-canvas", 256)
+    const outputCanvas = getCanvas(container, "output-canvas", 256)
     const opts = JumpFlood.Options.new
+    opts.antialiasingFactor = antialiasingFactor
     const jfa = createJumpFlood(outputCanvas, opts)
 
     PhotoDemoController.new(inputCanvas, outputCanvas, (photoController PhotoDemoController) => {
