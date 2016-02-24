@@ -7,7 +7,6 @@
     <title>Demos</title>
     <link href='https://fonts.googleapis.com/css?family=Lato:300,700italic' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="style.css">
-    <script src="igloo.js"></script>
     <script src="demo-compiled.js"></script>
   </head>
   <body>
@@ -18,18 +17,17 @@
 
 
       <p class="disclaimer">
-        Disclaimer: this page uses WebGL Extensions that aren't available on many mobile devices. So the demos won't work on your phone.
+        Disclaimer: the demos on this page use WebGL features that aren't available on many mobile devices. For the best experience, read this on a Desktop computer.
       </p>
 
       <hr>
 
       <p>
-        Voronoi diagrams are what you get when you have a few colored points on a page and you fill in every other point with the color of the closest point. Below is a demo with two canvases - the canvas on the left shows the starting points (or "seeds") and the canvas on the right has filled in every pixel with the color of the closest seed.
+        Voronoi diagrams are what you get when you start out with a few colored points on a page - called seeds - and you fill in every other point with the color of the closest seed. Below is a demo to explain things visually. The canvas on the left shows the starting points (or "seeds") and the canvas on the right has filled in every pixel with the color of the closest seed.
       </p>
 
       <p>
-        Right now there's just a single seed in the center of the canvas. Click to create more.
-        Or drag to create a line of differently colored seeds.
+        Right now it's pretty boring. There's just a single seed at the center of the canvas. Go ahead and click around to create more seeds. Drag to create a line of differently colored seeds.
       </p>
 
       <div id="paint-demo-container" class="demo-container">
@@ -38,7 +36,7 @@
       </div>
 
       <p>
-        If you were computing a Voronoi diagram by hand, you might plan to look at every pixel, find the closest seed to that pixel, and then color in the pixel with the color of that seed. That would work, but as the number of seeds grows, so does the work that you do for every pixel.
+        If you were trying to compute a Voronoi diagram in the simplest way possible, you'd probably do it as follows. For every pixel, you would look at every seed to find the closest one. Once you've found the closest one, you'd use its color and move on. The problem with this is that it gets slower as you draw more and more seeds.
       </p>
 
       <p>
@@ -60,7 +58,7 @@
       </p>
 
       <p>
-        Move the big dot around to translate the seeds and move the small dot to rotate them.
+        Move the circle to move the seeds and move the square to rotate them.
       </p>
 
       <div id="photo-demo-container" class="demo-container">
