@@ -114,7 +114,7 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
             )
 
             # Rotate by the angle between _center and _handle
-            location = location.rotate(angle)
+            location = location.rotated(angle)
 
             # Move according to where the center is
             location += canvasMouseLocation(_controller.inputCanvas, _center)

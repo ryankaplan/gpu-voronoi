@@ -1,4 +1,3 @@
-
 class Color {
     # 0-1 values
     var r double

@@ -1,3 +1,6 @@
+# This file implements a demo where blue-ish Voronoi seeds are floating across
+# the canvas and a yellow Voronoi seed is present at the user's cursor position.
+
 @import
 class Date {
     def new

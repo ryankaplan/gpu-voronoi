@@ -1,27 +1,7 @@
-@import
-namespace console {
-    const log dynamic
-}
-
-@import
-def parseInt(toParse string, base int) int
-
-class HTMLWindow {
-    var onload dynamic
-}
-
-def getQueryVariable(variable string) string {
-    var query = (window as dynamic).location.search.substring(1)
-    var vars = query.split("&")
-    for i=0; i < vars.length; i++ {
-        var pair = vars[i].split("=")
-        if pair[0] == variable {
-            return pair[1]
-        }
-    }
-    return null
-}
-
+# TODO(ryan): If we want things to look smooth on Retina displays we should
+# set canvas.width to devicePixelRatio * sizeUsedInCSS. But doing so makes
+# things laggy on a Macbook Air. So let's improve performance before we do
+# that.
 def getCanvas(container HTMLElement, className string, canvasSize int) HTMLCanvasElement {
     const canvas = (container as dynamic).getElementsByClassName(className)[0] as HTMLCanvasElement
     canvas.width = canvasSize
@@ -31,73 +11,63 @@ def getCanvas(container HTMLElement, className string, canvasSize int) HTMLCanva
     return canvas
 }
 
-def createJumpFlood(outputCanvas HTMLCanvasElement, options JumpFlood.Options) JumpFlood {
-    var jumpFlood JumpFlood = null
-    # try {
-        jumpFlood = JumpFlood.new(outputCanvas, options)
-    # } catch temp dynamic {
-    #     # Failed to initialize Web-GL. Display error.
-    #     document.getElementById("demo-page").style.display = "none"
-    #     document.getElementById("webgl-error").style.display = null
-    #     throw temp
-    # }
-    return jumpFlood
-}
-
-def canvasMouseLocation(canvas HTMLCanvasElement, domMouseLocation Vector) Vector {
-    const rect = canvas.getBoundingClientRect
-    return Vector.new(
-        (domMouseLocation.x / rect.width) * canvas.width,
-        (domMouseLocation.y / rect.height) * canvas.height
-    )
-}
-
-def canvasMouseLocation(canvas HTMLCanvasElement, event HTMLMouseEvent) Vector {
-    return canvasMouseLocation(canvas, Vector.new(event.offsetX, event.offsetY))
+# Builds a Voronoi generator and displays an error on the page if we can't
+# (likely because this browser doesn't support WebGL).
+def createVoronoiGenerator(outputCanvas HTMLCanvasElement, options Voronoi.Options) Voronoi {
+    var voronoi Voronoi = null
+    try {
+        voronoi = Voronoi.new(outputCanvas, options)
+    } catch temp dynamic {
+        # Failed to initialize Web-GL. Display error.
+        document.getElementById("demo-page").style.display = "none"
+        document.getElementById("webgl-error").style.display = null
+        throw temp
+    }
+    return voronoi
 }
 
 def initializePaintDemo(container HTMLElement, antialiasingFactor int) {
     const inputCanvas = getCanvas(container, "input-canvas", 256)
     const outputCanvas = getCanvas(container, "output-canvas", 256)
-    const opts = JumpFlood.Options.new
+    const opts = Voronoi.Options.new
     opts.antialiasingFactor = antialiasingFactor
-    const jfa = createJumpFlood(outputCanvas, opts)
+    const voronooi = createVoronoiGenerator(outputCanvas, opts)
 
     # A CanvasDrawController handles user draw-actions on the input canvas
     # Whenever the user draws, we re-render the voronoi diagram for the input
     CanvasDrawController.new(inputCanvas, outputCanvas, => {
-        jfa.setSeedsFromCanvas(inputCanvas)
-        jfa.computeVoronoi
-        jfa.drawToOutputCanvas
+        voronooi.setSeedsFromCanvas(inputCanvas)
+        voronooi.computeVoronoi
+        voronooi.drawToOutputCanvas
     })
 }
 
 def initializeFishDemo(container HTMLElement, antialiasingFactor int) {
     const inputCanvas = getCanvas(container, "input-canvas", 256)
     const outputCanvas = getCanvas(container, "output-canvas", 256)
-    const opts = JumpFlood.Options.new
+    const opts = Voronoi.Options.new
     opts.wrap = true
     opts.antialiasingFactor = antialiasingFactor
-    const jfa = createJumpFlood(outputCanvas, opts)
+    const voronoi = createVoronoiGenerator(outputCanvas, opts)
 
     FishGameController.new(inputCanvas, outputCanvas, => {
-        jfa.setSeedsFromCanvas(inputCanvas)
-        jfa.computeVoronoi
-        jfa.drawToOutputCanvas
+        voronoi.setSeedsFromCanvas(inputCanvas)
+        voronoi.computeVoronoi
+        voronoi.drawToOutputCanvas
     })
 }
 
 def initializePhotoDemo(container HTMLElement, antialiasingFactor int) {
     const inputCanvas = getCanvas(container, "input-canvas", 256)
     const outputCanvas = getCanvas(container, "output-canvas", 256)
-    const opts = JumpFlood.Options.new
+    const opts = Voronoi.Options.new
     opts.antialiasingFactor = antialiasingFactor
-    const jfa = createJumpFlood(outputCanvas, opts)
+    const voronoi = createVoronoiGenerator(outputCanvas, opts)
 
     PhotoDemoController.new(inputCanvas, outputCanvas, (photoController PhotoDemoController) => {
-        jfa.setSeedsFromCanvas(photoController.seedCanvas)
-        jfa.computeVoronoi
-        jfa.drawToOutputCanvas
+        voronoi.setSeedsFromCanvas(photoController.seedCanvas)
+        voronoi.computeVoronoi
+        voronoi.drawToOutputCanvas
     })
 }
 

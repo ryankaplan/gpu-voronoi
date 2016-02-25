@@ -97,7 +97,7 @@ class Vector {
 
     # TODO(ryan): Rename this to something that makes it clear that
     # it doesn't edit `self`
-    def rotate(angleRad double) Vector {
+    def rotated(angleRad double) Vector {
         return new(
             x * Math.cos(angleRad) - y * Math.sin(angleRad),
             y * Math.cos(angleRad) + x * Math.sin(angleRad)
@@ -127,12 +127,13 @@ class Vector {
     def toFloat32Array Float32Array { return Float32Array.new([x, y]) }
 
     def constrainToAspectRatio(other Vector, freeAxis Axis) {
-        # TODO(ryan): change this to a switch statement once the skew
-        # compiler is fixed
-        if freeAxis == Axis.X {
-            x = y * other.x / other.y
-        } else {
-            y = x * other.y / other.x
+        switch freeAxis {
+            case .X {
+                x = y * other.x / other.y                
+            }
+            case .Y {
+                y = x * other.y / other.x                
+            }
         }
     }
 }

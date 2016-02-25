@@ -12,14 +12,14 @@ def isPowerOfTwo(number int) bool {
     return number != 0 && ((number & (number - 1)) == 0)
 }
 
-namespace JumpFlood {
+namespace Voronoi {
     class Options {
         var wrap = false
         var antialiasingFactor = 1
     }
 }
 
-class JumpFlood {
+class Voronoi {
     const _options Options
     var _wham Wham
 
@@ -41,11 +41,11 @@ class JumpFlood {
 
     def new(canvas HTMLCanvasElement, options Options) {
         if canvas.width != canvas.height {
-            throw Error.new("JumpFlood canvas parameter must be square. Size is (\(canvas.width), \(canvas.height))")
+            throw Error.new("Voronoi canvas parameter must be square. Size is (\(canvas.width), \(canvas.height))")
         }
 
         if !isPowerOfTwo(canvas.width) {
-            throw Error.new("JumpFlood canvas size must be a power of two. Size is \(canvas.width)")
+            throw Error.new("Voronoi canvas size must be a power of two. Size is \(canvas.width)")
         }
 
         _options = options
