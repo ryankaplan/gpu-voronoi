@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <!-- From here: http://stackoverflow.com/a/4389976 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Demos</title>
+    <link href='https://fonts.googleapis.com/css?family=Lato:300,700italic' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="style.css">
+    <script src="demo-compiled.js"></script>
+  </head>
+  <body>
+    <div id="demo-page">
+      <h1>Voronoi Diagrams on the GPU</h1>
+
+      <hr>
+
+      <p class="disclaimer">
+        Disclaimer: the demos on this page use WebGL features that aren't available on many mobile devices. For the best experience, read this on a Desktop computer.
+      </p>
+
+      <hr>
+
+      <p>
+        What is a Voronoi diagram? Try the demo below to find out. When you click in the left canvas, you plant a colored 'seed'. In the right canvas, every pixel takes the color of the closest seed.
+      </p>
+
+      <div id="paint-demo-container" class="demo-container">
+        <canvas class="input-canvas"></canvas>
+        <canvas class="output-canvas"></canvas>
+      </div>
+
+      <p>
+        Here's another demo that's slightly more interactive. Try moving over the canvasses below.
+      </p>
+
+      <div id="fish-demo-container" class="demo-container">
+        <canvas class="input-canvas"></canvas>
+        <canvas class="output-canvas"></canvas>
+      </div>
+
+      <p>
+        Here's one more example. In the left canvas there are seeds in a radial pattern overlaid on top of a photo. Each seed takes the color of the underlying pixel in the image.
+      </p>
+
+      <p>
+        Move the circle to move the seeds and move the square to rotate them.
+      </p>
+
+      <div id="photo-demo-container" class="demo-container">
+        <div class="input-canvas-container">
+          <img id="eye" src="eye.jpg"></img>
+          <canvas class="input-canvas"></canvas>
+        </div>
+        <canvas class="output-canvas"></canvas>
+      </div>
+
+      <p>
+          You can find the code for these demos <a href="https://github.com/ryankaplan/gpu-voronoi">here</a> on Github.
+      </p>
+     
+
+      <!--
+      <h2>
+        How does this work?
+      </h2>
+
+      <p>
+        There's a really simple way of computing Voronoi diagrams: for every pixel in an image, look through every seed and take the color of the closest one. This gets pretty slow as you add a lot of seeds.
+      </p>
+
+      <p>
+        There are a few other popular algorithms for computing Voronoi diagrams, and I won't go into all of them. But I was recently showed one that I thought was particularly cool. It's performance doesn't depend on how many seeds you start with - and it's well suited to running on the GPU. It ends up pretty fast, and it's possible to compute Voronoi diagrams in real time.
+      </p>
+
+      <p>
+        Bla bla bla...
+      </p>
+
+      -->
+
+    </div>
+    <div id="webgl-error" style="display: none;">
+      This webpage uses WebGL which isn't supported by your browser. <br />
+      </br>
+      Sorry :(
+    </div>
+  </body>
+</html>
