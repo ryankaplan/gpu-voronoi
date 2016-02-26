@@ -47,7 +47,7 @@ class FishGameController {
     var _ctx CanvasRenderingContext2D
     var _onDraw fn()
 
-    var _numPads = 15
+    var _numPads = 12
     var _pads List<Square> = []
     var _speeds List<double> = []
     var _fish Square

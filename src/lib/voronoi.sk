@@ -27,16 +27,21 @@ class Voronoi {
     # its the size of a WebGL texture.
     var _canvasSize int
 
-    var _program Wham.Program
-    var _prepProgram Wham.Program
+    var _prepJumpFloodData Wham.Program
+    var _jumpFlood Wham.Program
+    var _drawJumpFloodData Wham.Program
+    var _renderTexture Wham.Program
+    
     var _quadBuffer Wham.Buffer
     var _sourceTexture Wham.Texture
+
     var _destTexture Wham.Texture
     var _seedInputTexture Wham.Texture
+    var _tempOutputTexture Wham.Texture    
     var _framebuffer Wham.Framebuffer
     var _simulationStepper dynamic
 
-    var _drawOutput Wham.Program
+
     var _outputCanvas HTMLCanvasElement
 
     def new(canvas HTMLCanvasElement, options Options) {
@@ -58,14 +63,15 @@ class Voronoi {
         }
 
         _wham.ctx.disable(_wham.ctx.DEPTH_TEST)
-        _drawOutput = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_GRID)
+        _drawJumpFloodData = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_GRID)
 
         const ctx = _wham.ctx
         getWebGLExtension(ctx, "OES_texture_float")
         ctx.disable(ctx.DEPTH_TEST)
 
-        _program = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_JUMP_FLOOD)
-        _prepProgram = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_PREP_FOR_JFA)
+        _jumpFlood = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_JUMP_FLOOD)
+        _prepJumpFloodData = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_PREP_FOR_JFA)
+        _renderTexture = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_RENDER_TEXTURE)
 
         _quadBuffer = Wham.Buffer.new(ctx)
         _quadBuffer.update(Wham.QUAD2, ctx.STATIC_DRAW)
@@ -76,9 +82,13 @@ class Voronoi {
         _destTexture = Wham.Texture.new(ctx, opts)
         _destTexture.clear(_gridSize, _gridSize)
 
+        opts = Wham.TextureOptions.new(ctx, ctx.RGBA, ctx.REPEAT, ctx.LINEAR, ctx.UNSIGNED_BYTE)        
+        _tempOutputTexture = Wham.Texture.new(ctx, opts)
+        _tempOutputTexture.clear(_gridSize, _gridSize)
+
         opts = Wham.TextureOptions.new(ctx, ctx.RGBA, ctx.REPEAT, ctx.NEAREST, ctx.UNSIGNED_BYTE)
         _seedInputTexture = Wham.Texture.new(ctx, opts)
-        _seedInputTexture.clear(_canvasSize, _canvasSize)
+        _seedInputTexture.clear(_canvasSize, _canvasSize)              
 
         _framebuffer = Wham.Framebuffer.create(ctx)
     }
@@ -86,24 +96,27 @@ class Voronoi {
     def _gridSize int {
         return _canvasSize * _options.antialiasingFactor
     }
-
-    def setSeedsFromCanvas(inputCanvas HTMLCanvasElement) {
-        _framebuffer.attach(_sourceTexture)
-
+    
+    def _checkFramebufferCompletion {
         if !RELEASE {
             const ctx = _wham.ctx
             var check = ctx.checkFramebufferStatus(ctx.FRAMEBUFFER)
             if check != ctx.FRAMEBUFFER_COMPLETE {
                 throw Error.new("Framebuffer completion issue")
             }
-        }
+        }        
+    }
+
+    def setSeedsFromCanvas(inputCanvas HTMLCanvasElement) {
+        _framebuffer.attach(_sourceTexture)
+        _checkFramebufferCompletion
 
         # Create a texture for the canvas. Bind it to texture position 0.
         _seedInputTexture.set(inputCanvas)
         _seedInputTexture.bind(0)
 
         _wham.ctx.viewport(0, 0, _gridSize, _gridSize)
-        _prepProgram
+        _prepJumpFloodData
                     .use
                     .attrib("quad", _quadBuffer, 2)
                     .uniform("iSeedInputTexture", 0)
@@ -113,18 +126,32 @@ class Voronoi {
     }
 
     def drawToOutputCanvas {
-        _wham.defaultFramebuffer.bind
+        # First draw _destTexture into _tempOutputTexture
+        _framebuffer.attach(_tempOutputTexture)
+        _checkFramebufferCompletion
         _destTexture.bind(0)
-        _wham.ctx.viewport(0, 0, _outputCanvas.width, _outputCanvas.height)
-        _drawOutput
+        _wham.ctx.viewport(0, 0, _gridSize, _gridSize)
+        _drawJumpFloodData
                     .use
                     .attrib("quad", _quadBuffer, 2)
                     .uniform("iCellGridTexture", 0)
-                    .uniform("iCanvasSize", Float32Array.new([_outputCanvas.width, _outputCanvas.height]))
+                    .uniform("iCanvasSize", Float32Array.new([_gridSize, _gridSize]))
                     .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
                     .uniform("iRelease", RELEASE ? 1 : 0)
                     .uniform("iAntialiasingFactor", _options.antialiasingFactor)
-                    .draw(_wham.ctx.TRIANGLE_STRIP, 4)
+                    .draw(_wham.ctx.TRIANGLE_STRIP, 4)   
+
+        # Now antialias _tempOutputTexture as you render it to the screen
+        _wham.defaultFramebuffer.bind
+        _checkFramebufferCompletion        
+
+        _tempOutputTexture.bind(0)
+        _wham.ctx.viewport(0, 0, _outputCanvas.width, _outputCanvas.height)
+        _renderTexture.use
+                      .attrib("quad", _quadBuffer, 2)
+                      .uniform("iTexture", 0)
+                      .uniform("iResolution", Float32Array.new([_outputCanvas.width, _outputCanvas.height]))
+                      .draw(_wham.ctx.TRIANGLE_STRIP, 4)
     }
 
     # Useful if you want to compute Voronoi in one step.
@@ -183,7 +210,7 @@ class Voronoi {
 
         _sourceTexture.bind(0)
         _wham.ctx.viewport(0, 0, _gridSize, _gridSize)
-        _program
+        _jumpFlood
             .use
             .attrib("quad", _quadBuffer, 2)
             .uniform("iCellGridTexture", 0)

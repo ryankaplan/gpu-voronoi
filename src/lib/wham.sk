@@ -265,7 +265,7 @@ namespace Wham {
             _ctx.activeTexture((_ctx.TEXTURE0 as dynamic) + unit)
             bind
         }
-
+       
         def clear(width int, height int) {
             bind
             _ctx.texImage2D(_ctx.TEXTURE_2D, 0, _options.format,

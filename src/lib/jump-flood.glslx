@@ -1,14 +1,18 @@
-// TODO(ryan): How slow does this make things on mobile devices?
 precision highp float;
 
 uniform sampler2D iCellGridTexture;
 uniform sampler2D iSeedInputTexture;
+uniform sampler2D iInputTexture;
+
 uniform vec2 iGridSize; // Width and height of iCellGridTexture
 uniform vec2 iCanvasSize; // Size of HTML canvas element
-uniform int iRelease; // Used for debugging
+uniform vec2 iResolution;
 uniform vec2 iCellGridSize;
+
+uniform int iRelease; // Used for debugging
 uniform int iStepSize;
 uniform int iAntialiasingFactor;
+
 uniform bool iUseTorusDistanceForSeeds;
 
 // The color that is *not* to be counted as seed.
@@ -247,23 +251,15 @@ export void fDrawGrid() {
     vec4 object = texture2D(iCellGridTexture, gridUv);
     if (!cellIsValid(object)) {
         discard;
-    } else if (iAntialiasingFactor == 1) {
-        gl_FragColor = cellColor(object);
     } else {
-        gl_FragColor = (
-            cellColor(object) +
-
-            // top, right, left, bottom
-            cellColor(texture2D(iCellGridTexture, (gridPoint + vec2(1.0, 0.0)) / iGridSize)) +
-            cellColor(texture2D(iCellGridTexture, (gridPoint + vec2(0.0, 1.0)) / iGridSize)) +
-            cellColor(texture2D(iCellGridTexture, (gridPoint + vec2(-1.0, 0.0)) / iGridSize)) +
-            cellColor(texture2D(iCellGridTexture, (gridPoint + vec2(0.0, -1.0)) / iGridSize)) +
-
-            // top right, top left, bottom right, bottom left
-            cellColor(texture2D(iCellGridTexture, (gridPoint + vec2(1.0, 1.0)) / iGridSize)) +
-            cellColor(texture2D(iCellGridTexture, (gridPoint + vec2(-1.0, 1.0)) / iGridSize)) +
-            cellColor(texture2D(iCellGridTexture, (gridPoint + vec2(1.0, -1.0)) / iGridSize)) +
-            cellColor(texture2D(iCellGridTexture, (gridPoint + vec2(-1.0, -1.0)) / iGridSize))
-        ) / 9.0;
+        gl_FragColor = cellColor(object);
     }
+}
+
+// Just renders a texture to the screen.
+////////////////////////////////////////////////////////////////////////
+
+export void fRenderTexture() {
+    vec2 canvasSpaceUv = gl_FragCoord.xy / iResolution;
+    gl_FragColor = texture2D(iInputTexture, canvasSpaceUv);
 }
