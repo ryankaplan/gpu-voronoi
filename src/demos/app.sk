@@ -4,8 +4,8 @@
 # that.
 def getCanvas(container HTMLElement, className string, canvasSize int) HTMLCanvasElement {
     const canvas = (container as dynamic).getElementsByClassName(className)[0] as HTMLCanvasElement
-    canvas.width = canvasSize
-    canvas.height = canvasSize
+    canvas.width = canvasSize * (window.devicePixelRatio as int)
+    canvas.height = canvasSize * (window.devicePixelRatio as int)
     canvas.style.width = "\(canvasSize)px"
     canvas.style.height = "\(canvasSize)px"
     return canvas
