@@ -25,7 +25,7 @@
         This page has a few demos of some code that I wrote to generate Voronoi diagrams. If you're interested, you can find the code <a target="blank_" href="https://github.com/ryankaplan/gpu-voronoi">here</a>.
       </p>
 
-      <p>               
+      <p>
         What is a Voronoi diagram? Try the demo below to find out. When you click in the left canvas, you plant a colored 'seed'. In the right canvas, every pixel takes the color of the closest seed.
       </p>
 
@@ -55,6 +55,24 @@
         <canvas class="output-canvas"></canvas>
       </div>
 
+      <p>
+        In the above examples, we draw a Voronoi diagram by walking through every pixel and, for each pixel, drawing the color of the closest seed. In the demo below, we show the distance to the closest seed. A white pixel is close a seed and a dark pixel is far from a seed.
+      </p>
+
+      <div id="distance-demo-container" class="demo-container">
+        <canvas class="input-canvas"></canvas>
+        <canvas class="output-canvas"></canvas>
+      </div>
+
+      <p>
+        And below we only draw pixels that are within some number of pixels of a seed.
+      </p>
+
+      <div id="threshold-demo-container" class="demo-container">
+        <canvas class="input-canvas"></canvas>
+        <canvas class="output-canvas"></canvas>
+      </div>
+
       <!--
 
       <h2>
@@ -68,7 +86,7 @@
       <p>
         There are a few other popular algorithms for computing Voronoi diagrams, and I won't go into all of them (<a href="http://www.alanzucconi.com/2015/02/24/to-voronoi-and-beyond/">this article</a> gives a good overview). But I was recently showed one that I thought was particularly cool. It's performance doesn't depend on how many seeds you start with - and it's well suited to running on the GPU. So it runs really fast and you can make demos that work in real time.
       </p>
-      
+
       -->
 
     </div>
