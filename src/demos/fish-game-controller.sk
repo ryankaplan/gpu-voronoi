@@ -1,17 +1,6 @@
 # This file implements a demo where blue-ish Voronoi seeds are floating across
 # the canvas and a yellow Voronoi seed is present at the user's cursor position.
 
-@import
-class Date {
-    def new
-}
-
-class Date {
-    def toMilliseconds double {
-        return + (self as dynamic)
-    }
-}
-
 class Square {
     var center Vector
     var size = 2
@@ -77,32 +66,26 @@ class FishGameController {
     }
 
     def _startRenderLoop {
-        var lastFrame Date = null
-
-        var tick fn() = => {
-            const now = Date.new
-            const timeElapsed = lastFrame == null ? 1.0 / 30.0 : now.toMilliseconds - lastFrame.toMilliseconds
-            self._render(timeElapsed / 1000.0)
-            lastFrame = now
-
-            requestAnimationFrame(tick)
-        }
-        requestAnimationFrame(tick)
+        renderWhileElementOnScreen(_inputCanvas, (elapsedMs double) => {
+            self._render(elapsedMs)
+        })
     }
 
-    def _render(timeElapsed double) {
+    def _render(timeElapsedMs double) {
+        const elapsedSeconds = timeElapsedMs / 1000
+
         _ctx.clearRect(0, 0, _inputCanvas.width, _inputCanvas.height)
 
         for i in 1.._pads.count {
             var pad = _pads[i]
-            pad.center.x += _speeds[i] * timeElapsed
-            pad.center.y -= _speeds[i] * timeElapsed
+            pad.center.x += _speeds[i] * elapsedSeconds
+            pad.center.y -= _speeds[i] * elapsedSeconds
 
             # Walk through the other pads and make sure that we're not too close
             # to any of them.
             for j in 1.._pads.count {
                 if i != j && pad.center.distanceTo(_pads[j].center) < 40 {
-                    pad.center += (pad.center - _pads[j].center).normalize * timeElapsed * 5
+                    pad.center += (pad.center - _pads[j].center).normalize * elapsedSeconds * 5
                 }
             }
 

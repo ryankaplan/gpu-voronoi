@@ -1,16 +1,27 @@
 # TODO(ryan): This is a grab bag of stuff that should all probably be elsewhere.
 
-@import
-namespace console {
-    const log dynamic
-}
+@import {
+    namespace console {
+        const log dynamic
+    }
 
-@import
-def parseInt(toParse string, base int) int
+    def parseInt(toParse string, base int) int
+
+    class Date {
+        def new
+    }
+}
 
 class HTMLWindow {
     var onload dynamic
 }
+
+class Date {
+    def toMilliseconds double {
+        return + (self as dynamic)
+    }
+}
+
 
 # Returns the value of a query parameter in the URL of the current page.
 # For example, if we are at www.rykap.com?thing=blah then
@@ -39,4 +50,27 @@ def canvasMouseLocation(canvas HTMLCanvasElement, domMouseLocation Vector) Vecto
 
 def canvasMouseLocation(canvas HTMLCanvasElement, event HTMLMouseEvent) Vector {
     return canvasMouseLocation(canvas, Vector.new(event.offsetX, event.offsetY))
+}
+
+def isElementInViewport(element HTMLElement) bool {
+    const rect = element.getBoundingClientRect
+    return
+        rect.bottom >= 0 &&
+        rect.right >= 0 &&
+        rect.top <= window.innerHeight &&
+        rect.left <= window.innerWidth
+}
+
+def renderWhileElementOnScreen(element HTMLElement, render fn(double)) {
+    var lastFrame Date = null
+    const renderFunc fn() = => {
+        if isElementInViewport(element) {
+            const now = Date.new
+            const timeElapsedMs = lastFrame == null ? 1.0 / 30.0 : now.toMilliseconds - lastFrame.toMilliseconds
+            render(timeElapsedMs)
+            lastFrame = now
+        }
+        requestAnimationFrame(renderFunc)
+    }
+    requestAnimationFrame(renderFunc)
 }
