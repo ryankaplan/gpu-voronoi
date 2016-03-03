@@ -71,6 +71,22 @@ def initializePhotoDemo(container HTMLElement, antialiasingFactor int) {
     })
 }
 
+def initializeDistanceDemo(container HTMLElement, antialiasingFactor int) {
+    const inputCanvas = getCanvas(container, "input-canvas", 256)
+    const outputCanvas = getCanvas(container, "output-canvas", 256)
+    const opts = Voronoi.Options.new
+    opts.wrap = true
+    opts.antialiasingFactor = antialiasingFactor
+    const voronoi = createVoronoiGenerator(outputCanvas, opts)
+
+    FishGameController.new(inputCanvas, outputCanvas, => {
+        voronoi.setSeedsFromCanvas(inputCanvas)
+        voronoi.computeVoronoi
+        voronoi.drawDistanceFieldToOutputCanvas       
+    })
+}
+
+
 @entry
 def main {
     window.onload = => {
@@ -86,6 +102,7 @@ def main {
         initializePaintDemo(document.getElementById("paint-demo-container"), antialiasingFactor)
         initializeFishDemo(document.getElementById("fish-demo-container"), antialiasingFactor)
         initializePhotoDemo(document.getElementById("photo-demo-container"), antialiasingFactor)
+        initializeDistanceDemo(document.getElementById("distance-demo-container"), antialiasingFactor)
     }
 }
 

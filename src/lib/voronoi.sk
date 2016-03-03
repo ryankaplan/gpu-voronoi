@@ -30,6 +30,7 @@ class Voronoi {
     var _prepJumpFloodData Wham.Program
     var _jumpFlood Wham.Program
     var _drawJumpFloodData Wham.Program
+    var _drawDistanceField Wham.Program
     var _renderTexture Wham.Program
     
     var _quadBuffer Wham.Buffer
@@ -63,7 +64,6 @@ class Voronoi {
         }
 
         _wham.ctx.disable(_wham.ctx.DEPTH_TEST)
-        _drawJumpFloodData = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_GRID)
 
         const ctx = _wham.ctx
         getWebGLExtension(ctx, "OES_texture_float")
@@ -72,6 +72,8 @@ class Voronoi {
         _jumpFlood = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_JUMP_FLOOD)
         _prepJumpFloodData = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_PREP_FOR_JFA)
         _renderTexture = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_RENDER_TEXTURE)
+        _drawJumpFloodData = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_JUMP_FLOOD_DATA)
+        _drawDistanceField = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_DISTANCE_FIELD)
 
         _quadBuffer = Wham.Buffer.new(ctx)
         _quadBuffer.update(Wham.QUAD2, ctx.STATIC_DRAW)
@@ -152,6 +154,42 @@ class Voronoi {
                       .uniform("iTexture", 0)
                       .uniform("iResolution", Float32Array.new([_outputCanvas.width, _outputCanvas.height]))
                       .draw(_wham.ctx.TRIANGLE_STRIP, 4)
+                      
+        _drawTempTexture
+    }
+    
+    def drawDistanceFieldToOutputCanvas {
+        # First draw _destTexture into _tempOutputTexture
+        _framebuffer.attach(_tempOutputTexture)
+        _checkFramebufferCompletion
+        _destTexture.bind(0)
+        _wham.ctx.viewport(0, 0, _gridSize, _gridSize)
+        _drawDistanceField
+                        .use
+                        .attrib("quad", _quadBuffer, 2)
+                        .uniform("iCellGridTexture", 0)
+                        .uniform("iCanvasSize", Float32Array.new([_gridSize, _gridSize]))
+                        .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
+                        .uniform("iRelease", RELEASE ? 1 : 0)
+                        .uniform("iAntialiasingFactor", _options.antialiasingFactor)
+                        .draw(_wham.ctx.TRIANGLE_STRIP, 4)   
+
+        _drawTempTexture
+    }
+    
+    # We draw into _tempTexture at a higher resolution than we want on screen
+    # and then scale down _tempTexture to antialias
+    def _drawTempTexture {
+        _wham.defaultFramebuffer.bind
+        _checkFramebufferCompletion        
+
+        _tempOutputTexture.bind(0)
+        _wham.ctx.viewport(0, 0, _outputCanvas.width, _outputCanvas.height)
+        _renderTexture.use
+                      .attrib("quad", _quadBuffer, 2)
+                      .uniform("iTexture", 0)
+                      .uniform("iResolution", Float32Array.new([_outputCanvas.width, _outputCanvas.height]))
+                      .draw(_wham.ctx.TRIANGLE_STRIP, 4)            
     }
 
     # Useful if you want to compute Voronoi in one step.

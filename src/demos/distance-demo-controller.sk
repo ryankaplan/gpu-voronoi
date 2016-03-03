@@ -1,0 +1,80 @@
+
+class DistanceDemoController {
+    var _inputCanvas HTMLCanvasElement
+    var _outputCanvas HTMLCanvasElement
+    var _ctx CanvasRenderingContext2D
+    var _onDraw fn()
+
+    var _numPads = 12
+    var _pads List<Square> = []
+    var _speeds List<double> = []
+    var _fish Square
+
+    def new(inputCanvas HTMLCanvasElement, outputCanvas HTMLCanvasElement, onDraw fn()) {
+        _inputCanvas = inputCanvas
+        _outputCanvas = outputCanvas
+        _onDraw = onDraw
+        _ctx = _inputCanvas.getContext2D
+
+        for i in 1.._numPads {
+            _pads.append(Square.new(Vector.new(Math.random * _inputCanvas.width, Math.random * _inputCanvas.height)))
+            _pads[_pads.count - 1].color = waterColors[i % waterColors.count]
+            _speeds.append(15.0 + Math.random * 8.0)
+        }
+
+        _fish = Square.new(Vector.new(Math.random * _inputCanvas.width, Math.random * _inputCanvas.height))
+        _fish.color = Color.fromHex(0xFFE911)
+
+        for canvas in [_inputCanvas, _outputCanvas] {
+            canvas.addEventListener("mousemove", (e HTMLMouseEvent) => {
+                _fish.center = canvasMouseLocation(canvas, e)
+            })
+        }
+
+        _startRenderLoop
+    }
+
+    def _startRenderLoop {
+        var lastFrame Date = null
+
+        var tick fn() = => {
+            const now = Date.new
+            const timeElapsed = lastFrame == null ? 1.0 / 30.0 : now.toMilliseconds - lastFrame.toMilliseconds
+            self._render(timeElapsed / 1000.0)
+            lastFrame = now
+
+            requestAnimationFrame(tick)
+        }
+        requestAnimationFrame(tick)
+    }
+
+    def _render(timeElapsed double) {
+        _ctx.clearRect(0, 0, _inputCanvas.width, _inputCanvas.height)
+
+        for i in 1.._pads.count {
+            var pad = _pads[i]
+            pad.center.x += _speeds[i] * timeElapsed
+            pad.center.y -= _speeds[i] * timeElapsed
+
+            # Walk through the other pads and make sure that we're not too close
+            # to any of them.
+            for j in 1.._pads.count {
+                if i != j && pad.center.distanceTo(_pads[j].center) < 40 {
+                    pad.center += (pad.center - _pads[j].center).normalize * timeElapsed * 5
+                }
+            }
+
+            pad.center %= Vector.new(_inputCanvas.width, _inputCanvas.height)
+        }
+
+        for pad in _pads {
+            pad.render(_ctx)
+        }
+
+        _fish.render(_ctx)
+
+        if _onDraw != null {
+            _onDraw()
+        }
+    }
+}

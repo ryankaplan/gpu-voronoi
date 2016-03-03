@@ -73,11 +73,7 @@ bool between(vec2 value, vec2 bottom, vec2 top) {
 }
 
 vec2 gridPointFromFragCoord(vec2 fragCoord) {
-    // UV co-ordinates of the pixel we're drawing in canvas space
-    vec2 canvasSpaceUv = gl_FragCoord.xy / iCanvasSize;
-
-    // Use that to find the grid point that we're drawing
-    return vec2(0.0, 0.0) + iGridSize * canvasSpaceUv;
+    return iGridSize * gl_FragCoord.xy / iCanvasSize;
 }
 
 bool validUv(vec2 uv) {
@@ -238,7 +234,7 @@ void drawDebugUI(vec2 gridPoint) {
     }
 }
 
-export void fDrawGrid() {
+export void fDrawJumpFloodData() {
     vec2 gridPoint = gridPointFromFragCoord(gl_FragCoord.xy);
     vec2 gridUv = gridPoint / iGridSize;
 
@@ -254,6 +250,32 @@ export void fDrawGrid() {
     } else {
         gl_FragColor = cellColor(object);
     }
+}
+
+export void fDrawDistanceField() {
+    vec2 gridPoint = gridPointFromFragCoord(gl_FragCoord.xy);
+    vec2 gridUv = gridPoint / iGridSize;
+
+    if (!validUv(gridUv)) {
+        gl_FragColor = BLACK;
+        drawDebugUI(gridPoint);
+        return;
+    }
+
+    vec4 object = texture2D(iCellGridTexture, gridUv);
+    if (!cellIsValid(object)) {
+        discard;
+    } else {
+        vec2 seedLocation = cellSeedLocation(object);
+        float dist = torusDistance(seedLocation, gridPoint, iGridSize);
+        
+        // The 0.5 is made up. We just need to divide `dist` by
+        // some number bigger than its maximum possible size, and
+        // for our demos `iGridSize.x / 0.5` works fine.        
+        dist = 1.0 - (dist / (iGridSize.x * 0.5));
+        
+        gl_FragColor = vec4(dist, dist, dist, 1.0);           
+    }    
 }
 
 // Just renders a texture to the screen.
