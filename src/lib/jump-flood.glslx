@@ -169,20 +169,12 @@ vec4 compareCellWithCellAtOffset(const vec4 self, const vec2 offset) {
         vec2 selfSeedLocation = cellSeedLocation(self);
         vec2 otherSeedLocation = cellSeedLocation(otherCell);
 
-        if (iUseTorusDistanceForSeeds) {
-            if (
-                torusDistance(selfSeedLocation, gl_FragCoord.xy, iCellGridSize) >
-                torusDistance(otherSeedLocation, gl_FragCoord.xy, iCellGridSize)
-            ) {
-                return otherCell;
-            }
-        } else {
-            if (
-                distance(selfSeedLocation, gl_FragCoord.xy) >
-                distance(otherSeedLocation, gl_FragCoord.xy)
-            ) {
-                return otherCell;
-            }
+        float selfSeedDist = iUseTorusDistanceForSeeds ? torusDistance(selfSeedLocation, gl_FragCoord.xy, iCellGridSize) : distance(selfSeedLocation, gl_FragCoord.xy);
+        float otherSeedDist = iUseTorusDistanceForSeeds ? torusDistance(otherSeedLocation, gl_FragCoord.xy, iCellGridSize) : distance(otherSeedLocation, gl_FragCoord.xy);
+
+        float threshold = -1.0;
+        if ((selfSeedDist > otherSeedDist) && ((threshold < 0.0) || (otherSeedDist < threshold))) {
+            return otherCell;
         }
     }
 
@@ -268,14 +260,14 @@ export void fDrawDistanceField() {
     } else {
         vec2 seedLocation = cellSeedLocation(object);
         float dist = torusDistance(seedLocation, gridPoint, iGridSize);
-        
+
         // The 0.5 is made up. We just need to divide `dist` by
         // some number bigger than its maximum possible size, and
-        // for our demos `iGridSize.x / 0.5` works fine.        
+        // for our demos `iGridSize.x / 0.5` works fine.
         dist = 1.0 - (dist / (iGridSize.x * 0.5));
-        
-        gl_FragColor = vec4(dist, dist, dist, 1.0);           
-    }    
+
+        gl_FragColor = vec4(dist, dist, dist, 1.0);
+    }
 }
 
 // Just renders a texture to the screen.
