@@ -13,6 +13,8 @@ uniform int iRelease; // Used for debugging
 uniform int iStepSize;
 uniform int iAntialiasingFactor;
 
+uniform float iMinSeedDistanceThreshold;
+
 uniform bool iUseTorusDistanceForSeeds;
 
 // The color that is *not* to be counted as seed.
@@ -172,8 +174,7 @@ vec4 compareCellWithCellAtOffset(const vec4 self, const vec2 offset) {
         float selfSeedDist = iUseTorusDistanceForSeeds ? torusDistance(selfSeedLocation, gl_FragCoord.xy, iCellGridSize) : distance(selfSeedLocation, gl_FragCoord.xy);
         float otherSeedDist = iUseTorusDistanceForSeeds ? torusDistance(otherSeedLocation, gl_FragCoord.xy, iCellGridSize) : distance(otherSeedLocation, gl_FragCoord.xy);
 
-        float threshold = -1.0;
-        if ((selfSeedDist > otherSeedDist) && ((threshold < 0.0) || (otherSeedDist < threshold))) {
+        if (selfSeedDist > otherSeedDist) {
             return otherCell;
         }
     }
@@ -239,6 +240,8 @@ export void fDrawJumpFloodData() {
     vec4 object = texture2D(iCellGridTexture, gridUv);
     if (!cellIsValid(object)) {
         discard;
+    } else if ((iMinSeedDistanceThreshold > 0.0 ) && (distance(cellSeedLocation(object), gridPoint) > iMinSeedDistanceThreshold)) {
+        gl_FragColor = BLACK;
     } else {
         gl_FragColor = cellColor(object);
     }
@@ -265,7 +268,6 @@ export void fDrawDistanceField() {
         // some number bigger than its maximum possible size, and
         // for our demos `iGridSize.x / 0.5` works fine.
         dist = 1.0 - (dist / (iGridSize.x * 0.5));
-
         gl_FragColor = vec4(dist, dist, dist, 1.0);
     }
 }

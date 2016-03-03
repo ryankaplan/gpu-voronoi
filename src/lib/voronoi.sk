@@ -16,6 +16,11 @@ namespace Voronoi {
     class Options {
         var wrap = false
         var antialiasingFactor = 1
+
+        # If this is set to a number greater than 0, then when you call
+        # Voronoi.drawToOutputCanvas we draw colors to pixels that are
+        # within `minSeedDistanceThreshold` of their closest seed
+        var minSeedDistanceThreshold = -1.0
     }
 }
 
@@ -32,13 +37,13 @@ class Voronoi {
     var _drawJumpFloodData Wham.Program
     var _drawDistanceField Wham.Program
     var _renderTexture Wham.Program
-    
+
     var _quadBuffer Wham.Buffer
     var _sourceTexture Wham.Texture
 
     var _destTexture Wham.Texture
     var _seedInputTexture Wham.Texture
-    var _tempOutputTexture Wham.Texture    
+    var _tempOutputTexture Wham.Texture
     var _framebuffer Wham.Framebuffer
     var _simulationStepper dynamic
 
@@ -84,13 +89,13 @@ class Voronoi {
         _destTexture = Wham.Texture.new(ctx, opts)
         _destTexture.clear(_gridSize, _gridSize)
 
-        opts = Wham.TextureOptions.new(ctx, ctx.RGBA, ctx.REPEAT, ctx.LINEAR, ctx.UNSIGNED_BYTE)        
+        opts = Wham.TextureOptions.new(ctx, ctx.RGBA, ctx.REPEAT, ctx.LINEAR, ctx.UNSIGNED_BYTE)
         _tempOutputTexture = Wham.Texture.new(ctx, opts)
         _tempOutputTexture.clear(_gridSize, _gridSize)
 
         opts = Wham.TextureOptions.new(ctx, ctx.RGBA, ctx.REPEAT, ctx.NEAREST, ctx.UNSIGNED_BYTE)
         _seedInputTexture = Wham.Texture.new(ctx, opts)
-        _seedInputTexture.clear(_canvasSize, _canvasSize)              
+        _seedInputTexture.clear(_canvasSize, _canvasSize)
 
         _framebuffer = Wham.Framebuffer.create(ctx)
     }
@@ -98,7 +103,7 @@ class Voronoi {
     def _gridSize int {
         return _canvasSize * _options.antialiasingFactor
     }
-    
+
     def _checkFramebufferCompletion {
         if !RELEASE {
             const ctx = _wham.ctx
@@ -106,7 +111,7 @@ class Voronoi {
             if check != ctx.FRAMEBUFFER_COMPLETE {
                 throw Error.new("Framebuffer completion issue")
             }
-        }        
+        }
     }
 
     def setSeedsFromCanvas(inputCanvas HTMLCanvasElement) {
@@ -141,23 +146,12 @@ class Voronoi {
                     .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
                     .uniform("iRelease", RELEASE ? 1 : 0)
                     .uniform("iAntialiasingFactor", _options.antialiasingFactor)
-                    .draw(_wham.ctx.TRIANGLE_STRIP, 4)   
+                    .uniform("iMinSeedDistanceThreshold", _options.minSeedDistanceThreshold)
+                    .draw(_wham.ctx.TRIANGLE_STRIP, 4)
 
-        # Now antialias _tempOutputTexture as you render it to the screen
-        _wham.defaultFramebuffer.bind
-        _checkFramebufferCompletion        
-
-        _tempOutputTexture.bind(0)
-        _wham.ctx.viewport(0, 0, _outputCanvas.width, _outputCanvas.height)
-        _renderTexture.use
-                      .attrib("quad", _quadBuffer, 2)
-                      .uniform("iTexture", 0)
-                      .uniform("iResolution", Float32Array.new([_outputCanvas.width, _outputCanvas.height]))
-                      .draw(_wham.ctx.TRIANGLE_STRIP, 4)
-                      
         _drawTempTexture
     }
-    
+
     def drawDistanceFieldToOutputCanvas {
         # First draw _destTexture into _tempOutputTexture
         _framebuffer.attach(_tempOutputTexture)
@@ -172,16 +166,16 @@ class Voronoi {
                         .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
                         .uniform("iRelease", RELEASE ? 1 : 0)
                         .uniform("iAntialiasingFactor", _options.antialiasingFactor)
-                        .draw(_wham.ctx.TRIANGLE_STRIP, 4)   
+                        .draw(_wham.ctx.TRIANGLE_STRIP, 4)
 
         _drawTempTexture
     }
-    
+
     # We draw into _tempTexture at a higher resolution than we want on screen
     # and then scale down _tempTexture to antialias
     def _drawTempTexture {
         _wham.defaultFramebuffer.bind
-        _checkFramebufferCompletion        
+        _checkFramebufferCompletion
 
         _tempOutputTexture.bind(0)
         _wham.ctx.viewport(0, 0, _outputCanvas.width, _outputCanvas.height)
@@ -189,7 +183,7 @@ class Voronoi {
                       .attrib("quad", _quadBuffer, 2)
                       .uniform("iTexture", 0)
                       .uniform("iResolution", Float32Array.new([_outputCanvas.width, _outputCanvas.height]))
-                      .draw(_wham.ctx.TRIANGLE_STRIP, 4)            
+                      .draw(_wham.ctx.TRIANGLE_STRIP, 4)
     }
 
     # Useful if you want to compute Voronoi in one step.
