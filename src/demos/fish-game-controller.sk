@@ -1,25 +1,6 @@
 # This file implements a demo where blue-ish Voronoi seeds are floating across
 # the canvas and a yellow Voronoi seed is present at the user's cursor position.
 
-class Square {
-    var center Vector
-    var size = 2
-    var color = Color.new(0, 0, 1, 1)
-
-    def render(ctx CanvasRenderingContext2D) {
-        ctx.beginPath
-        ctx.rect(
-            (center.x - size / 2) as int,
-            (center.y - size / 2) as int,
-            size,
-            size
-        )
-        ctx.fillStyle = color.toCSS
-        ctx.fill
-        ctx.closePath
-    }
-}
-
 var waterColors = [
     Color.fromHex(0x6B99F2),
     Color.fromHex(0x4976CF),
@@ -33,7 +14,7 @@ var waterColors = [
 class FishGameController {
     var _inputCanvas HTMLCanvasElement
     var _outputCanvas HTMLCanvasElement
-    var _ctx CanvasRenderingContext2D
+    var _ctx CanvasContext2DWrapper
     var _onDraw fn()
 
     var _numPads = 12
@@ -45,7 +26,7 @@ class FishGameController {
         _inputCanvas = inputCanvas
         _outputCanvas = outputCanvas
         _onDraw = onDraw
-        _ctx = _inputCanvas.getContext2D
+        _ctx = CanvasContext2DWrapper.new(_inputCanvas.getContext2D)
 
         for i in 1.._numPads {
             _pads.append(Square.new(Vector.new(Math.random * _inputCanvas.width, Math.random * _inputCanvas.height)))
@@ -58,7 +39,7 @@ class FishGameController {
 
         for canvas in [_inputCanvas, _outputCanvas] {
             canvas.addEventListener("mousemove", (e HTMLMouseEvent) => {
-                _fish.center = canvasMouseLocation(canvas, e)
+                _fish.center = e.location
             })
         }
 

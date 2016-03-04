@@ -1,0 +1,260 @@
+
+# In a function so that its easy to stub out
+def getDevicePixelRatio double {
+    return window.devicePixelRatio
+}
+
+namespace CanvasContext2DWrapper {
+    def sizeCanvas(canvas HTMLCanvasElement, width int, height int) {
+        canvas.width = (width * getDevicePixelRatio) as int
+        canvas.height = (height * getDevicePixelRatio) as int
+        canvas.style.width = "\(width)px"
+        canvas.style.height = "\(height)px"
+    }
+}
+
+# A wrapper around CanvasRenderingContext2D that takes care of scaling
+# canvas methods by devicePixelRatio, assuming that you've called
+# CanvasContext2DWrapper.sizeCanvas on your canvas.
+class CanvasContext2DWrapper {
+    const _ctx CanvasRenderingContext2D
+    const _devicePixelRatio double
+
+    def new(ctx CanvasRenderingContext2D) {
+        _ctx = ctx
+        _devicePixelRatio = getDevicePixelRatio
+        console.log("Device pixel ratio \(_devicePixelRatio)")
+    }
+
+    # transformations (default: transform is the identity matrix)
+    def scale(x double, y double) {
+        _ctx.scale(x * _devicePixelRatio, y * _devicePixelRatio)
+    }
+
+    def rotate(angle double) {
+        _ctx.rotate(angle)
+    }
+
+    def translate(x double, y double) {
+        _ctx.translate(x * _devicePixelRatio, y * _devicePixelRatio)
+    }
+
+    def transform(a double, b double, c double, d double, e double, f double) {
+        # TODO(ryan)
+        assert(false)
+    }
+
+    def setTransform(a double, b double, c double, d double, e double, f double) {
+        # TODO(ryan)
+        assert(false)
+    }
+
+    # TODO(ryan): Scale patterns, gradients...
+    def strokeStyle string { return _ctx.strokeStyle }
+    def fillStyle string { return _ctx.fillStyle }
+    def strokeStyle=(value string) { _ctx.strokeStyle = value }
+    def strokeStyle=(value CanvasPattern) {
+        assert(false)
+        _ctx.strokeStyle = value
+    }
+    def strokeStyle=(value CanvasGradient) {
+        _ctx.strokeStyle = value
+    }
+    def fillStyle=(value string) { _ctx.fillStyle = value }
+    def fillStyle=(value CanvasPattern) {
+        _ctx.fillStyle = value
+    }
+    def fillStyle=(value CanvasGradient) {
+        _ctx.fillStyle = value
+    }
+    def createLinearGradient(x0 double, y0 double, x1 double, y1 double) CanvasGradient {
+        assert(false)
+        return _ctx.createLinearGradient(x0, y0, x1, y1)
+    }
+    def createRadialGradient(x0 double, y0 double, r0 double, x1 double, y1 double, r1 double) CanvasGradient {
+        assert(false)
+        return _ctx.createRadialGradient(x0, y0, r0, x1, y1, r1)
+    }
+    def createPattern(image HTMLImageElement, repetition string) CanvasPattern {
+        # TODO(ryan): Maybe the image should be scaled here?
+        return _ctx.createPattern(image, repetition)
+    }
+    def createPattern(image HTMLCanvasElement, repetition string) CanvasPattern {
+        # TODO(ryan): Maybe the canvas should be scaled here?
+        return _ctx.createPattern(image, repetition)
+    }
+    def createPattern(image HTMLVideoElement, repetition string) CanvasPattern {
+        assert(false)
+        return _ctx.createPattern(image, repetition)
+    }
+
+    # shadows
+    # var shadowOffsetX double # (default: 0)
+    # var shadowOffsetY double # (default: 0)
+    # var shadowBlur double # (default: 0)
+    def shadowColor string {
+        return _ctx.shadowColor
+    }
+    def shadowColor=(value string) {
+        _ctx.shadowColor = value
+    }
+
+    # rects
+    def clearRect(x double, y double, w double, h double) {
+        _ctx.clearRect(x * _devicePixelRatio, y * _devicePixelRatio, w * _devicePixelRatio, h * _devicePixelRatio)
+    }
+
+    def fillRect(x double, y double, w double, h double) {
+        _ctx.fillRect(x * _devicePixelRatio, y * _devicePixelRatio, w * _devicePixelRatio, h * _devicePixelRatio)
+    }
+
+    def strokeRect(x double, y double, w double, h double) {
+        _ctx.strokeRect(x * _devicePixelRatio, y * _devicePixelRatio, w * _devicePixelRatio, h * _devicePixelRatio)
+    }
+
+    # path API
+    def beginPath {
+        _ctx.beginPath
+    }
+    def fill {
+        _ctx.fill
+    }
+    def fill(fillRule string) {
+        _ctx.fill(fillRule)
+    }
+    def stroke {
+        _ctx.stroke
+    }
+    def drawFocusIfNeeded(element HTMLElement) {
+        _ctx.drawFocusIfNeeded(element)
+    }
+    def clip {
+        _ctx.clip
+    }
+    def isPointInPath(x double, y double) bool {
+        # TODO(ryan)
+        assert(false)
+        return false
+    }
+
+    # shared path API methods
+    def closePath {
+        _ctx.closePath
+    }
+    def moveTo(x double, y double) {
+        _ctx.moveTo(x * _devicePixelRatio, y * _devicePixelRatio)
+    }
+    def lineTo(x double, y double) {
+        _ctx.moveTo(x * _devicePixelRatio, y * _devicePixelRatio)
+    }
+    def quadraticCurveTo(cpx double, cpy double, x double, y double) {
+        assert(false)
+        # TODO(ryan)
+    }
+    def bezierCurveTo(cp1x double, cp1y double, cp2x double, cp2y double, x double, y double) {
+        assert(false)
+        # TODO(ryan)
+    }
+    def arcTo(x1 double, y1 double, x2 double, y2 double, radius double) {
+        assert(false)
+        # TODO(ryan)
+    }
+    def rect(x double, y double, w double, h double) {
+        _ctx.rect(x * _devicePixelRatio, y * _devicePixelRatio, w * _devicePixelRatio, h * _devicePixelRatio)
+    }
+    def arc(x double, y double, radius double, startAngle double, endAngle double) {
+        _ctx.arc(x * _devicePixelRatio, y * _devicePixelRatio, radius * _devicePixelRatio, startAngle, endAngle)
+    }
+    def arc(x double, y double, radius double, startAngle double, endAngle double, anticlockwise bool) {
+        _ctx.arc(x * _devicePixelRatio, y * _devicePixelRatio, radius * _devicePixelRatio, startAngle, endAngle, anticlockwise)
+    }
+
+    # # text
+    def fillText(text string, x double, y double, maxWidth double) {
+        _ctx.fillText(text, x * _devicePixelRatio, y * _devicePixelRatio, maxWidth * _devicePixelRatio)
+    }
+    def strokeText(text string, x double, y double, maxWidth double) {
+        _ctx.strokeText(text, x * _devicePixelRatio, y * _devicePixelRatio)
+    }
+    def fillText(text string, x double, y double) {
+        _ctx.fillText(text, x * _devicePixelRatio, y * _devicePixelRatio)
+    }
+    def strokeText(text string, x double, y double) {
+        _ctx.strokeText(text, x * _devicePixelRatio, y * _devicePixelRatio)
+    }
+    # def measureText(text string) TextMetrics
+
+    # line caps/joins
+    def lineWidth double {
+        return _ctx.lineWidth / _devicePixelRatio
+    }
+    def lineWidth=(value double) {
+        _ctx.lineWidth = value * _devicePixelRatio
+    }
+    def lineCap string {
+        return _ctx.lineCap
+    }
+    def lineCap=(value string) {
+        _ctx.lineCap = value
+    }
+    def lineJoin string {
+        return _ctx.lineJoin
+    }
+    def lineJoin=(value string) {
+        _ctx.lineJoin = value
+    }
+    def miterLimit double {
+        return _ctx.miterLimit / _devicePixelRatio
+    }
+    def miterLimit=(value double) {
+        _ctx.miterLimit = value * _devicePixelRatio
+    }
+
+    # # dashed lines
+    # def setLineDash(segments List<double>) # (default: empty)
+    # def getLineDash List<double>
+    # var lineDashOffset double
+
+    # # text
+    def font string {
+        return _ctx.font
+    }
+    def font=(value string) {
+        _ctx.font = value
+    }
+    def textAlign string {
+        return _ctx.textAlign
+    }
+    def textAlign=(value string) {
+        _ctx.textAlign = value
+    }
+    def textBaseline string {
+        return _ctx.textBaseline
+    }
+    def textBaseLine=(value string) {
+        _ctx.textBaseline = value
+    }
+
+    # # drawing images
+    # def drawImage(image HTMLImageElement, dx double, dy double)
+    # def drawImage(image HTMLImageElement, dx double, dy double, dw double, dh double)
+    # def drawImage(image HTMLImageElement, sx double, sy double, sw double, sh double, dx double, dy double, dw double, dh double)
+    # def drawImage(image HTMLCanvasElement, dx double, dy double)
+    # def drawImage(image HTMLCanvasElement, dx double, dy double, dw double, dh double)
+    # def drawImage(image HTMLCanvasElement, sx double, sy double, sw double, sh double, dx double, dy double, dw double, dh double)
+    # def drawImage(image HTMLVideoElement, dx double, dy double)
+    # def drawImage(image HTMLVideoElement, dx double, dy double, dw double, dh double)
+    # def drawImage(image HTMLVideoElement, sx double, sy double, sw double, sh double, dx double, dy double, dw double, dh double)
+
+    # # hit regions
+    # def addHitRegion(options dynamic)
+    # def removeHitRegion(id string)
+    # def clearHitRegions
+
+    # # pixel manipulation
+    # def createImageData(sw int, sh int) ImageData
+    # def createImageData(imagedata ImageData) ImageData
+    # def getImageData(sx int, sy int, sw int, sh int) ImageData
+    # def putImageData(imagedata ImageData, dx int, dy int, dirtyX int, dirtyY int, dirtyWidth int, dirtyHeight int)
+    # def putImageData(imagedata ImageData, dx int, dy int)
+}

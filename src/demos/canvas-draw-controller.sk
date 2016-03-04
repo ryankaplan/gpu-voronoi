@@ -9,7 +9,7 @@ namespace CanvasDrawController {
 class CanvasDrawController {
     var _inputCanvas HTMLCanvasElement
     var _outputCanvas HTMLCanvasElement
-    var _ctx CanvasRenderingContext2D      
+    var _ctx CanvasContext2DWrapper
     var _onDraw fn()
 
     # onDraw will be called whenever the user draws something in the canvas.
@@ -21,15 +21,14 @@ class CanvasDrawController {
         _onDraw = onDraw
 
         _inputCanvas.style.backgroundColor = "white"
-        _ctx = _inputCanvas.getContext2D
+        _ctx = CanvasContext2DWrapper.new(_inputCanvas.getContext2D)
 
         var isMouseDown = false
 
         for canvas in [_inputCanvas, _outputCanvas] {
             canvas.addEventListener("mousemove", (e HTMLMouseEvent) => {
                 if isMouseDown && (e.target == _inputCanvas || e.target == _outputCanvas) {
-                    console.log(isMouseDown)
-                    _changeColorAndDraw(canvasMouseLocation(_inputCanvas, e))
+                    _changeColorAndDraw(e.location)
                 }
             })
         }
@@ -37,8 +36,8 @@ class CanvasDrawController {
         document.addEventListener("mousedown", (e HTMLMouseEvent) => {
             if e.target == _inputCanvas || e.target == _outputCanvas {
                 isMouseDown = true
-                _changeColorAndDraw(canvasMouseLocation(_inputCanvas, e))                
-            }            
+                _changeColorAndDraw(e.location)
+            }
         })
 
         document.addEventListener("mouseup", (e HTMLMouseEvent) => {

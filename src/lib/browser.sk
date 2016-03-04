@@ -22,6 +22,11 @@ class Date {
     }
 }
 
+class HTMLMouseEvent {
+    def location Vector {
+        return Vector.new(offsetX, offsetY)
+    }
+}
 
 # Returns the value of a query parameter in the URL of the current page.
 # For example, if we are at www.rykap.com?thing=blah then
@@ -36,20 +41,6 @@ def getQueryVariable(variable string) string {
         }
     }
     return null
-}
-
-# If the canvas is scaled with CSS, this returns the position of the mouse
-# in canvas-space.
-def canvasMouseLocation(canvas HTMLCanvasElement, domMouseLocation Vector) Vector {
-    const rect = canvas.getBoundingClientRect
-    return Vector.new(
-        (domMouseLocation.x / rect.width) * canvas.width,
-        (domMouseLocation.y / rect.height) * canvas.height
-    )
-}
-
-def canvasMouseLocation(canvas HTMLCanvasElement, event HTMLMouseEvent) Vector {
-    return canvasMouseLocation(canvas, Vector.new(event.offsetX, event.offsetY))
 }
 
 def isElementInViewport(element HTMLElement) bool {
