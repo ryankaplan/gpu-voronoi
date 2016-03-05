@@ -5,7 +5,10 @@
 # that.
 def getCanvas(container HTMLElement, className string, canvasSize int) HTMLCanvasElement {
     const canvas = (container as dynamic).getElementsByClassName(className)[0] as HTMLCanvasElement
-    CanvasContext2DWrapper.sizeCanvas(canvas, canvasSize, canvasSize)
+    canvas.width = (canvasSize * Browser.devicePixelRatio) as int
+    canvas.height = (canvasSize * Browser.devicePixelRatio) as int
+    canvas.style.width = "\(canvasSize)px"
+    canvas.style.height = "\(canvasSize)px"
     return canvas
 }
 
@@ -106,7 +109,7 @@ def main {
         var antialiasingFactor = 1
 
         try {
-            const antialiasingFactorParam = getQueryVariable("antialiasingFactor")
+            const antialiasingFactorParam = Browser.getQueryVariable("antialiasingFactor")
             if antialiasingFactorParam != null {
                 antialiasingFactor = parseInt(antialiasingFactorParam, 10)
             }

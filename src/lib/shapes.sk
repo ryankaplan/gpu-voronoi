@@ -4,7 +4,7 @@ class Square {
     var size = 2
     var color = Color.new(0, 0, 1, 1)
 
-    def render(ctx CanvasContext2DWrapper) {
+    def render(ctx CanvasRenderingContext2D) {
         ctx.beginPath
         ctx.rect(
             (center.x - size / 2) as int,
