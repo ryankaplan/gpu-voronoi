@@ -22,55 +22,54 @@ class Date {
     }
 }
 
-
-# Returns the value of a query parameter in the URL of the current page.
-# For example, if we are at www.rykap.com?thing=blah then
-# getQueryVariable("thing") will return "blah".
-def getQueryVariable(variable string) string {
-    var query = (window as dynamic).location.search.substring(1)
-    var vars = query.split("&")
-    for i=0; i < vars.length; i++ {
-        var pair = vars[i].split("=")
-        if pair[0] == variable {
-            return pair[1]
-        }
+class HTMLMouseEvent {
+    def location Vector {
+        return Vector.new(offsetX, offsetY)
     }
-    return null
 }
 
-# If the canvas is scaled with CSS, this returns the position of the mouse
-# in canvas-space.
-def canvasMouseLocation(canvas HTMLCanvasElement, domMouseLocation Vector) Vector {
-    const rect = canvas.getBoundingClientRect
-    return Vector.new(
-        (domMouseLocation.x / rect.width) * canvas.width,
-        (domMouseLocation.y / rect.height) * canvas.height
-    )
-}
+namespace Browser {
+    # This is a function so that we can easily stub it out
+    def devicePixelRatio double {
+        return 2.0
+        return window.devicePixelRatio
+    }
 
-def canvasMouseLocation(canvas HTMLCanvasElement, event HTMLMouseEvent) Vector {
-    return canvasMouseLocation(canvas, Vector.new(event.offsetX, event.offsetY))
-}
+    # Returns the value of a query parameter in the URL of the current page.
+    # For example, if we are at www.rykap.com?thing=blah then
+    # getQueryVariable("thing") will return "blah".
+    def getQueryVariable(variable string) string {
+        var query = (window as dynamic).location.search.substring(1)
+        var vars = query.split("&")
+        for i=0; i < vars.length; i++ {
+            var pair = vars[i].split("=")
+            if pair[0] == variable {
+                return pair[1]
+            }
+        }
+        return null
+    }
 
-def isElementInViewport(element HTMLElement) bool {
-    const rect = element.getBoundingClientRect
-    return
-        rect.bottom >= 0 &&
-        rect.right >= 0 &&
-        rect.top <= window.innerHeight &&
-        rect.left <= window.innerWidth
-}
+    def isElementInViewport(element HTMLElement) bool {
+        const rect = element.getBoundingClientRect
+        return
+            rect.bottom >= 0 &&
+            rect.right >= 0 &&
+            rect.top <= window.innerHeight &&
+            rect.left <= window.innerWidth
+    }
 
-def renderWhileElementOnScreen(element HTMLElement, render fn(double)) {
-    var lastFrame Date = null
-    const renderFunc fn() = => {
-        if isElementInViewport(element) {
-            const now = Date.new
-            const timeElapsedMs = lastFrame == null ? 1.0 / 30.0 : now.toMilliseconds - lastFrame.toMilliseconds
-            render(timeElapsedMs)
-            lastFrame = now
+    def renderWhileElementOnScreen(element HTMLElement, render fn(double)) {
+        var lastFrame Date = null
+        const renderFunc fn() = => {
+            if isElementInViewport(element) {
+                const now = Date.new
+                const timeElapsedMs = lastFrame == null ? 1.0 / 30.0 : now.toMilliseconds - lastFrame.toMilliseconds
+                render(timeElapsedMs)
+                lastFrame = now
+            }
+            requestAnimationFrame(renderFunc)
         }
         requestAnimationFrame(renderFunc)
     }
-    requestAnimationFrame(renderFunc)
 }

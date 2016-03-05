@@ -12,25 +12,29 @@ class DrawSeedMouseBehavior :: MouseBehavior {
     def down(e HTMLMouseEvent) {
         _isMouseDown = true
         e.stopPropagation
-        _controller.drawAtPoint(canvasMouseLocation(_controller.inputCanvas, e))
+        _controller.drawAtPoint(e.location)
         _controller.onDraw(_controller)
     }
 
     def move(e HTMLMouseEvent) {
         if _isMouseDown {
-            _controller.drawAtPoint(canvasMouseLocation(_controller.inputCanvas, e))
+            _controller.drawAtPoint(e.location)
             _controller.onDraw(_controller)
         }
         e.stopPropagation
     }
 
     def up(e HTMLMouseEvent) {
-        _controller.drawAtPoint(canvasMouseLocation(_controller.inputCanvas, e))
+        _controller.drawAtPoint(e.location)
         _controller.onDraw(_controller)
         _isMouseDown = false
         e.stopPropagation
     }
 }
+
+
+###############################################################################################
+
 
 namespace SeedSpiralMouseBehavior {
     enum DragType {
@@ -117,7 +121,7 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
             location = location.rotated(angle)
 
             # Move according to where the center is
-            location += canvasMouseLocation(_controller.inputCanvas, _center)
+            location += _center
 
             _drawIfOnCanvas(location)
         }
@@ -128,8 +132,8 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
 
     def _drawHandleAndCenter {
         const ctx = _controller.inputContext
-        const canvasHandle = canvasMouseLocation(_controller.inputCanvas, _handle)
-        const canvasCenter = canvasMouseLocation(_controller.inputCanvas, _center)
+        const canvasHandle = _handle
+        const canvasCenter = _center
 
         # Draw line between the center and anchor
         ctx.beginPath
@@ -217,7 +221,7 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
     }
 
     def up(e HTMLMouseEvent) {
-        _controller.drawAtPoint(canvasMouseLocation(_controller.inputCanvas, e))
+        _controller.drawAtPoint(e.location)
         _dragContext = null
         _lastKnownMouse = Vector.new(e.offsetX, e.offsetY)
         _drawHandleAndCenter
@@ -225,12 +229,16 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
     }
 
     def _drawIfOnCanvas(point Vector) {
-        const maxWidth = _controller.seedCanvas.width
+        const maxWidth = _controller.inputCanvas.getBoundingClientRect.width
         if point.x > 0 && point.y > 0 && point.x < maxWidth && point.y < maxWidth {
             _controller.drawAtPoint(point)
         }
     }
 }
+
+
+###############################################################################################
+
 
 class PhotoDemoController {
     # Canvas that user sees
@@ -259,14 +267,26 @@ class PhotoDemoController {
         outputCanvas = outputCanvas_
         onDraw = onDraw_
         inputContext = inputCanvas.getContext2D
+        inputContext.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
 
         _seedCanvas = document.createElement("canvas") as HTMLCanvasElement
         _seedCtx = _seedCanvas.getContext2D
         _seedCanvas.width = inputCanvas.width
         _seedCanvas.height = inputCanvas.height
+        # Do not scale the _seedCanvas. We want to be able to draw 1px blocks on it.
 
         sourceImg = document.getElementById("eye") as HTMLImageElement
-        sourcePattern = _seedCtx.createPattern(sourceImg, "repeat")
+
+
+        const patternCanvas = document.createElement("canvas") as HTMLCanvasElement
+        patternCanvas.width = _seedCanvas.width
+        patternCanvas.height = _seedCanvas.height
+        patternCanvas.getContext2D.drawImage(
+            sourceImg,
+            0, 0, sourceImg.naturalWidth, sourceImg.naturalHeight,
+            0, 0, patternCanvas.width, patternCanvas.height
+        )
+        sourcePattern = _seedCtx.createPattern(patternCanvas, "repeat")
 
         for canvas in [inputCanvas, outputCanvas] {
             canvas.addEventListener("mousedown", (e HTMLMouseEvent) => {
@@ -290,7 +310,17 @@ class PhotoDemoController {
 
     def seedCanvas HTMLCanvasElement { return _seedCanvas }
 
-    def _drawAtPoint(ctx CanvasRenderingContext2D, point Vector, fillStyle dynamic, size int) {
+    def _drawAtPoint(ctx CanvasRenderingContext2D, point Vector, fillStyle string, size int) {
+        ctx.fillStyle = fillStyle
+        _drawAtPoint(ctx, point, size)
+    }
+
+    def _drawAtPoint(ctx CanvasRenderingContext2D, point Vector, fillStyle CanvasPattern, size int) {
+        ctx.fillStyle = fillStyle
+        _drawAtPoint(ctx, point, size)
+    }
+
+    def _drawAtPoint(ctx CanvasRenderingContext2D, point Vector, size int) {
         ctx.beginPath
         ctx.rect(
             point.x as int,
@@ -298,15 +328,14 @@ class PhotoDemoController {
             size,
             size
         )
-        # TODO(ryan): Talk to Evan about this
-        (ctx as dynamic).fillStyle = fillStyle
         ctx.fill
     }
 
     # Called by mouse behaviors
 
     def clearSeedCanvas {
-        inputContext.clearRect(0, 0, inputCanvas.width, inputCanvas.height)
+        const rect = inputCanvas.getBoundingClientRect
+        inputContext.clearRect(0, 0, rect.width, rect.height)
         _seedCtx.clearRect(0, 0, _seedCanvas.width, _seedCanvas.height)
     }
 
@@ -315,6 +344,15 @@ class PhotoDemoController {
 
         # Pin the sourceImage pixels down onto the seed canvas
         # where the user is drawing
-        _drawAtPoint(_seedCtx, point, sourcePattern, 1)
+
+        _seedCtx.fillStyle = sourcePattern
+        _seedCtx.beginPath
+        _seedCtx.rect(
+            (point.x * Browser.devicePixelRatio) as int,
+            (point.y * Browser.devicePixelRatio) as int,
+            1,
+            1
+        )
+        _seedCtx.fill
     }
 }

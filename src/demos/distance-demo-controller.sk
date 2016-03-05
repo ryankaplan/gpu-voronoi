@@ -15,19 +15,22 @@ class DistanceDemoController {
         _outputCanvas = outputCanvas
         _onDraw = onDraw
         _ctx = _inputCanvas.getContext2D
+        _ctx.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
+
+        const canvasRect = _inputCanvas.getBoundingClientRect
 
         for i in 1.._numPads {
-            _pads.append(Square.new(Vector.new(Math.random * _inputCanvas.width, Math.random * _inputCanvas.height)))
+            _pads.append(Square.new(Vector.new(Math.random * canvasRect.width, Math.random * canvasRect.height)))
             _pads[_pads.count - 1].color = waterColors[i % waterColors.count]
             _speeds.append(15.0 + Math.random * 8.0)
         }
 
-        _fish = Square.new(Vector.new(Math.random * _inputCanvas.width, Math.random * _inputCanvas.height))
+        _fish = Square.new(Vector.new(Math.random * canvasRect.width, Math.random * canvasRect.height))
         _fish.color = Color.fromHex(0xFFE911)
 
         for canvas in [_inputCanvas, _outputCanvas] {
             canvas.addEventListener("mousemove", (e HTMLMouseEvent) => {
-                _fish.center = canvasMouseLocation(canvas, e)
+                _fish.center = e.location
             })
         }
 
@@ -49,7 +52,8 @@ class DistanceDemoController {
     }
 
     def _render(timeElapsed double) {
-        _ctx.clearRect(0, 0, _inputCanvas.width, _inputCanvas.height)
+        const canvasRect = _inputCanvas.getBoundingClientRect
+        _ctx.clearRect(0, 0, canvasRect.width, canvasRect.height)
 
         for i in 1.._pads.count {
             var pad = _pads[i]
@@ -64,7 +68,7 @@ class DistanceDemoController {
                 }
             }
 
-            pad.center %= Vector.new(_inputCanvas.width, _inputCanvas.height)
+            pad.center %= Vector.new(canvasRect.width, canvasRect.height)
         }
 
         for pad in _pads {

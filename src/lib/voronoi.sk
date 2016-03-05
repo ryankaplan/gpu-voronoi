@@ -146,7 +146,7 @@ class Voronoi {
                     .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
                     .uniform("iRelease", RELEASE ? 1 : 0)
                     .uniform("iAntialiasingFactor", _options.antialiasingFactor)
-                    .uniform("iMinSeedDistanceThreshold", _options.minSeedDistanceThreshold)
+                    .uniform("iMinSeedDistanceThreshold", _options.minSeedDistanceThreshold * Browser.devicePixelRatio)
                     .draw(_wham.ctx.TRIANGLE_STRIP, 4)
 
         _drawTempTexture
