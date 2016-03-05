@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <!-- From here: http://stackoverflow.com/a/4389976 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Demos</title>
+    <title>Voronoi GPU</title>
     <link href='https://fonts.googleapis.com/css?family=Lato:300,700italic' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="style.css">
     <script src="demo-compiled.js"></script>
@@ -55,8 +55,40 @@
         <canvas class="output-canvas"></canvas>
       </div>
 
+      <h2>
+        How does this work?
+      </h2>
+
       <p>
-        In the above examples, we draw a Voronoi diagram by walking through every pixel and, for each pixel, drawing the color of the closest seed. In the demo below, we show the distance to the closest seed. A white pixel is close a seed and a dark pixel is far from a seed.
+        There are a few other popular algorithms for computing Voronoi diagrams. If you're interested in a survey you can read <a href="http://www.alanzucconi.com/2015/02/24/to-voronoi-and-beyond/" target="blank_">this article</a>. But I'll talk about one that I used above. I think it's really cool and it's called Jump Flooding.
+      </p>
+
+      <p>
+        There's a really simple way of computing Voronoi diagrams: for every pixel in an image, look through every seed and take the color of the closest one. This works fine but it gets slow when you have lots of seeds. You can picture it searching radially outward for every pixel, like in the gif below.
+      </p>
+
+      <div style="width: 100%; text-align: center;">
+        <img src="naive.gif" alt="" />
+      </div>
+
+      <p>
+          Each pixel looks at its neighbours to see if there are any seeds. Then it looks to those neighbours neighbours, and so on. At each pixel it compares its distance to the distance of the closest known seed. When you've searched all pixels in the grid, you have the location of the closest seed.
+      </p>
+
+      <p>
+          Jump Flooding is similar to this. It just uses a more efficient searching pattern. Instead of searching in rings around our current pixel, it shoots rays out of the current pixel in a radial pattern. The first step looks at the neighbouring 8 pixels, just like the naive approach above. But the second step - instead of searching 16 new pixels like the naive approach - searches just 8 pixels again, each slightly further from the original pixel. And the third step - instead of 32 pixels - searches 8 pixels again. You get the idea. Here's a gif.
+      </p>
+
+      <div style="width: 100%; text-align: center;">
+        <img src="jump-flood.gif" alt="" />
+      </div>
+
+      <h2>
+          Other Applications of Jump Flooding
+      </h2>
+
+      <p>
+        In the demos up top we use the Jump Flooding algorithm to draw Voronoi diagrams. For each pixel we calculate the color of the closest seed and the distance to the closest seed. The Jump Flooding algorithm gives us something else that we didn't draw: the distance to the closest seed. Below is a demo where the color of the pixel changes based on the distance to the closest seed. Bright pixels are close to a seed and dark pixels are far from a seed.
       </p>
 
       <div id="distance-demo-container" class="demo-container">
@@ -65,29 +97,13 @@
       </div>
 
       <p>
-        And below we only draw pixels that are within some minimum distance of a seed.
+        We can use this to implement 'outlines' on shapes. Below is a demo of a rectangle - you can drag it to move it around. In the right canvas, we've run the Jump Flooding algorithm and we draw pixels that are within 10px of an seed (aka any pixel in the square). What we get is a square with an outline.
       </p>
 
       <div id="threshold-demo-container" class="demo-container">
         <canvas class="input-canvas"></canvas>
         <canvas class="output-canvas"></canvas>
       </div>
-
-      <!--
-
-      <h2>
-        How does this work?
-      </h2>
-
-      <p>
-        There's a really simple way of computing Voronoi diagrams: for every pixel in an image, look through every seed and take the color of the closest one. This gets pretty slow as you add a lot of seeds.
-      </p>
-
-      <p>
-        There are a few other popular algorithms for computing Voronoi diagrams, and I won't go into all of them (<a href="http://www.alanzucconi.com/2015/02/24/to-voronoi-and-beyond/">this article</a> gives a good overview). But I was recently showed one that I thought was particularly cool. It's performance doesn't depend on how many seeds you start with - and it's well suited to running on the GPU. So it runs really fast and you can make demos that work in real time.
-      </p>
-
-      -->
 
     </div>
     <div id="webgl-error" style="display: none;">
