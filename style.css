@@ -2,25 +2,61 @@ html, body {
     width: 100%;
     height: 100%;
 
-    font-family: 'Lato', sans-serif;
     font-weight: 300;
-    color: #DDD;
-    background-color: #222;
+    color: #CCC;
+    background-color: #282828;
 }
 
 a {
-    color: white;
+    color: #DDD;
+}
+
+p {
+    font-family: Georgia, Cambria, 'Times New Roman', Times, serif;
+    font-size: 20px;
+}
+
+.uppercase {
+    text-transform: uppercase;
+}
+
+h1, h2, h3, .sans-serif {
+    font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Geneva, Verdana, sans-serif;
+    color: #EEE;
+    text-transform: uppercase;
+}
+
+#demo-page {
+    max-width: 760px;
+    margin: 20px auto;
+    line-height: 120%;
+}
+
+h1 {
+    font-size: 36px;
+    line-height: 36px;
+    margin: 60px 20px;
+}
+
+h2 {
+    font-size: 28px;
+    line-height: 28px;
+    margin: 60px 20px 40px 20px;
+}
+
+h1, h2 {
+    letter-spacing: 2px;
 }
 
 /* Demo index page */
 
 hr {
-    border: 1px solid #D3D3FF;
+    border: 1px solid #DDD;
 }
 
 .disclaimer {
-    font-weight: bold;
-    font-style: italic;
+    font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Geneva, Verdana, sans-serif;
+    font-size: 14px;
 }
 
 #webgl-error {
@@ -30,31 +66,9 @@ hr {
     padding-top: 100px;
 }
 
-#demo-page {
-    max-width: 700px;
-    margin: 20px auto;
-    line-height: 120%;
-}
-
-#demo-page h1 {
-    font-size: 30px;
-    line-height: 30px;
-    margin: 40px 20px;
-}
-
-#demo-page h2 {
-    font-size: 20px;
-    line-height: 20px;
-    margin: 30px 20px;
-}
-
-#demo-page h1, h2 {
-    letter-spacing: 2px;
-}
-
 #demo-page p {
-    margin: 35px 20px;
-    line-height: 200%;
+    margin: 45px 20px;
+    line-height: 250%;
     letter-spacing: 0.5px;
 }
 
@@ -84,4 +98,9 @@ canvas {
     position: absolute;
     top: 0;
     left: 0;
+}
+
+
+#fish-demo-container .input-canvas {
+    background-color: #111;
 }
