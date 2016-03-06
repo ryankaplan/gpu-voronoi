@@ -5,7 +5,6 @@
     <!-- From here: http://stackoverflow.com/a/4389976 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Voronoi GPU</title>
-    <link href='https://fonts.googleapis.com/css?family=Lato:300,700italic' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="style.css">
     <script src="demo-compiled.js"></script>
   </head>
@@ -16,7 +15,7 @@
       <hr>
 
       <p class="disclaimer">
-        <span class="uppercase">Disclaimer:</span> the demos on this page use WebGL features that aren't available on many mobile devices. For the best experience, read this on a Desktop computer.
+        The demos on this page use WebGL features that aren't available on many mobile devices. For the best experience, read this on a Desktop computer.
       </p>
 
       <hr>
@@ -56,11 +55,11 @@
       </h2>
 
       <p>
-        There are a few popular algorithms for computing Voronoi diagrams. I'll talk about one that I used to build the demos above (by the way you can find the code <a target="blank_" href="https://github.com/ryankaplan/gpu-voronoi">here</a>). The approach is from a paper called <a href="http://www.comp.nus.edu.sg/~tants/jfa.html" target="blank_">Jump Flooding in GPU with Applications to Voronoi Diagram and Distance Transform</a>. We'll call it JFA - short for Jump Flooding Algorithm.
+        There are a few popular algorithms for computing Voronoi diagrams. I'll talk about the one that I used to build the demos above (by the way you can find the code <a target="blank_" href="https://github.com/ryankaplan/gpu-voronoi">here</a>). The approach is from a paper called <a href="http://www.comp.nus.edu.sg/~tants/jfa.html" target="blank_">Jump Flooding in GPU with Applications to Voronoi Diagram and Distance Transform</a>. We'll call it JFA - short for Jump Flooding Algorithm.
      </p>
 
       <p>
-        The input to JFA is an image that looks like the left canvasses in the demos above. You iterate over the image in <i>rounds</i>, each with a <i>step length</i>, k. In a given round you iterate through each pixel (i, j) and look at 8 pixels around it. The 8 pixels that you look at aren't the direct neighbours of the node. They depend on the step length of the round that you're in. If your round has step length k, then you look at nearby pixels in the pattern shown in the diagram below.
+        The input to JFA is an image that looks like the left canvasses in the first two demos above: a blank background with some colored seeds on it. You iterate over the image in <i>rounds</i>, each with a <i>step length</i>, k. In a given round you iterate through each pixel (i, j) and look at 8 pixels around it. The 8 pixels that you look at aren't the immediate neighbours. They depend on the step length of the round that you're in. If your round has step length k, then you look at nearby pixels in the pattern shown in the diagram below.
       </p>
 
       <div style="width: 100%; text-align: center;">
@@ -68,7 +67,7 @@
       </div>
 
       <p>
-        If your round has step length 1, then you look at your immediate neighbours. But if your step length is 10, then you look 10 pixels North, West, East, South, etc.
+        If your round has step length 1, then you look at your immediate neighbours. But if your step length is 10, then you look 10 pixels North, North-West, West, South-West, etc.
       </p>
 
       <p>
