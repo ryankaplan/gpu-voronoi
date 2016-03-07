@@ -48,6 +48,8 @@ h1, h2 {
     letter-spacing: 2px;
 }
 
+
+
 /* Demo index page */
 
 hr {
@@ -57,6 +59,13 @@ hr {
 .disclaimer {
     font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Geneva, Verdana, sans-serif;
     font-size: 14px;
+}
+
+.image-caption {
+    color: #999;
+    margin: 12px;
+    font-size: 12px;
+    font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Geneva, Verdana, sans-serif;
 }
 
 #webgl-error {
