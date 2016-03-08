@@ -27,11 +27,10 @@ def createVoronoiGenerator(outputCanvas HTMLCanvasElement, options Voronoi.Optio
     return voronoi
 }
 
-def initializePaintDemo(container HTMLElement, antialiasingFactor int) {
+def initializePaintDemo(container HTMLElement) {
     const inputCanvas = getCanvas(container, "input-canvas", 256)
     const outputCanvas = getCanvas(container, "output-canvas", 256)
     const opts = Voronoi.Options.new
-    opts.antialiasingFactor = antialiasingFactor
     const voronooi = createVoronoiGenerator(outputCanvas, opts)
 
     # A CanvasDrawController handles user draw-actions on the input canvas
@@ -43,12 +42,11 @@ def initializePaintDemo(container HTMLElement, antialiasingFactor int) {
     })
 }
 
-def initializeFishDemo(container HTMLElement, antialiasingFactor int) {
+def initializeFishDemo(container HTMLElement) {
     const inputCanvas = getCanvas(container, "input-canvas", 256)
     const outputCanvas = getCanvas(container, "output-canvas", 256)
     const opts = Voronoi.Options.new
     opts.wrap = true
-    opts.antialiasingFactor = antialiasingFactor
     const voronoi = createVoronoiGenerator(outputCanvas, opts)
 
     FishGameController.new(inputCanvas, outputCanvas, => {
@@ -58,11 +56,10 @@ def initializeFishDemo(container HTMLElement, antialiasingFactor int) {
     })
 }
 
-def initializePhotoDemo(container HTMLElement, antialiasingFactor int) {
+def initializePhotoDemo(container HTMLElement) {
     const inputCanvas = getCanvas(container, "input-canvas", 256)
     const outputCanvas = getCanvas(container, "output-canvas", 256)
     const opts = Voronoi.Options.new
-    opts.antialiasingFactor = antialiasingFactor
     const voronoi = createVoronoiGenerator(outputCanvas, opts)
 
     PhotoDemoController.new(inputCanvas, outputCanvas, (photoController PhotoDemoController) => {
@@ -72,12 +69,11 @@ def initializePhotoDemo(container HTMLElement, antialiasingFactor int) {
     })
 }
 
-def initializeDistanceDemo(container HTMLElement, antialiasingFactor int) {
+def initializeDistanceDemo(container HTMLElement) {
     const inputCanvas = getCanvas(container, "input-canvas", 256)
     const outputCanvas = getCanvas(container, "output-canvas", 256)
     const opts = Voronoi.Options.new
     opts.wrap = true
-    opts.antialiasingFactor = antialiasingFactor
     const voronoi = createVoronoiGenerator(outputCanvas, opts)
 
     FishGameController.new(inputCanvas, outputCanvas, => {
@@ -87,12 +83,11 @@ def initializeDistanceDemo(container HTMLElement, antialiasingFactor int) {
     })
 }
 
-def initializeThresholdDemo(container HTMLElement, antialiasingFactor int) {
+def initializeThresholdDemo(container HTMLElement) {
     const inputCanvas = getCanvas(container, "input-canvas", 256)
     const outputCanvas = getCanvas(container, "output-canvas", 256)
     const opts = Voronoi.Options.new
     opts.wrap = true
-    opts.antialiasingFactor = antialiasingFactor
     opts.minSeedDistanceThreshold = 15.0
     const voronoi = createVoronoiGenerator(outputCanvas, opts)
 
@@ -106,20 +101,11 @@ def initializeThresholdDemo(container HTMLElement, antialiasingFactor int) {
 @entry
 def main {
     window.onload = => {
-        var antialiasingFactor = 1
-
-        try {
-            const antialiasingFactorParam = Browser.getQueryVariable("antialiasingFactor")
-            if antialiasingFactorParam != null {
-                antialiasingFactor = parseInt(antialiasingFactorParam, 10)
-            }
-        }
-
-        initializePaintDemo(document.getElementById("paint-demo-container"), antialiasingFactor)
-        initializeFishDemo(document.getElementById("fish-demo-container"), antialiasingFactor)
-        initializePhotoDemo(document.getElementById("photo-demo-container"), antialiasingFactor)
-        initializeDistanceDemo(document.getElementById("distance-demo-container"), antialiasingFactor)
-        initializeThresholdDemo(document.getElementById("threshold-demo-container"), antialiasingFactor)
+        initializePaintDemo(document.getElementById("paint-demo-container"))
+        initializeFishDemo(document.getElementById("fish-demo-container"))
+        initializePhotoDemo(document.getElementById("photo-demo-container"))
+        initializeDistanceDemo(document.getElementById("distance-demo-container"))
+        initializeThresholdDemo(document.getElementById("threshold-demo-container"))
     }
 }
 

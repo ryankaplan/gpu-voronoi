@@ -15,7 +15,6 @@ def isPowerOfTwo(number int) bool {
 namespace Voronoi {
     class Options {
         var wrap = false
-        var antialiasingFactor = 1
 
         # If this is set to a number greater than 0, then when you call
         # Voronoi.drawToOutputCanvas we draw colors to pixels that are
@@ -28,9 +27,7 @@ class Voronoi {
     const _options Options
     var _wham Wham
 
-    # Width and height of the JFA canvas. Must be a power of two becuase
-    # its the size of a WebGL texture.
-    var _canvasSize int
+    var _gridSize int
 
     var _prepJumpFloodData Wham.Program
     var _jumpFlood Wham.Program
@@ -61,7 +58,7 @@ class Voronoi {
         }
 
         _options = options
-        _canvasSize = canvas.width
+        _gridSize = canvas.width
         _outputCanvas = canvas
 
         _wham = Wham.new(canvas)
@@ -101,10 +98,6 @@ class Voronoi {
         _framebuffer = Wham.Framebuffer.create(ctx)
     }
 
-    def _gridSize int {
-        return _canvasSize * _options.antialiasingFactor
-    }
-
     def _checkFramebufferCompletion {
         if !RELEASE {
             const ctx = _wham.ctx
@@ -134,19 +127,6 @@ class Voronoi {
     }
 
     def drawToOutputCanvas {
-        # _wham.defaultFramebuffer.bind
-        # _checkFramebufferCompletion
-
-        # _destTexture.bind(0)
-        # _wham.ctx.viewport(0, 0, _outputCanvas.width, _outputCanvas.height)
-        # _renderTexture.use
-        #               .attrib("quad", _quadBuffer, 2)
-        #               .uniform("iTexture", 0)
-        #               .uniform("iResolution", Float32Array.new([_outputCanvas.width, _outputCanvas.height]))
-        #               .draw(_wham.ctx.TRIANGLE_STRIP, 4)
-        # return
-
-
         # First draw _destTexture into _tempOutputTexture
         _framebuffer.attach(_tempOutputTexture)
         _checkFramebufferCompletion
@@ -162,9 +142,7 @@ class Voronoi {
                           .attrib("quad", _quadBuffer, 2)
                           .uniform("iSeedInputTexture", 0)
                           .uniform("iCellGridTexture", 1)
-                          .uniform("iCanvasSize", Float32Array.new([_gridSize, _gridSize]))
                           .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
-                          .uniform("iAntialiasingFactor", _options.antialiasingFactor)
                           .uniform("iMinSeedDistanceThreshold", _options.minSeedDistanceThreshold * Browser.devicePixelRatio)
                           .draw(_wham.ctx.TRIANGLE_STRIP, 4)
 
@@ -181,9 +159,7 @@ class Voronoi {
                         .use
                         .attrib("quad", _quadBuffer, 2)
                         .uniform("iCellGridTexture", 0)
-                        .uniform("iCanvasSize", Float32Array.new([_gridSize, _gridSize]))
                         .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
-                        .uniform("iAntialiasingFactor", _options.antialiasingFactor)
                         .draw(_wham.ctx.TRIANGLE_STRIP, 4)
 
         _drawTempTexture

@@ -4,13 +4,13 @@ uniform sampler2D iCellGridTexture;
 uniform sampler2D iSeedInputTexture;
 uniform sampler2D iInputTexture;
 
-uniform vec2 iGridSize; // Width and height of iCellGridTexture
-uniform vec2 iCanvasSize; // Size of HTML canvas element
+// Width and height of texture grid that we use to store
+// JFA data
+uniform vec2 iGridSize;
 uniform vec2 iResolution;
 uniform vec2 iCellGridSize;
 
 uniform int iStepSize;
-uniform int iAntialiasingFactor;
 
 uniform float iMinSeedDistanceThreshold;
 
@@ -71,10 +71,6 @@ bool approxEqual(vec4 a, vec4 b) {
 
 bool between(vec2 value, vec2 bottom, vec2 top) {
     return value.x > bottom.x && value.x < top.x && value.y > bottom.y && value.y < top.y;
-}
-
-vec2 gridPointFromFragCoord(vec2 fragCoord) {
-    return iGridSize * gl_FragCoord.xy / iCanvasSize;
 }
 
 bool validUv(vec2 uv) {
@@ -207,8 +203,7 @@ export void fJumpFlood() {
 ////////////////////////////////////////////////////////////////////////
 
 export void fDrawJumpFloodData() {
-    vec2 gridPoint = gridPointFromFragCoord(gl_FragCoord.xy);
-    vec2 gridUv = gridPoint / iGridSize;
+    vec2 gridUv = gl_FragCoord.xy / iGridSize;
 
     vec4 object = texture2D(iCellGridTexture, gridUv);
     if (!cellIsValid(object)) {
@@ -225,8 +220,7 @@ export void fDrawJumpFloodData() {
 }
 
 export void fDrawDistanceField() {
-    vec2 gridPoint = gridPointFromFragCoord(gl_FragCoord.xy);
-    vec2 gridUv = gridPoint / iGridSize;
+    vec2 gridUv = gl_FragCoord.xy / iGridSize;
 
     if (!validUv(gridUv)) {
         gl_FragColor = RED;
@@ -238,7 +232,7 @@ export void fDrawDistanceField() {
         discard;
     } else {
         vec2 seedLocation = cellSeedLocation(object);
-        float dist = torusDistance(seedLocation, gridPoint, iGridSize);
+        float dist = torusDistance(seedLocation, gl_FragCoord.xy, iGridSize);
 
         // The 0.5 is made up. We just need to divide `dist` by
         // some number bigger than its maximum possible size, and
