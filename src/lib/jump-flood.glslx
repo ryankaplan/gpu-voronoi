@@ -239,7 +239,7 @@ export void fDrawJumpFloodData() {
 
     vec4 object = texture2D(iCellGridTexture, gridUv);
     if (!cellIsValid(object)) {
-        discard;
+        gl_FragColor = WHITE;
     } else if ((iMinSeedDistanceThreshold > 0.0 ) && (distance(cellSeedLocation(object), gridPoint) > iMinSeedDistanceThreshold)) {
         gl_FragColor = BLACK;
     } else {

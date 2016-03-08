@@ -26,6 +26,20 @@ h1, h2, h3, .sans-serif {
     text-transform: uppercase;
 }
 
+.label {
+    font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Geneva, Verdana, sans-serif;
+}
+
+.jfa-round-label {
+    display: inline-block;
+    text-align: center;
+    width: 256px;
+}
+
+.jfa-round-slider {
+    width: 256px;
+}
+
 #demo-page {
     max-width: 760px;
     margin: 20px auto;

@@ -202,15 +202,14 @@ class Voronoi {
     # example, if you're showing an explanation of the
     # algorithm.
     def resetVoronoiSteps {
-        var stepSize int = _gridSize / 2
+        var stepSize double = _gridSize / 2
         _simulationStepper = () => {
             if stepSize >= 1 {
-                _runJumpFloodStep(stepSize)
+                _runJumpFloodStep(stepSize as int)
                 stepSize /= 2
             } else if stepSize < 1 {
-                for i in 1..10 {
-                    _runJumpFloodStep(11 - i)
-                }
+                _runJumpFloodStep(2)
+                _runJumpFloodStep(1)
             }
         }
     }

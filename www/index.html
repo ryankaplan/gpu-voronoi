@@ -81,6 +81,18 @@
         In an image of width and height N, JFA performs log(N) rounds. The first round has step length N / 2, then next has N / 4, the next has N / 8, and so on until N / k is 1.
       </p>
 
+      <p>
+          Below is a demo a lot like the first one on this page. You can draw in the left canvas and the corresponding Voronoi diagram appears in the right canvas. I've added a slider though which sets the maximum JFA round number. If you set it to 5, then we stop computing JFA at round 5. Try adding a few seeds and moving the slider from 0 through the maximum value to see what the pixel grid looks like at each step of JFA.
+      </p>
+
+      <div id="slider-demo-container" class="demo-container">
+        <canvas class="input-canvas"></canvas>
+        <canvas class="output-canvas"></canvas>
+        <div>
+            <span class="jfa-round-label label"></span><input class="jfa-round-slider" type="range"></input>
+        </div>
+      </div>
+
       <h2>
         Distance fields
       </h2>
