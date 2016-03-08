@@ -48,6 +48,7 @@ class Voronoi {
     var _simulationStepper dynamic
 
 
+    var _inputCanvas HTMLCanvasElement
     var _outputCanvas HTMLCanvasElement
 
     def new(canvas HTMLCanvasElement, options Options) {
@@ -83,7 +84,7 @@ class Voronoi {
         _quadBuffer = Wham.Buffer.new(ctx)
         _quadBuffer.update(Wham.QUAD2, ctx.STATIC_DRAW)
 
-        var opts = Wham.TextureOptions.new(ctx, ctx.RGBA, ctx.REPEAT, ctx.NEAREST, ctx.FLOAT)
+        var opts = Wham.TextureOptions.new(ctx, ctx.RGBA, ctx.REPEAT, ctx.NEAREST, ctx.UNSIGNED_BYTE)
         _sourceTexture = Wham.Texture.new(ctx, opts)
         _sourceTexture.clear(_gridSize, _gridSize)
         _destTexture = Wham.Texture.new(ctx, opts)
@@ -95,7 +96,7 @@ class Voronoi {
 
         opts = Wham.TextureOptions.new(ctx, ctx.RGBA, ctx.REPEAT, ctx.NEAREST, ctx.UNSIGNED_BYTE)
         _seedInputTexture = Wham.Texture.new(ctx, opts)
-        _seedInputTexture.clear(_canvasSize, _canvasSize)
+        _seedInputTexture.clear(_gridSize, _gridSize)
 
         _framebuffer = Wham.Framebuffer.create(ctx)
     }
@@ -115,6 +116,7 @@ class Voronoi {
     }
 
     def setSeedsFromCanvas(inputCanvas HTMLCanvasElement) {
+        _inputCanvas = inputCanvas
         _framebuffer.attach(_sourceTexture)
         _checkFramebufferCompletion
 
@@ -123,31 +125,48 @@ class Voronoi {
         _seedInputTexture.bind(0)
 
         _wham.ctx.viewport(0, 0, _gridSize, _gridSize)
-        _prepJumpFloodData
-                    .use
-                    .attrib("quad", _quadBuffer, 2)
-                    .uniform("iSeedInputTexture", 0)
-                    .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
-                    .uniform("iBackgroundColor", Float32Array.new([0, 0, 0, 0]))
-                    .draw(_wham.ctx.TRIANGLE_STRIP, 4)
+        _prepJumpFloodData.use
+                          .attrib("quad", _quadBuffer, 2)
+                          .uniform("iSeedInputTexture", 0)
+                          .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
+                          .uniform("iBackgroundColor", Float32Array.new([0, 0, 0, 0]))
+                          .draw(_wham.ctx.TRIANGLE_STRIP, 4)
     }
 
     def drawToOutputCanvas {
+        # _wham.defaultFramebuffer.bind
+        # _checkFramebufferCompletion
+
+        # _destTexture.bind(0)
+        # _wham.ctx.viewport(0, 0, _outputCanvas.width, _outputCanvas.height)
+        # _renderTexture.use
+        #               .attrib("quad", _quadBuffer, 2)
+        #               .uniform("iTexture", 0)
+        #               .uniform("iResolution", Float32Array.new([_outputCanvas.width, _outputCanvas.height]))
+        #               .draw(_wham.ctx.TRIANGLE_STRIP, 4)
+        # return
+
+
         # First draw _destTexture into _tempOutputTexture
         _framebuffer.attach(_tempOutputTexture)
         _checkFramebufferCompletion
-        _destTexture.bind(0)
+
+        # Create a texture for the canvas. Bind it to texture position 0.
+        _seedInputTexture.set(_inputCanvas)
+        _seedInputTexture.bind(0)
+
+        _destTexture.bind(1)
+
         _wham.ctx.viewport(0, 0, _gridSize, _gridSize)
-        _drawJumpFloodData
-                    .use
-                    .attrib("quad", _quadBuffer, 2)
-                    .uniform("iCellGridTexture", 0)
-                    .uniform("iCanvasSize", Float32Array.new([_gridSize, _gridSize]))
-                    .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
-                    .uniform("iRelease", RELEASE ? 1 : 0)
-                    .uniform("iAntialiasingFactor", _options.antialiasingFactor)
-                    .uniform("iMinSeedDistanceThreshold", _options.minSeedDistanceThreshold * Browser.devicePixelRatio)
-                    .draw(_wham.ctx.TRIANGLE_STRIP, 4)
+        _drawJumpFloodData.use
+                          .attrib("quad", _quadBuffer, 2)
+                          .uniform("iSeedInputTexture", 0)
+                          .uniform("iCellGridTexture", 1)
+                          .uniform("iCanvasSize", Float32Array.new([_gridSize, _gridSize]))
+                          .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
+                          .uniform("iAntialiasingFactor", _options.antialiasingFactor)
+                          .uniform("iMinSeedDistanceThreshold", _options.minSeedDistanceThreshold * Browser.devicePixelRatio)
+                          .draw(_wham.ctx.TRIANGLE_STRIP, 4)
 
         _drawTempTexture
     }
@@ -164,7 +183,6 @@ class Voronoi {
                         .uniform("iCellGridTexture", 0)
                         .uniform("iCanvasSize", Float32Array.new([_gridSize, _gridSize]))
                         .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
-                        .uniform("iRelease", RELEASE ? 1 : 0)
                         .uniform("iAntialiasingFactor", _options.antialiasingFactor)
                         .draw(_wham.ctx.TRIANGLE_STRIP, 4)
 
