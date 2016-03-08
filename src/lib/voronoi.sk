@@ -1,11 +1,3 @@
-def getWebGLExtension(gl WebGLRenderingContext, name string) dynamic {
-    const ext = gl.getExtension(name)
-    if ext == null {
-        throw Error.new("Unsupported WebGL extension with name \(name)")
-    }
-    return ext
-}
-
 # See here to understand how this works:
 # http://www.skorks.com/2010/10/write-a-function-to-determine-if-a-number-is-a-power-of-2/
 def isPowerOfTwo(number int) bool {
@@ -69,7 +61,6 @@ class Voronoi {
         _wham.ctx.disable(_wham.ctx.DEPTH_TEST)
 
         const ctx = _wham.ctx
-        getWebGLExtension(ctx, "OES_texture_float")
         ctx.disable(ctx.DEPTH_TEST)
 
         _jumpFlood = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_JUMP_FLOOD)

@@ -14,6 +14,14 @@ class Wham {
         ctx = canvas.getContextWebGL
         defaultFramebuffer = Wham.Framebuffer.getDefault(ctx)
     }
+
+    def getWebGLExtension(gl WebGLRenderingContext, name string) dynamic {
+        const ext = gl.getExtension(name)
+        if ext == null {
+            throw Error.new("Unsupported WebGL extension with name \(name)")
+        }
+        return ext
+    }
 }
 
 namespace Wham {
@@ -265,7 +273,7 @@ namespace Wham {
             _ctx.activeTexture((_ctx.TEXTURE0 as dynamic) + unit)
             bind
         }
-       
+
         def clear(width int, height int) {
             bind
             _ctx.texImage2D(_ctx.TEXTURE_2D, 0, _options.format,
