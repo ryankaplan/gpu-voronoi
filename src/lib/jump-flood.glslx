@@ -1,4 +1,5 @@
 precision highp float;
+precision highp int;
 
 uniform sampler2D iCellGridTexture;
 uniform sampler2D iSeedInputTexture;
@@ -9,11 +10,8 @@ uniform sampler2D iInputTexture;
 uniform vec2 iGridSize;
 uniform vec2 iResolution;
 uniform vec2 iCellGridSize;
-
 uniform int iStepSize;
-
 uniform float iMinSeedDistanceThreshold;
-
 uniform bool iUseTorusDistanceForSeeds;
 
 // The color that is *not* to be counted as seed.
@@ -106,19 +104,19 @@ vec4 createCell(const ivec2 location) {
 //
 // This is the call with co-ordinates (~65k, ~65k)
 vec4 createInvalidCell() {
-    return createCell(ivec2(60000, 60000));
+    return createCell(ivec2(21000, 21000));
 }
 
 // Input is a vec4 that can be used as a texel. It's co-ordinates
 // are from 0-1.
-vec2 cellSeedLocation(const vec4 obj) {
+vec2 cell_closestSeed(const vec4 obj) {
     int x = joinInt(ivec2(obj.rg * 255.));
     int y = joinInt(ivec2(obj.ba * 255.));
     return vec2(x, y);
 }
 
-bool cellIsValid(const vec4 obj) {
-    vec2 location = cellSeedLocation(obj);
+bool cell_isValid(const vec4 obj) {
+    vec2 location = cell_closestSeed(obj);
     return location.x < 20000.0;
 }
 
@@ -156,20 +154,20 @@ vec4 compareCellWithCellAtOffset(const vec4 self, const vec2 offset) {
         otherCell = createInvalidCell();
     }
 
-    if (!cellIsValid(otherCell)) {
+    if (!cell_isValid(otherCell)) {
         // Other is invalid. This means that 'offset' is off the grid or
         // 'otherCell' doesn't have any seed info yet.
         return self;
     }
 
-    else if (!cellIsValid(self)) {
+    else if (!cell_isValid(self)) {
         // Our seed location hasn't been set but other's has.
         return otherCell;
     }
 
     else {
-        vec2 selfSeedLocation = cellSeedLocation(self);
-        vec2 otherSeedLocation = cellSeedLocation(otherCell);
+        vec2 selfSeedLocation = cell_closestSeed(self);
+        vec2 otherSeedLocation = cell_closestSeed(otherCell);
 
         float selfSeedDist = iUseTorusDistanceForSeeds ? torusDistance(selfSeedLocation, gl_FragCoord.xy, iCellGridSize) : distance(selfSeedLocation, gl_FragCoord.xy);
         float otherSeedDist = iUseTorusDistanceForSeeds ? torusDistance(otherSeedLocation, gl_FragCoord.xy, iCellGridSize) : distance(otherSeedLocation, gl_FragCoord.xy);
@@ -204,18 +202,19 @@ export void fJumpFlood() {
 
 export void fDrawJumpFloodData() {
     vec2 gridUv = gl_FragCoord.xy / iGridSize;
-
     vec4 object = texture2D(iCellGridTexture, gridUv);
-    if (!cellIsValid(object)) {
-        discard;
-    } else {
+    vec2 seedLocation = cell_closestSeed(object) + vec2(.5);
+    float dist = torusDistance(seedLocation, gl_FragCoord.xy, iGridSize);
+
+    if (cell_isValid(object) && (iMinSeedDistanceThreshold < 0.) || (dist < iMinSeedDistanceThreshold)) {
         // Pixel shaders have fragments co-ordinates on the half pixel. We
         // lost the half pixel when encoding as an int, so add it back now
         // before we sample from the original pixel.
-        vec2 seedLocation = cellSeedLocation(object) + vec2(.5, .5);
         vec2 gridUv = seedLocation / iGridSize;
         vec2 gridUvFlippedY = vec2(gridUv.x, 1.0 - gridUv.y);
         gl_FragColor = texture2D(iSeedInputTexture, gridUvFlippedY);
+    } else {
+        gl_FragColor = BLACK;
     }
 }
 
@@ -228,18 +227,15 @@ export void fDrawDistanceField() {
     }
 
     vec4 object = texture2D(iCellGridTexture, gridUv);
-    if (!cellIsValid(object)) {
-        discard;
-    } else {
-        vec2 seedLocation = cellSeedLocation(object);
-        float dist = torusDistance(seedLocation, gl_FragCoord.xy, iGridSize);
+    vec2 seedLocation = cell_closestSeed(object);
+    float dist = torusDistance(seedLocation, gl_FragCoord.xy, iGridSize);
 
-        // The 0.5 is made up. We just need to divide `dist` by
-        // some number bigger than its maximum possible size, and
-        // for our demos `iGridSize.x / 0.5` works fine.
-        dist = 1.0 - (dist / (iGridSize.x * 0.5));
-        gl_FragColor = vec4(dist, dist, dist, 1.0);
-    }
+    // The 0.5 is made up. We just need to divide `dist` by
+    // some number bigger than its maximum possible size, and
+    // for our demos `iGridSize.x / 0.5` works fine.
+    dist = 1.0 - (dist / (iGridSize.x * 0.5));
+    gl_FragColor = vec4(dist, dist, dist, 1.0);
+
 }
 
 // Just renders a texture to the screen.
