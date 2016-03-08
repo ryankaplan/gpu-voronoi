@@ -31,7 +31,6 @@ class HTMLMouseEvent {
 namespace Browser {
     # This is a function so that we can easily stub it out
     def devicePixelRatio double {
-        return 2.0
         return window.devicePixelRatio
     }
 

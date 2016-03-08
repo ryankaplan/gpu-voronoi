@@ -3,7 +3,7 @@
 # generated (pink-ish) colors.
 
 namespace CanvasDrawController {
-    const dotRadius = 10
+    const dotRadius = 1
 }
 
 class CanvasDrawController {
