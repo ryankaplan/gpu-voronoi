@@ -1,10 +1,13 @@
 
 class MouseEvent {
-    # One of these is non-nil
     const _manager MouseBehaviorManager
+
+    # One of these is non-nil
     const mouseEvent HTMLMouseEvent
     const touchEvent HTMLTouchEvent
 
+    # Returns true if the user has clicked down with the mouse
+    # or if they are touching the screen
     def isDown bool {
         return _manager.lastKnownInfo.isDown
     }
@@ -29,6 +32,8 @@ class MouseEvent {
         return mouseEvent != null ? mouseEvent.target : touchEvent.target
     }
 
+    # Returns the equivalent of (offsetX, offsetY), but it works for touch
+    # events too. Returns the offset from the target of the event.
     def location Vector {
         const rect = target.getBoundingClientRect
 
