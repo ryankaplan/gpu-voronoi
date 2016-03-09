@@ -213,8 +213,10 @@ export void fDrawJumpFloodData() {
         vec2 gridUv = seedLocation / iGridSize;
         vec2 gridUvFlippedY = vec2(gridUv.x, 1.0 - gridUv.y);
         gl_FragColor = texture2D(iSeedInputTexture, gridUvFlippedY);
-    } else {
+    } else if (cell_isValid(object)) {
         gl_FragColor = BLACK;
+    } else {
+        gl_FragColor = WHITE;
     }
 }
 

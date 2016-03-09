@@ -98,6 +98,43 @@ def initializeThresholdDemo(container HTMLElement) {
     })
 }
 
+def initializeSliderDemo(container HTMLElement) {
+    const inputCanvas = getCanvas(container, "input-canvas", 256)
+    const outputCanvas = getCanvas(container, "output-canvas", 256)
+    const opts = Voronoi.Options.new
+    const voronooi = createVoronoiGenerator(outputCanvas, opts)
+
+    const label = (container as dynamic).getElementsByClassName("jfa-round-label")[0] as HTMLElement
+    const slider = (container as dynamic).getElementsByClassName("jfa-round-slider")[0]
+
+    slider.min = 1
+    slider.max = Math.log(inputCanvas.width) + 3
+    slider.value = slider.max
+    slider.step = 1
+
+    const drawWithSteps = (steps int) => {
+        label.textContent = "Round #\(slider.value)"
+        voronooi.setSeedsFromCanvas(inputCanvas)
+        voronooi.resetVoronoiSteps
+        for i in 0..steps {
+            voronooi.stepVoronoi
+        }
+        voronooi.drawToOutputCanvas
+    }
+
+    slider.oninput = (e HTMLEvent) => {
+        drawWithSteps(slider.value)
+    }
+    # TODO(ryan) oninput not supported in IE10: http://stackoverflow.com/a/19067260
+    #slider.onchange = func
+
+    # A CanvasDrawController handles user draw-actions on the input canvas
+    # Whenever the user draws, we re-render the voronoi diagram for the input
+    CanvasDrawController.new(inputCanvas, outputCanvas, => {
+        drawWithSteps(slider.value)
+    })
+}
+
 @entry
 def main {
     window.onload = => {
@@ -106,6 +143,7 @@ def main {
         initializePhotoDemo(document.getElementById("photo-demo-container"))
         initializeDistanceDemo(document.getElementById("distance-demo-container"))
         initializeThresholdDemo(document.getElementById("threshold-demo-container"))
+        initializeSliderDemo(document.getElementById("slider-demo-container"))
     }
 }
 
