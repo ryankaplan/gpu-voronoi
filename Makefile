@@ -7,7 +7,7 @@ npm-modules:
 
 build-shaders: | npm-modules
 	mkdir -p compiled
-	node_modules/.bin/glslx src/lib/jump-flood.glslx --output=compiled/jump-flood-shaders.sk --format=skew --renaming=internal-only --pretty-print
+	node_modules/.bin/glslx src/voronoi/jump-flood.glslx --output=compiled/jump-flood-shaders.sk --format=skew --renaming=internal-only --pretty-print
 
 build-demo: | npm-modules build-shaders
 	$(BUILD) --output-file=www/demo-compiled.js
