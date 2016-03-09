@@ -62,7 +62,9 @@ h1, h2 {
     letter-spacing: 2px;
 }
 
-
+.demo-controls {
+    margin-top: 20px;
+}
 
 /* Demo index page */
 
