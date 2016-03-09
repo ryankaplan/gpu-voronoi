@@ -44,6 +44,11 @@ class FishGameController {
 
         _mouseBehaviorManager.listenOnElement(_inputCanvas)
         _mouseBehaviorManager.listenOnElement(_outputCanvas)
+
+        _mouseBehaviorManager.onDown((e MouseEvent) => {
+            _fish.center = e.location
+        })
+
         _mouseBehaviorManager.onMove((e MouseEvent) => {
             _fish.center = e.location
         })
