@@ -1,33 +1,24 @@
 
-interface MouseBehavior {
-    def down(e HTMLMouseEvent)
-    def move(e HTMLMouseEvent)
-    def up(e HTMLMouseEvent)
-}
-
 class DrawSeedMouseBehavior :: MouseBehavior {
     var _controller PhotoDemoController
-    var _isMouseDown = false
 
-    def down(e HTMLMouseEvent) {
-        _isMouseDown = true
+    def down(e MouseEvent) {
         e.stopPropagation
         _controller.drawAtPoint(e.location)
         _controller.onDraw(_controller)
     }
 
-    def move(e HTMLMouseEvent) {
-        if _isMouseDown {
+    def move(e MouseEvent) {
+        if e.isDown {
             _controller.drawAtPoint(e.location)
             _controller.onDraw(_controller)
         }
         e.stopPropagation
     }
 
-    def up(e HTMLMouseEvent) {
+    def up(e MouseEvent) {
         _controller.drawAtPoint(e.location)
         _controller.onDraw(_controller)
-        _isMouseDown = false
         e.stopPropagation
     }
 }
@@ -177,27 +168,27 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
         ctx.stroke
     }
 
-    def _onMove(e HTMLMouseEvent) {
+    def _onMove(e MouseEvent) {
         switch _dragContext.type {
             case DragType.CENTER {
                 # Move both handle and center
                 const handleRelativeToCenter = _handle - _center
-                _center = Vector.new(e.offsetX, e.offsetY)
+                _center = e.location
                 _handle = _center + handleRelativeToCenter
             }
             case DragType.HANDLE {
                 # Move just the handle
-                _handle = Vector.new(e.offsetX, e.offsetY)
+                _handle = e.location
             }
         }
 
         _render
     }
 
-    def down(e HTMLMouseEvent) {
-        _lastKnownMouse = Vector.new(e.offsetX, e.offsetY)
+    def down(e MouseEvent) {
+        _lastKnownMouse = e.location
 
-        const mouseDown = Vector.new(e.offsetX, e.offsetY)
+        const mouseDown = e.location
         if _handle.distanceTo(mouseDown) < _center.distanceTo(mouseDown) {
             _dragContext = DragContext.new(DragType.HANDLE)
         } else {
@@ -208,8 +199,8 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
         _onMove(e)
     }
 
-    def move(e HTMLMouseEvent) {
-        _lastKnownMouse = Vector.new(e.offsetX, e.offsetY)
+    def move(e MouseEvent) {
+        _lastKnownMouse = e.location
         if _dragContext != null {
             _onMove(e)
         } else {
@@ -220,10 +211,10 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
         e.stopPropagation
     }
 
-    def up(e HTMLMouseEvent) {
+    def up(e MouseEvent) {
         _controller.drawAtPoint(e.location)
         _dragContext = null
-        _lastKnownMouse = Vector.new(e.offsetX, e.offsetY)
+        _lastKnownMouse = e.location
         _drawHandleAndCenter
         e.stopPropagation
     }
@@ -255,16 +246,16 @@ class PhotoDemoController {
     var sourceImg HTMLImageElement
     var sourcePattern CanvasPattern
 
-    var _isMouseDown = false
-
     # Set by someone else to hear when we draw
     var onDraw fn(PhotoDemoController)
 
-    var _mouseBehaviors List<MouseBehavior> = []
+    const _mouseBehaviorManager = MouseBehaviorManager.new
 
     def new(inputCanvas_ HTMLCanvasElement, outputCanvas_ HTMLCanvasElement, onDraw_ fn(PhotoDemoController)) {
         inputCanvas = inputCanvas_
         outputCanvas = outputCanvas_
+        _mouseBehaviorManager.listenOnElement(inputCanvas)
+        _mouseBehaviorManager.listenOnElement(outputCanvas)
         onDraw = onDraw_
         inputContext = inputCanvas.getContext2D
         inputContext.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
@@ -277,7 +268,6 @@ class PhotoDemoController {
 
         sourceImg = document.getElementById("eye") as HTMLImageElement
 
-
         const patternCanvas = document.createElement("canvas") as HTMLCanvasElement
         patternCanvas.width = _seedCanvas.width
         patternCanvas.height = _seedCanvas.height
@@ -288,24 +278,8 @@ class PhotoDemoController {
         )
         sourcePattern = _seedCtx.createPattern(patternCanvas, "repeat")
 
-        for canvas in [inputCanvas, outputCanvas] {
-            canvas.addEventListener("mousedown", (e HTMLMouseEvent) => {
-                for behavior in _mouseBehaviors { behavior.down(e) }
-            })
-
-            canvas.addEventListener("mousemove", (e HTMLMouseEvent) => {
-                for behavior in _mouseBehaviors { behavior.move(e) }
-            })
-
-            canvas.addEventListener("mouseup", (e HTMLMouseEvent) => {
-                for behavior in _mouseBehaviors { behavior.up(e) }
-            })
-        }
-
-        _mouseBehaviors = [
-            #DrawSeedMouseBehavior.new(self)
-            SeedSpiralMouseBehavior.new(self)
-        ]
+        #_mouseBehaviorManager.register(DrawSeedMouseBehavior.new(self))
+        _mouseBehaviorManager.register(SeedSpiralMouseBehavior.new(self))
     }
 
     def seedCanvas HTMLCanvasElement { return _seedCanvas }

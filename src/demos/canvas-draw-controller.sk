@@ -12,6 +12,8 @@ class CanvasDrawController {
     const _ctx CanvasRenderingContext2D
     const _onDraw fn()
 
+    const _mouseBehaviorManager = MouseBehaviorManager.new
+
     # onDraw will be called whenever the user draws something in the canvas.
     # Useful since we want to re-compute the Voronoi diagram of the canvas
     # every time the user draws.
@@ -24,29 +26,19 @@ class CanvasDrawController {
         _ctx = _inputCanvas.getContext2D
         _ctx.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
 
-        var isMouseDown = false
+        _mouseBehaviorManager.listenOnElement(_inputCanvas)
+        _mouseBehaviorManager.listenOnElement(_outputCanvas)
 
-        for canvas in [_inputCanvas, _outputCanvas] {
-            canvas.addEventListener("mousemove", (e HTMLMouseEvent) => {
-                if isMouseDown && (e.target == _inputCanvas || e.target == _outputCanvas) {
-                    _changeColorAndDraw(e.location)
-                }
-            })
-        }
-
-        document.addEventListener("mousedown", (e HTMLMouseEvent) => {
+        _mouseBehaviorManager.onDown((e MouseEvent) => {
             if e.target == _inputCanvas || e.target == _outputCanvas {
-                isMouseDown = true
                 _changeColorAndDraw(e.location)
             }
         })
 
-        document.addEventListener("mouseup", (e HTMLMouseEvent) => {
-            isMouseDown = false
-        })
-
-        document.addEventListener("mouseleave", (e HTMLMouseEvent) => {
-            isMouseDown = false
+        _mouseBehaviorManager.onMove((e MouseEvent) => {
+            if e.isDown {
+                _changeColorAndDraw(e.location)
+            }
         })
 
         const canvasRect = _inputCanvas.getBoundingClientRect

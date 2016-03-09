@@ -137,13 +137,13 @@ def initializeSliderDemo(container HTMLElement) {
 
 @entry
 def main {
-    window.onload = => {
+    window.addEventListener("load", => {
         initializePaintDemo(document.getElementById("paint-demo-container"))
         initializeFishDemo(document.getElementById("fish-demo-container"))
         initializePhotoDemo(document.getElementById("photo-demo-container"))
         initializeDistanceDemo(document.getElementById("distance-demo-container"))
         initializeThresholdDemo(document.getElementById("threshold-demo-container"))
         initializeSliderDemo(document.getElementById("slider-demo-container"))
-    }
+    })
 }
 

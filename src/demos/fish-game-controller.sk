@@ -22,6 +22,8 @@ class FishGameController {
     var _speeds List<double> = []
     var _fish Square
 
+    const _mouseBehaviorManager = MouseBehaviorManager.new
+
     def new(inputCanvas HTMLCanvasElement, outputCanvas HTMLCanvasElement, onDraw fn()) {
         _inputCanvas = inputCanvas
         _outputCanvas = outputCanvas
@@ -40,11 +42,11 @@ class FishGameController {
         _fish = Square.new(Vector.new(Math.random * canvasRect.width, Math.random * canvasRect.height))
         _fish.color = Color.fromHex(0xFFE911)
 
-        for canvas in [_inputCanvas, _outputCanvas] {
-            canvas.addEventListener("mousemove", (e HTMLMouseEvent) => {
-                _fish.center = e.location
-            })
-        }
+        _mouseBehaviorManager.listenOnElement(_inputCanvas)
+        _mouseBehaviorManager.listenOnElement(_outputCanvas)
+        _mouseBehaviorManager.onMove((e MouseEvent) => {
+            _fish.center = e.location
+        })
 
         _startRenderLoop
     }

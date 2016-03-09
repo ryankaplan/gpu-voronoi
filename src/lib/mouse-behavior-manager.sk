@@ -1,0 +1,195 @@
+
+class MouseEvent {
+    # One of these is non-nil
+    const _manager MouseBehaviorManager
+    const mouseEvent HTMLMouseEvent
+    const touchEvent HTMLTouchEvent
+
+    def isDown bool {
+        return _manager.lastKnownInfo.isDown
+    }
+
+    def preventDefault {
+        if mouseEvent != null {
+            mouseEvent.stopPropagation
+        } else {
+            touchEvent.stopPropagation
+        }
+    }
+
+    def stopPropagation {
+        if mouseEvent != null {
+            mouseEvent.stopPropagation
+        } else {
+            touchEvent.stopPropagation
+        }
+    }
+
+    def target HTMLElement {
+        return mouseEvent != null ? mouseEvent.target : touchEvent.target
+    }
+
+    def location Vector {
+        const rect = target.getBoundingClientRect
+
+        var clientLocation Vector = null
+        if mouseEvent != null {
+            clientLocation = Vector.new(mouseEvent.clientX, mouseEvent.clientY)
+        } else {
+            clientLocation = Vector.new(touchEvent.touches[0].clientX, touchEvent.touches[0].clientY)
+        }
+
+        return clientLocation - Vector.new(rect.left, rect.top)
+    }
+}
+
+interface MouseBehavior {
+    def down(e MouseEvent)
+    def move(e MouseEvent)
+    def up(e MouseEvent)
+}
+
+# For wrapping onDown, onMove, onUp callbacks
+class AnonymousBehavior :: MouseBehavior {
+    const onDown fn(MouseEvent)
+    const onMove fn(MouseEvent)
+    const onUp fn(MouseEvent)
+
+    def down(e MouseEvent) {
+        if onDown != null {
+            onDown(e)
+        }
+    }
+
+    def move(e MouseEvent) {
+        if onMove != null {
+            onMove(e)
+        }
+    }
+
+    def up(e MouseEvent) {
+        if onUp != null {
+            onUp(e)
+        }
+    }
+}
+
+# Wrapper that handles mouse and touch events for simple stuff
+# like down/drag/up. Doesn't handle swipes/rotates or anything
+# like that.
+class MouseInfo {
+    var isDown bool
+
+    def new(isDown_ bool) {
+        isDown = isDown_
+    }
+
+    def clone MouseInfo {
+        return MouseInfo.new(isDown)
+    }
+}
+
+class MouseWatcher {
+    var lastKnownInfo = MouseInfo.new(false)
+
+    def new {
+        window.addEventListener("load", => {
+            (document as dynamic).addEventListener("mousedown", (e HTMLMouseEvent) => {
+                lastKnownInfo.isDown = true
+            }, true)
+
+            (document as dynamic).addEventListener("mouseup", (e HTMLMouseEvent) => {
+                lastKnownInfo.isDown = false
+            })
+
+            (document as dynamic).addEventListener("mouseout", (e HTMLMouseEvent) => {
+                if e.toElement == null && e.relatedTarget == null {
+                    lastKnownInfo.isDown = false
+                }
+            })
+        })
+    }
+}
+
+# Need to have only one of these since it listens on the document with a
+# useCapture listener
+const MOUSE_WATCHER = MouseWatcher.new
+
+class MouseBehaviorManager {
+    var _mouseBehaviors List<MouseBehavior> = []
+
+    def register(behavior MouseBehavior) {
+        _mouseBehaviors.append(behavior)
+    }
+
+    def onDown(onDown fn(MouseEvent)) {
+        _mouseBehaviors.append(AnonymousBehavior.new(onDown, null, null))
+    }
+
+    def onMove(onMove fn(MouseEvent)) {
+        _mouseBehaviors.append(AnonymousBehavior.new(null, onMove, null))
+    }
+
+    def onUp(onUp fn(MouseEvent)) {
+        _mouseBehaviors.append(AnonymousBehavior.new(null, null, onUp))
+    }
+
+    def lastKnownInfo MouseInfo {
+        return MOUSE_WATCHER.lastKnownInfo.clone
+    }
+
+    def listenOnElement(element HTMLElement) {
+        element.addEventListener("mousedown", (e HTMLMouseEvent) => {
+            _notifyDown(MouseEvent.new(self, e, null))
+            e.preventDefault
+        })
+
+        element.addEventListener("mousemove", (e HTMLMouseEvent) => {
+            _notifyMove(MouseEvent.new(self, e, null))
+            e.preventDefault
+        })
+
+        element.addEventListener("mouseup", (e HTMLMouseEvent) => {
+            _notifyUp(MouseEvent.new(self, e, null))
+            e.preventDefault
+        })
+
+        element.addEventListener("mouseleave", (e HTMLMouseEvent) => {
+            _notifyUp(MouseEvent.new(self, e, null))
+            e.preventDefault
+        })
+
+        element.addEventListener("touchstart", (e HTMLTouchEvent) => {
+            _notifyDown(MouseEvent.new(self, null, e))
+            e.preventDefault
+        })
+
+        element.addEventListener("touchmove", (e HTMLTouchEvent) => {
+            _notifyMove(MouseEvent.new(self, null, e))
+            e.preventDefault
+        })
+
+        element.addEventListener("touchend", (e HTMLTouchEvent) => {
+            _notifyUp(MouseEvent.new(self, null, e))
+            e.preventDefault
+        })
+    }
+
+    def _notifyDown(event MouseEvent) {
+        for _behavior in _mouseBehaviors {
+            _behavior.down(event)
+        }
+    }
+
+    def _notifyUp(event MouseEvent) {
+        for _behavior in _mouseBehaviors {
+            _behavior.up(event)
+        }
+    }
+
+    def _notifyMove(event MouseEvent) {
+        for _behavior in _mouseBehaviors {
+            _behavior.move(event)
+        }
+    }
+}
