@@ -5,7 +5,9 @@
     <!-- From here: http://stackoverflow.com/a/4389976 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Voronoi GPU</title>
+    <link rel="stylesheet" href="nouislider.css">
     <link rel="stylesheet" href="style.css">
+    <script src="nouislider.min.js" ></script>
     <script src="demo-compiled.js"></script>
   </head>
   <body>
@@ -55,7 +57,7 @@
       </h2>
 
       <p>
-        There are a few popular algorithms for computing Voronoi diagrams. I'll talk about the one that I used to build the demos above (by the way you can find the code for them <a target="blank_" href="https://github.com/ryankaplan/gpu-voronoi">here</a>). The approach is from a paper called <a href="http://www.comp.nus.edu.sg/~tants/jfa.html" target="blank_">Jump Flooding in GPU with Applications to Voronoi Diagram and Distance Transform</a>. We'll call it JFA - short for Jump Flooding Algorithm.
+        There are a few popular algorithms for computing Voronoi diagrams. I'll talk about the one that I used to build the demos above (you can find the code for them <a target="blank_" href="https://github.com/ryankaplan/gpu-voronoi">here</a>). The approach is from a paper called <a href="http://www.comp.nus.edu.sg/~tants/jfa.html" target="blank_">Jump Flooding in GPU with Applications to Voronoi Diagram and Distance Transform</a>. We'll call it JFA - short for Jump Flooding Algorithm.
      </p>
 
       <p>
@@ -82,14 +84,14 @@
       </p>
 
       <p>
-          Below is a demo a lot like the first one on this page. You can draw in the left canvas and the corresponding Voronoi diagram appears in the right canvas. I've added a slider though which sets the maximum JFA round number. If you set it to 5, then we stop computing JFA at round 5. Try adding a few seeds and moving the slider from 0 through the maximum value to see what the pixel grid looks like at each step of JFA.
+          Below is a demo like the one at the top of the page, except there's a slider to set the maximum JFA round number. If you set it to 5, then we stop computing JFA at round 5. Try adding a few seeds and moving the slider around to see what the pixel grid looks like at each step of JFA.
       </p>
 
       <div id="slider-demo-container" class="demo-container">
         <canvas class="input-canvas"></canvas>
         <canvas class="output-canvas"></canvas>
         <div class="demo-controls">
-            <span class="jfa-round-label label"></span><input class="jfa-round-slider" type="range"></input>
+            <span class="jfa-round-label label"></span><div class="jfa-round-slider" />
         </div>
       </div>
 
@@ -98,7 +100,7 @@
       </h2>
 
       <p>
-        JFA gives us two things for every pixel: the color of the closest seed, and the location of the closest seed. In the demos above, I use the color to draw Voronoi diagrams. In the demo below, I color each pixel based on the distance to the closest seed. Bright pixels are close to a seed and dark pixels are far from a seed.
+        JFA gives us two things for every pixel: the color of the closest seed, and the location of the closest seed. I used the color of the closest seed in the demos above. Below is a demo that colors pixels by how far they are from the closest seed. A bright pixel means its close to a seed.
       </p>
 
       <div id="distance-demo-container" class="demo-container">
@@ -107,7 +109,7 @@
       </div>
 
       <p>
-        We can use this to expand shapes outward. Below is a demo where every dot in the simulation has been expanded out into a disk.
+        We can use this to build strokes for shapes. Below is a demo where every dot in the simulation has a 15px stroke.
       </p>
 
       <div id="threshold-demo-container" class="demo-container">

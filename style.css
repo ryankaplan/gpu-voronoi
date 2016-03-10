@@ -38,6 +38,7 @@ h1, h2, h3, .sans-serif {
 
 .jfa-round-slider {
     width: 256px;
+    display: inline-block;
 }
 
 #demo-page {
