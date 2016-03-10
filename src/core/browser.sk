@@ -28,6 +28,11 @@ class HTMLMouseEvent {
     }
 }
 
+namespace Math {
+    def log2(val int) int
+}
+
+
 namespace Browser {
     # This is a function so that we can easily stub it out
     def devicePixelRatio double {

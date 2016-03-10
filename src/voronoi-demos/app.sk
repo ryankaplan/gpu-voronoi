@@ -99,21 +99,27 @@ def initializeThresholdDemo(container HTMLElement) {
 }
 
 def initializeSliderDemo(container HTMLElement) {
-    const inputCanvas = getCanvas(container, "input-canvas", 256)
-    const outputCanvas = getCanvas(container, "output-canvas", 256)
+    const gridSize = 256
+    const inputCanvas = getCanvas(container, "input-canvas", gridSize)
+    const outputCanvas = getCanvas(container, "output-canvas", gridSize)
     const opts = Voronoi.Options.new
     const voronooi = createVoronoiGenerator(outputCanvas, opts)
 
     const label = (container as dynamic).getElementsByClassName("jfa-round-label")[0] as HTMLElement
     const slider = (container as dynamic).getElementsByClassName("jfa-round-slider")[0]
 
-    slider.min = 1
-    slider.max = Math.log(inputCanvas.width) + 3
-    slider.value = slider.max
-    slider.step = 1
+    const max = Math.log2(gridSize) + 1
+    noUiSlider.create(slider, {
+        "start": max,
+        "step": 1,
+        "range": {
+            "min": 1,
+            "max": max
+        }
+    })
 
     const drawWithSteps = (steps int) => {
-        label.textContent = "Round #\(slider.value)"
+        label.textContent = "Round #\(slider.noUiSlider.get() as int)"
         voronooi.setSeedsFromCanvas(inputCanvas)
         voronooi.resetVoronoiSteps
         for i in 0..steps {
@@ -122,17 +128,17 @@ def initializeSliderDemo(container HTMLElement) {
         voronooi.drawToOutputCanvas
     }
 
-    slider.oninput = (e HTMLEvent) => {
-        drawWithSteps(slider.value)
-    }
-    # TODO(ryan) oninput not supported in IE10: http://stackoverflow.com/a/19067260
-    #slider.onchange = func
+    slider.noUiSlider.on("slide", => {
+        drawWithSteps(slider.noUiSlider.get() as int)
+    })
 
     # A CanvasDrawController handles user draw-actions on the input canvas
     # Whenever the user draws, we re-render the voronoi diagram for the input
     CanvasDrawController.new(inputCanvas, outputCanvas, => {
-        drawWithSteps(slider.value)
+        drawWithSteps(slider.noUiSlider.get() as int)
     })
+
+    drawWithSteps(max)
 }
 
 @entry

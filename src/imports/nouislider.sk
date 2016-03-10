@@ -1,0 +1,4 @@
+@import
+namespace noUiSlider {
+    def create(slider HTMLElement, props StringMap<dynamic>)
+}
