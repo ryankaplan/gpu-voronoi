@@ -1,0 +1,172 @@
+
+namespace JFAPatternDemoController {
+    const FRAME_DURATION_MS = 100.0
+
+    class IntPair {
+        var x int
+        var y int
+    }
+
+    class State {
+        var center IntPair
+        var stepLength int
+
+        def clone State {
+            return State.new(center, stepLength)
+        }
+    }
+
+    # From here: http://stackoverflow.com/a/6333775
+    def fillAndStrokeArrow(ctx CanvasRenderingContext2D, from IntPair, to IntPair) {
+        const headlen = 10
+        const angle = Math.atan2(to.y - from.y, to.x - from.x)
+
+        # Draw the line
+        ctx.moveTo(from.x, from.y)
+        ctx.lineTo(to.x, to.y)
+        ctx.stroke
+
+        # Draw the arrow head
+        const pt2 = Vector.new(
+            to.x - headlen * Math.cos(angle - Math.PI / 6),
+            to.y - headlen * Math.sin(angle - Math.PI / 6)
+        )
+        const pt3 = Vector.new(
+            to.x - headlen * Math.cos(angle + Math.PI / 6),
+            to.y - headlen * Math.sin(angle + Math.PI / 6)
+        )
+
+        ctx.beginPath
+        ctx.moveTo(to.x, to.y)
+        ctx.lineTo(pt2.x, pt2.y)
+        ctx.lineTo(pt3.x, pt3.y)
+        ctx.fill
+    }
+}
+
+class JFAPatternDemoController {
+    const _canvas HTMLCanvasElement
+    const _gridSize int
+    const _logicalCanvasSize int
+    var _state State
+    var stepLength int
+    var _elapsedSinceLastRender double = 0.0
+
+    def new(canvas HTMLCanvasElement, logicalCanvasSize int, gridSize int) {
+        _canvas = canvas
+        _canvas.getContext2D.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
+        _logicalCanvasSize = logicalCanvasSize
+        _gridSize = gridSize
+        _state = State.new(IntPair.new(gridSize - 1, gridSize - 1), gridSize / 2)
+        stepLength = gridSize / 2
+        Browser.renderWhileElementOnScreen(canvas, (elapsedMs double) => {
+            self._render(elapsedMs)
+        })
+    }
+
+    def nextState(state State) State {
+        const next = state.clone
+
+        next.stepLength = stepLength
+
+        next.center.x = next.center.x + 1
+
+        if next.center.x == _gridSize {
+            next.center.x = 0
+            next.center.y = next.center.y + 1
+        }
+
+        if next.center.y == _gridSize {
+            next.center.y = 0
+        }
+
+        return next
+    }
+
+    def _render(elapsedMs double) {
+        _elapsedSinceLastRender += elapsedMs
+
+        if _elapsedSinceLastRender > FRAME_DURATION_MS {
+            _elapsedSinceLastRender -= FRAME_DURATION_MS
+
+            _state = nextState(_state)
+            const piece = _logicalCanvasSize / _gridSize
+
+            const ctx = _canvas.getContext2D
+
+            ctx.clearRect(0, 0, _logicalCanvasSize, _logicalCanvasSize)
+
+            const gridLineWidth = 1
+
+            # Draw background grid
+            ctx.beginPath
+            ctx.lineWidth = gridLineWidth
+            for i in 0.._gridSize + 1 {
+                ctx.moveTo(0, piece * i)
+                ctx.lineTo(_logicalCanvasSize, piece * i)
+            }
+            for i in 0.._gridSize + 1 {
+                ctx.moveTo(piece * i, 0)
+                ctx.lineTo(piece * i, _logicalCanvasSize)
+            }
+            ctx.strokeStyle = Color.darkGrey.toCSS
+            ctx.stroke
+
+            # Border around everything
+            ctx.beginPath
+            ctx.rect(0, 0, _logicalCanvasSize - 1, _logicalCanvasSize - 1)
+            ctx.strokeStyle = Color.lightGrey.toCSS
+            ctx.stroke
+
+            # Draw center square
+            ctx.beginPath
+            ctx.rect(_state.center.x * piece, _state.center.y * piece, piece, piece)
+            ctx.strokeStyle = Color.veryLightGrey.toCSS
+            ctx.stroke
+
+            # Draw the cells that we're moving to
+            ctx.beginPath
+            ctx.lineWidth = gridLineWidth
+            ctx.strokeStyle = Color.purple.toCSS
+            const k = _state.stepLength
+            for deltaX in [-k, 0, k] {
+                for deltaY in [-k, 0, k] {
+                    const cellX = _state.center.x + deltaX
+                    const cellY = _state.center.y + deltaY
+                    ctx.rect(
+                        cellX * piece + gridLineWidth,
+                        cellY * piece + gridLineWidth,
+                        piece - 2 * gridLineWidth,
+                        piece - 2 * gridLineWidth
+                    )
+                }
+            }
+            ctx.stroke
+
+            # Draw the lines to arrows to the cells
+            ctx.beginPath
+            ctx.lineWidth = gridLineWidth
+            ctx.strokeStyle = Color.veryLightGrey.toCSS
+            ctx.fillStyle = "white"
+            for deltaX in [-k, 0, k] {
+                for deltaY in [-k, 0, k] {
+                    if deltaX == 0 && deltaY == 0 {
+                        continue
+                    }
+
+                    const cellX = _state.center.x + deltaX
+                    const cellY = _state.center.y + deltaY
+                    const rectX = cellX * piece
+                    const rectY = cellY * piece
+                    const extraX = (deltaX == -k ? 0 : deltaX == 0 ? piece / 2 : piece)
+                    const extraY = (deltaY == -k ? 0 : deltaY == 0 ? piece / 2 : piece)
+                    fillAndStrokeArrow(
+                        ctx,
+                        IntPair.new(_state.center.x * piece + extraX, _state.center.y * piece + extraY),
+                        IntPair.new(rectX + piece / 2, rectY + piece / 2)
+                    )
+                }
+            }
+        }
+    }
+}

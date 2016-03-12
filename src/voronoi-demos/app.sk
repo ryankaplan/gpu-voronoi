@@ -3,12 +3,16 @@
 # set canvas.width to devicePixelRatio * sizeUsedInCSS. But doing so makes
 # things laggy on a Macbook Air. So let's improve performance before we do
 # that.
+def sizeCanvas(canvas HTMLCanvasElement, size int) {
+    canvas.width = (size * Browser.devicePixelRatio) as int
+    canvas.height = (size * Browser.devicePixelRatio) as int
+    canvas.style.width = "\(size)px"
+    canvas.style.height = "\(size)px"
+}
+
 def getCanvas(container HTMLElement, className string, canvasSize int) HTMLCanvasElement {
     const canvas = (container as dynamic).getElementsByClassName(className)[0] as HTMLCanvasElement
-    canvas.width = (canvasSize * Browser.devicePixelRatio) as int
-    canvas.height = (canvasSize * Browser.devicePixelRatio) as int
-    canvas.style.width = "\(canvasSize)px"
-    canvas.style.height = "\(canvasSize)px"
+    sizeCanvas(canvas, canvasSize)
     return canvas
 }
 
@@ -141,15 +145,46 @@ def initializeSliderDemo(container HTMLElement) {
     drawWithSteps(max)
 }
 
+def initializeJfaPatternDemo(element HTMLElement) {
+    const canvas = (element as dynamic).getElementsByTagName("canvas")[0]
+    const gridSize = 16
+    sizeCanvas(canvas, 256)
+    const controller = JFAPatternDemoController.new(canvas, 256, gridSize)
+    const slider = (element as dynamic).getElementsByClassName("step-size-slider")[0]
+    const label = (element as dynamic).getElementsByClassName("step-size-label")[0] as HTMLElement
+
+    const updateLabel = (round int) => {
+        label.textContent = "Round is \(round) and step length is \(2 ** round)"
+    }
+
+    const max = Math.log2(gridSize / 2)
+    noUiSlider.create(slider, {
+        "start": max,
+        "step": 1,
+        "direction": "rtl",
+        "range": {
+            "min": 0,
+            "max": max
+        }
+    })
+
+    slider.noUiSlider.on("slide", => {
+        updateLabel(slider.noUiSlider.get() as int)
+        controller.stepLength = 2 ** (slider.noUiSlider.get() as int)
+    })
+    updateLabel(max)
+}
+
 @entry
 def main {
     window.addEventListener("load", => {
         initializePaintDemo(document.getElementById("paint-demo-container"))
         initializeFishDemo(document.getElementById("fish-demo-container"))
         initializePhotoDemo(document.getElementById("photo-demo-container"))
+        initializeJfaPatternDemo(document.getElementById("jfa-pattern-demo-container"))
+        initializeSliderDemo(document.getElementById("slider-demo-container"))
         initializeDistanceDemo(document.getElementById("distance-demo-container"))
         initializeThresholdDemo(document.getElementById("threshold-demo-container"))
-        initializeSliderDemo(document.getElementById("slider-demo-container"))
     })
 }
 

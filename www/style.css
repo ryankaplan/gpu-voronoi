@@ -14,6 +14,7 @@ a {
 p {
     font-family: Georgia, Cambria, 'Times New Roman', Times, serif;
     font-size: 20px;
+    text-align: left;
 }
 
 .uppercase {
@@ -37,8 +38,19 @@ h1, h2, h3, .sans-serif {
 }
 
 .jfa-round-slider {
-    width: 256px;
+    width: 226px;
     display: inline-block;
+}
+
+.step-size-label {
+    margin-top: 20px;
+    display: block;
+    margin: 20px auto;
+}
+
+.step-size-slider {
+    width: 226px;
+    margin: 20px auto;
 }
 
 #demo-page {

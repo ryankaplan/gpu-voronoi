@@ -11,6 +11,12 @@ class Color {
 }
 
 namespace Color {
+    const darkGrey = Color.fromHex(0x333333)
+    const mediumGrey = Color.fromHex(0x666666)
+    const lightGrey = Color.fromHex(0x999999)
+    const veryLightGrey = Color.fromHex(0xA5A5A5)
+    const purple = Color.fromHex(0x8F4CFF)
+
     def encodeColorValues(a int, b int) int {
         if a < 0 || a > 255 {
             throw Error.new("First parameter \(a) is out of bounds. Must be between 0 and 255.")
@@ -30,7 +36,7 @@ namespace Color {
 
     def fromHex(number int) Color {
         return Color.new(
-            ((number >> 16) & 255) / 255,
+            ((number >> 16) & 255) / 255.0,
             ((number >> 8) & 255) / 255.0,
             (number & 255) / 255.0,
             1.0

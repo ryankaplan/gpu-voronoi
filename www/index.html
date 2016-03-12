@@ -83,6 +83,12 @@
         In an image of width and height N, JFA performs log(N) rounds. The first round has step length N / 2, then next has N / 4, the next has N / 8, and so on until N / k is 1.
       </p>
 
+      <div id="jfa-pattern-demo-container" class="demo-container">
+        <canvas></canvas>
+        <div class="step-size-label label" ></div>
+        <div class="step-size-slider" ></div>
+      </div>
+
       <p>
           Below is a demo like the one at the top of the page, except there's a slider to set the maximum JFA round number. If you set it to 5, then we stop computing JFA at round 5. Try adding a few seeds and moving the slider around to see what the pixel grid looks like at each step of JFA.
       </p>
