@@ -195,7 +195,7 @@ def initializeJfaPatternDemo(element HTMLElement) {
         uiToModel(slider.noUiSlider.get() as int)
     })
 
-    controller.onStateChange = => {
+    controller.onJfaRoundChange = => {
         if !isUserDragging {
             modelToUi(controller.state.jfaRound)
             slider.noUiSlider.set(controller.state.jfaRound)

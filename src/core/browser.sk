@@ -63,6 +63,10 @@ namespace Browser {
             rect.left <= window.innerWidth
     }
 
+    # Calls `render` when `element` is on screen. Calls it with the time elapsed
+    # since `render` was last called for this element. This number can be large
+    # if you scroll away from an element and come back (or similarly if you change
+    # tabs and come back).
     def renderWhileElementOnScreen(element HTMLElement, render fn(double)) {
         var lastFrame Date = null
         const renderFunc fn() = => {

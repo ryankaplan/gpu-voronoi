@@ -72,7 +72,7 @@ class JFAPatternDemoController {
     const _logicalCanvasSize int
     const _mouseBehaviorManager MouseBehaviorManager
     var state State
-    var onStateChange fn()
+    var onJfaRoundChange fn()
     var _elapsedSinceLastRender double = 0.0
 
     def new(canvas HTMLCanvasElement, logicalCanvasSize int, gridSize int) {
@@ -90,9 +90,6 @@ class JFAPatternDemoController {
         const moveToStateUnderMouse = (event MouseEvent) => {
             const cellLocation = event.location / _cellSize
             state.center = IntPair.new(cellLocation.x as int - 1, cellLocation.y as int)
-            if onStateChange != null {
-                onStateChange()
-            }
         }
         _mouseBehaviorManager.onDown(moveToStateUnderMouse)
         _mouseBehaviorManager.onMove((event MouseEvent) => {
@@ -131,11 +128,13 @@ class JFAPatternDemoController {
         _elapsedSinceLastRender += elapsedMs
 
         if _elapsedSinceLastRender > frameDurationMs {
-            _elapsedSinceLastRender -= frameDurationMs
+            _elapsedSinceLastRender = 0
 
+            const oldJfaRound = state.jfaRound
             state = nextState(state)
-            if onStateChange != null {
-                onStateChange()
+
+            if oldJfaRound != state.jfaRound && onJfaRoundChange != null {
+                onJfaRoundChange()
             }
 
             const ctx = _canvas.getContext2D
