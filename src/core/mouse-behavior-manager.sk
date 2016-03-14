@@ -99,17 +99,21 @@ class MouseWatcher {
 
     def new {
         window.addEventListener("load", => {
-            (document as dynamic).addEventListener("mousedown", (e HTMLMouseEvent) => {
+            var setDown = => {
                 lastKnownInfo.isDown = true
-            }, true)
+            }
 
-            (document as dynamic).addEventListener("mouseup", (e HTMLMouseEvent) => {
+            var setUp = => {
                 lastKnownInfo.isDown = false
-            })
+            }
 
+            (document as dynamic).addEventListener("mousedown", setDown, true)
+            (document as dynamic).addEventListener("mouseup", setUp)
+            (document as dynamic).addEventListener("touchstart", setDown)
+            (document as dynamic).addEventListener("touchend", setUp)
             (document as dynamic).addEventListener("mouseout", (e HTMLMouseEvent) => {
                 if e.toElement == null && e.relatedTarget == null {
-                    lastKnownInfo.isDown = false
+                    setUp()
                 }
             })
         })
