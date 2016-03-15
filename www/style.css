@@ -37,7 +37,12 @@ h1, h2, h3, .sans-serif {
     width: 256px;
 }
 
-.jfa-round-slider {
+.shadow-spread-label {
+    display: inline-block;
+    margin-right: 40px;
+}
+
+.jfa-round-slider, .shadow-spread-slider {
     width: 226px;
     display: inline-block;
 }

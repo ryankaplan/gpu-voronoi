@@ -25,6 +25,7 @@ class Voronoi {
     var _jumpFlood Wham.Program
     var _drawJumpFloodData Wham.Program
     var _drawDistanceField Wham.Program
+    var _drawShadow Wham.Program
     var _renderTexture Wham.Program
 
     var _quadBuffer Wham.Buffer
@@ -68,6 +69,7 @@ class Voronoi {
         _renderTexture = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_RENDER_TEXTURE)
         _drawJumpFloodData = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_JUMP_FLOOD_DATA)
         _drawDistanceField = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_DISTANCE_FIELD)
+        _drawShadow = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_SHADOW)
 
         _quadBuffer = Wham.Buffer.new(ctx)
         _quadBuffer.update(Wham.QUAD2, ctx.STATIC_DRAW)
@@ -100,6 +102,10 @@ class Voronoi {
     }
 
     def setSeedsFromCanvas(inputCanvas HTMLCanvasElement) {
+        setSeedsFromCanvas(inputCanvas, Float32Array.new([0, 0, 0, 0]))
+    }
+
+    def setSeedsFromCanvas(inputCanvas HTMLCanvasElement, backgroundColor Float32Array) {
         _inputCanvas = inputCanvas
         _framebuffer.attach(_sourceTexture)
         _checkFramebufferCompletion
@@ -113,7 +119,7 @@ class Voronoi {
                           .attrib("quad", _quadBuffer, 2)
                           .uniform("iSeedInputTexture", 0)
                           .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
-                          .uniform("iBackgroundColor", Float32Array.new([0, 0, 0, 0]))
+                          .uniform("iBackgroundColor", backgroundColor)
                           .draw(_wham.ctx.TRIANGLE_STRIP, 4)
     }
 
@@ -153,6 +159,25 @@ class Voronoi {
                         .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
                         .draw(_wham.ctx.TRIANGLE_STRIP, 4)
 
+        _drawTempTexture
+    }
+
+    def drawShadowToOutputCanvas(shadowSpread double) {
+        if shadowSpread < 0 || shadowSpread > 1.0 {
+            throw Error.new("Invalid shadowSpread \(shadowSpread)")
+        }
+
+        # First draw _destTexture into _tempOutputTexture
+        _framebuffer.attach(_tempOutputTexture)
+        _checkFramebufferCompletion
+        _destTexture.bind(0)
+        _wham.ctx.viewport(0, 0, _gridSize, _gridSize)
+        _drawShadow.use
+                    .attrib("quad", _quadBuffer, 2)
+                    .uniform("iCellGridTexture", 0)
+                    .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
+                    .uniform("iShadowSpread", shadowSpread)
+                    .draw(_wham.ctx.TRIANGLE_STRIP, 4)
         _drawTempTexture
     }
 

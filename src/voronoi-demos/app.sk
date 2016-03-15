@@ -87,19 +87,60 @@ def initializeDistanceDemo(container HTMLElement) {
     })
 }
 
-def initializeThresholdDemo(container HTMLElement) {
-    const inputCanvas = getCanvas(container, "input-canvas", 256)
-    const outputCanvas = getCanvas(container, "output-canvas", 256)
-    const opts = Voronoi.Options.new
-    opts.wrap = true
-    opts.minSeedDistanceThreshold = 15.0
-    const voronoi = createVoronoiGenerator(outputCanvas, opts)
+def initializeShadowDemo(container HTMLElement) {
+    const gridSize = 256
+    const inputCanvas = getCanvas(container, "input-canvas", gridSize)
+    const outputCanvas = getCanvas(container, "output-canvas", gridSize)
+    const outputCanvasCtx = outputCanvas.getContext2D
+    outputCanvasCtx.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
 
-    FishGameController.new(inputCanvas, outputCanvas, => {
-        voronoi.setSeedsFromCanvas(inputCanvas)
+    const secretOutputCanvas = document.createElement("canvas") as HTMLCanvasElement
+    sizeCanvas(secretOutputCanvas, gridSize)
+    const slider = (container as dynamic).getElementsByClassName("shadow-spread-slider")[0]
+    const opts = Voronoi.Options.new
+    const voronoi = createVoronoiGenerator(secretOutputCanvas, opts)
+    const controller = DraggableTextDemoController.new(inputCanvas, outputCanvas)
+
+    var shadowSpread = 0.01
+    var lastKnownOffset = controller.center
+
+   var onDraw = (shadowSpread double, offset Vector) => {
+        voronoi.setSeedsFromCanvas(inputCanvas, Float32Array.new([1.0, 1.0, 1.0, 1.0]))
         voronoi.computeVoronoi
-        voronoi.drawToOutputCanvas
+        voronoi.drawShadowToOutputCanvas(shadowSpread)
+
+        outputCanvasCtx.fillStyle = "white"
+        outputCanvasCtx.fillRect(0, 0, outputCanvas.width / 2, outputCanvas.height / 2)
+        outputCanvasCtx.drawImage(secretOutputCanvas, 0, 0, outputCanvas.width / 2, outputCanvas.height / 2)
+        controller.drawTextToContext(outputCanvasCtx, offset - Vector.new(7, 7))
+    }
+
+    controller.dragBehavior.onUpdate = (type UpdateType) => {
+        switch type {
+            case .CHANGE {
+                onDraw(shadowSpread, lastKnownOffset + controller.dragBehavior.offset)
+            }
+            case .COMMIT {
+                lastKnownOffset += controller.dragBehavior.offset
+                onDraw(shadowSpread, lastKnownOffset)
+            }
+        }
+    }
+
+    noUiSlider.create(slider, {
+        "start": shadowSpread,
+        "range": {
+            "min": 0,
+            "max": 0.5
+        }
     })
+
+    slider.noUiSlider.on("slide", => {
+        shadowSpread = slider.noUiSlider.get()
+        onDraw(shadowSpread, lastKnownOffset)
+    })
+
+    onDraw(shadowSpread, lastKnownOffset)
 }
 
 def initializeSliderDemo(container HTMLElement) {
@@ -214,7 +255,7 @@ def main {
         initializeJfaPatternDemo(document.getElementById("jfa-pattern-demo-container"))
         initializeSliderDemo(document.getElementById("slider-demo-container"))
         initializeDistanceDemo(document.getElementById("distance-demo-container"))
-        initializeThresholdDemo(document.getElementById("threshold-demo-container"))
+        initializeShadowDemo(document.getElementById("shadow-demo-container"))
     })
 }
 

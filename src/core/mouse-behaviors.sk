@@ -1,0 +1,50 @@
+enum UpdateType {
+    CHANGE
+    COMMIT
+}
+
+class DragBehavior :: MouseBehavior {
+    const _element HTMLElement
+    var _dragStart Vector
+
+    var offset Vector
+    var onUpdate fn(UpdateType)
+
+    def new(element HTMLElement) {
+        _element = element
+    }
+
+    def down(e MouseEvent) {
+        _setCursorMove(true)
+        _dragStart = e.location
+        _update(e.location, .CHANGE)
+    }
+
+    def move(e MouseEvent) {
+        _setCursorMove(e.isDown)
+        if _dragStart != null {
+            _update(e.location, .CHANGE)
+        }
+    }
+
+    def up(e MouseEvent) {
+        if _dragStart != null {
+            _update(e.location, .COMMIT)
+            _dragStart = null
+        }
+        _setCursorMove(false)
+    }
+
+    def _update(eventLocation Vector, type UpdateType) {
+        assert(_dragStart != null)
+        offset = eventLocation - _dragStart
+
+        if onUpdate != null {
+            onUpdate(type)
+        }
+    }
+
+    def _setCursorMove(setMove bool) {
+        _element.style.cursor = setMove ? "move" : null
+    }
+}

@@ -1,0 +1,69 @@
+
+namespace DraggableTextDemoController {
+    const text = "Voronoi"
+    const textSizePx = 60
+
+    def drawTextCanvas HTMLCanvasElement {
+        const canvas = document.createElement("canvas") as HTMLCanvasElement
+        const ctx = canvas.getContext2D
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+        ctx.font = "\(textSizePx)px Baskerville"
+
+        const width = ctx.measureText(text).width
+        canvas.width = (Math.round(width) * Browser.devicePixelRatio) as int
+        canvas.height = (textSizePx * Browser.devicePixelRatio) as int
+        ctx.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
+
+        ctx.font = "\(textSizePx)px Baskerville"
+        ctx.fillStyle = "#333"
+        ctx.textBaseline = "hanging"
+        ctx.fillText(text, 0, 0)
+        return canvas
+    }
+}
+
+class DraggableTextDemoController {
+    const _textCanvas HTMLCanvasElement
+
+    const _inputCanvas HTMLCanvasElement
+    const _outputCanvas HTMLCanvasElement
+    const _ctx CanvasRenderingContext2D
+    const _logicalCanvasSize int
+    const _mouseBehaviorManager = MouseBehaviorManager.new
+    const center Vector
+
+    const dragBehavior DragBehavior
+
+    def new(inputCanvas HTMLCanvasElement, outputCanvas HTMLCanvasElement) {
+        _inputCanvas = inputCanvas
+        _outputCanvas = outputCanvas
+
+        _textCanvas = drawTextCanvas
+        _ctx = _inputCanvas.getContext2D
+        _ctx.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
+        _logicalCanvasSize = inputCanvas.getBoundingClientRect.width
+
+        # Figure out the width of the text and set _lastKnownOffset so that the text
+        # is centered in the canvas
+        center = Vector.new(_logicalCanvasSize / 2 - _textCanvas.width / 4, _logicalCanvasSize / 2 - _textCanvas.height / 4)
+
+        _mouseBehaviorManager.listenOnElement(_inputCanvas)
+        _mouseBehaviorManager.listenOnElement(_outputCanvas)
+
+        dragBehavior = DragBehavior.new(_inputCanvas)
+        _mouseBehaviorManager.register(dragBehavior)
+        render
+    }
+
+    def render {
+        _ctx.fillStyle = "white"
+        _ctx.fillRect(0, 0, _logicalCanvasSize, _logicalCanvasSize)
+        drawTextToContext(_ctx, center)
+    }
+
+    def drawTextToContext(ctx CanvasRenderingContext2D, offset Vector) {
+        ctx.drawImage(_textCanvas, offset.x, offset.y, _textCanvas.width / 2, _textCanvas.height / 2)
+    }
+}

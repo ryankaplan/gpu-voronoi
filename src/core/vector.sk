@@ -1,5 +1,4 @@
-# This class shamelessly stolen and edited from https://github.com/evanw/theta/blob/master/src/core/vector.sk
-# I started writing it myself and couldn't be bothered to type it all out
+# This class is partly taken from https://github.com/evanw/theta/blob/master/src/core/vector.sk
 
 enum Axis {
     X
@@ -18,6 +17,10 @@ class Vector {
 		self.x = x
 		self.y = y
 	}
+
+	def clone Vector {
+       return new(x, y)
+    }
 
 	def - Vector { return new(-x, -y) }
 
@@ -105,10 +108,14 @@ class Vector {
     }
 
     # Returns as unit vector
-    def normalize Vector { return self / self.length }
+    def normalize Vector {
+        return self / self.length
+    }
 
     # Returns the angle of this vector in radians
-    def toAngleRad double { return Math.atan2(y, x) }
+    def toAngleRad double {
+        return Math.atan2(y, x)
+    }
 
     def angleTo(v Vector) double {
         return Math.acos(
@@ -116,23 +123,45 @@ class Vector {
         )
     }
 
-    def signedAngleTo(v Vector) double { return v.toAngleRad - toAngleRad }
-    def distanceTo(v Vector) double { return (self - v).length }
-	def equals(v Vector) bool { return x == v.x && y == v.y }
-	def length double { return Math.sqrt(x * x + y * y) }
-	def dot(v Vector) double { return x * v.x + y * v.y }
-	def clone Vector { return new(x, y) }
-	def toString string { return "Vector(\(x), \(y))" }
-    def toStringAsInts string { return "Vector(\(x as int), \(y as int))" }
-    def toFloat32Array Float32Array { return Float32Array.new([x, y]) }
+    def signedAngleTo(v Vector) double {
+        return v.toAngleRad - toAngleRad
+    }
+
+    def distanceTo(v Vector) double {
+        return (self - v).length
+    }
+
+	def equals(v Vector) bool {
+        return x == v.x && y == v.y
+    }
+
+	def length double {
+        return Math.sqrt(x * x + y * y)
+    }
+
+	def dot(v Vector) double {
+        return x * v.x + y * v.y
+    }
+
+
+	def toString string {
+        return "Vector(\(x), \(y))"
+    }
+
+    def toStringAsInts string {
+        return "Vector(\(x as int), \(y as int))"
+    }
+
+    def toFloat32Array Float32Array {
+        return Float32Array.new([x, y]) }
 
     def constrainToAspectRatio(other Vector, freeAxis Axis) {
         switch freeAxis {
             case .X {
-                x = y * other.x / other.y                
+                x = y * other.x / other.y
             }
             case .Y {
-                y = x * other.y / other.x                
+                y = x * other.y / other.x
             }
         }
     }

@@ -119,18 +119,16 @@
       </div>
 
       <p>
-        We can use this to build strokes for shapes. Below is a demo where every dot in the simulation has a 15px stroke.
+        We can use this to build shadows for shapes. The shape is composed entirely of seeds, and we make pixels near a seed dark and pixels far from a seed light.
       </p>
 
-      <div id="threshold-demo-container" class="demo-container">
+      <div id="shadow-demo-container" class="demo-container">
         <canvas class="input-canvas"></canvas>
         <canvas class="output-canvas"></canvas>
+        <div class="demo-controls">
+            <span class="shadow-spread-label label">Shadow Size</span><div class="shadow-spread-slider" />
+        </div>
       </div>
-
-      <p>
-        You can also use this to implement shadows. I'll add a demo for that soon.
-      </p>
-
 
     </div>
     <div id="webgl-error" style="display: none;">
