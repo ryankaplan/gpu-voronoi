@@ -119,16 +119,27 @@
       </div>
 
       <p>
-        We can use this to build shadows for shapes. The shape is composed entirely of seeds, and we make pixels near a seed dark and pixels far from a seed light.
+        We can use this to build drop shadows for artbitrary shapes. One of the tricky parts of rendering drop shadows (in CSS) is that they have a "spread" value. The bigger the spread, the farther the shadow reaches before fading out. This means that you can't implement a drop shadow just by blurring the shape casting the shadow.
+      </p>
+
+      <p>
+          We use JFA to generate a distance field - each pixel in the shape casting the shadow is a &lsquo;seed&rsquo; our JFA input. The distance field tells us how far away each pixel is from the geometry casting the shadow. When the spread is big, we know that we should blur shadow pixels only if they're far from the geometry, and vice versa.
       </p>
 
       <div id="shadow-demo-container" class="demo-container">
-        <canvas class="input-canvas"></canvas>
+        <canvas class="input-canvas" style="display: none;"></canvas>
         <canvas class="output-canvas"></canvas>
-        <div class="demo-controls">
-            <span class="shadow-spread-label label">Shadow Size</span><div class="shadow-spread-slider" />
+        <div class="shadow-spread-controls">
+            <span class="shadow-spread-label label">Spread</span><div class="shadow-spread-slider" ></div>
+        </div>
+        <div class="shadow-blur-controls">
+            <span class="shadow-blur-label label">Blur</span><div class="shadow-blur-slider" ></div>
         </div>
       </div>
+
+      <p>
+          You can drag the canvas above the move the drop shadow, or use the sliders to control spread and blur.
+      </p>
 
     </div>
     <div id="webgl-error" style="display: none;">
