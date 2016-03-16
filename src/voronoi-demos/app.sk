@@ -94,37 +94,33 @@ def initializeShadowDemo(container HTMLElement) {
     const outputCanvasCtx = outputCanvas.getContext2D
     outputCanvasCtx.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
 
-    const secretOutputCanvas = document.createElement("canvas") as HTMLCanvasElement
-    sizeCanvas(secretOutputCanvas, gridSize)
+    const shadowCanvas = document.createElement("canvas") as HTMLCanvasElement
+    sizeCanvas(shadowCanvas, gridSize)
     const slider = (container as dynamic).getElementsByClassName("shadow-spread-slider")[0]
     const opts = Voronoi.Options.new
-    const voronoi = createVoronoiGenerator(secretOutputCanvas, opts)
+    const voronoi = createVoronoiGenerator(shadowCanvas, opts)
     const controller = DraggableTextDemoController.new(inputCanvas, outputCanvas)
 
     var shadowSpread = 0.01
-    var lastKnownOffset = controller.center
 
    var onDraw = (shadowSpread double, offset Vector) => {
         voronoi.setSeedsFromCanvas(inputCanvas, Float32Array.new([1.0, 1.0, 1.0, 1.0]))
         voronoi.computeVoronoi
         voronoi.drawShadowToOutputCanvas(shadowSpread)
 
+        # Output canvas has a white background
         outputCanvasCtx.fillStyle = "white"
         outputCanvasCtx.fillRect(0, 0, outputCanvas.width / 2, outputCanvas.height / 2)
-        outputCanvasCtx.drawImage(secretOutputCanvas, 0, 0, outputCanvas.width / 2, outputCanvas.height / 2)
-        controller.drawTextToContext(outputCanvasCtx, offset - Vector.new(7, 7))
+
+        # Draw the shadow of the text on the background
+        outputCanvasCtx.drawImage(shadowCanvas, 0, 0, outputCanvas.width / Browser.devicePixelRatio, outputCanvas.height / Browser.devicePixelRatio)
+
+        # Draw the text to the center of the output canvas
+        controller.drawTextToContext(outputCanvasCtx, controller.center)
     }
 
-    controller.dragBehavior.onUpdate = (type UpdateType) => {
-        switch type {
-            case .CHANGE {
-                onDraw(shadowSpread, lastKnownOffset + controller.dragBehavior.offset)
-            }
-            case .COMMIT {
-                lastKnownOffset += controller.dragBehavior.offset
-                onDraw(shadowSpread, lastKnownOffset)
-            }
-        }
+    controller.onDraw = => {
+        onDraw(shadowSpread, controller.lastKnownOffset)
     }
 
     noUiSlider.create(slider, {
@@ -137,10 +133,10 @@ def initializeShadowDemo(container HTMLElement) {
 
     slider.noUiSlider.on("slide", => {
         shadowSpread = slider.noUiSlider.get()
-        onDraw(shadowSpread, lastKnownOffset)
+        onDraw(shadowSpread, controller.lastKnownOffset)
     })
 
-    onDraw(shadowSpread, lastKnownOffset)
+    onDraw(shadowSpread, controller.lastKnownOffset)
 }
 
 def initializeSliderDemo(container HTMLElement) {
