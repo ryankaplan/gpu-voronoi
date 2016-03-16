@@ -49,15 +49,15 @@ class DraggableTextDemoController {
 
         # Figure out the width of the text and set _lastKnownOffset so that the text
         # is centered in the canvas
-        const halfCanvas = Vector.new(_logicalCanvasSize / 2, _logicalCanvasSize / 2)
-        const halfTextSize = Vector.new(_textCanvas.width / (2 * Browser.devicePixelRatio), _textCanvas.height / (2 * Browser.devicePixelRatio))
-        center = halfCanvas - halfTextSize
+        const halfCanvas = Vector.new(_outputCanvas.width, _outputCanvas.height) / 2
+        const halfTextSize = Vector.new(_textCanvas.width, _textCanvas.height) / 2
+        center = (halfCanvas - halfTextSize) / Browser.devicePixelRatio
         lastKnownOffset = center.clone
 
         _mouseBehaviorManager.listenOnElement(_inputCanvas)
         _mouseBehaviorManager.listenOnElement(_outputCanvas)
 
-        dragBehavior = DragBehavior.new(_inputCanvas)
+        dragBehavior = DragBehavior.new(_outputCanvas)
         dragBehavior.onUpdate = (type UpdateType) => {
             switch type {
                 case .CHANGE {

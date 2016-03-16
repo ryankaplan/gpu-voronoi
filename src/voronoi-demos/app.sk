@@ -117,7 +117,7 @@ def initializeShadowDemo(container HTMLElement) {
 
         # Output canvas has a white background
         outputCanvasCtx.fillStyle = "white"
-        outputCanvasCtx.fillRect(0, 0, outputCanvas.width / 2, outputCanvas.height / 2)
+        outputCanvasCtx.fillRect(0, 0, outputCanvas.width, outputCanvas.height)
 
         # Draw the shadow of the text on the background
         outputCanvasCtx.drawImage(
