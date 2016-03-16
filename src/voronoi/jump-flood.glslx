@@ -13,6 +13,8 @@ uniform vec2 iCellGridSize;
 uniform int iStepSize;
 uniform float iMinSeedDistanceThreshold;
 uniform float iShadowSpread;
+uniform float iShadowBlur;
+uniform vec4 iShadowColor;
 uniform bool iUseTorusDistanceForSeeds;
 
 // The color that is *not* to be counted as seed.
@@ -242,7 +244,6 @@ export void fDrawDistanceField() {
 
 export void fDrawShadow() {
     vec2 gridUv = gl_FragCoord.xy / iGridSize;
-    float shadowSpread = max(iShadowSpread, 0.01);
 
     if (!validUv(gridUv)) {
         gl_FragColor = RED;
@@ -253,18 +254,11 @@ export void fDrawShadow() {
     vec2 seedLocation = cell_closestSeed(object);
     float dist = distance(seedLocation, gl_FragCoord.xy);
 
-    // Normalize dist so that it's from 0 to 1
-    dist /= iGridSize.x * shadowSpread;
+    float startFading = iShadowSpread - iShadowBlur / 2.0;
+    float stopFading = iShadowSpread + iShadowBlur / 2.0;
 
-    // Smooth them out a little
-    dist = pow(dist, 1.3);
-
-    dist = clamp(dist, 0.0, 1.0);
-
-    vec4 shadowColor = vec4(dist, dist, dist, 1.0);
-
-    float shadowBlendValue = (1.0 - iShadowSpread) / 1.5;
-    gl_FragColor = shadowColor * shadowBlendValue + (1.0 - shadowBlendValue) * WHITE;
+    float mixValue = clamp((dist - startFading) / iShadowBlur, 0.0, 1.0);
+    gl_FragColor = mix(iShadowColor, vec4(0.0), mixValue);
 }
 
 // Just renders a texture to the screen.

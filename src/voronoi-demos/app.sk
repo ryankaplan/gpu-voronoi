@@ -88,55 +88,81 @@ def initializeDistanceDemo(container HTMLElement) {
 }
 
 def initializeShadowDemo(container HTMLElement) {
+    # Initialize canvasses
     const gridSize = 256
     const inputCanvas = getCanvas(container, "input-canvas", gridSize)
     const outputCanvas = getCanvas(container, "output-canvas", gridSize)
     const outputCanvasCtx = outputCanvas.getContext2D
     outputCanvasCtx.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
-
     const shadowCanvas = document.createElement("canvas") as HTMLCanvasElement
     sizeCanvas(shadowCanvas, gridSize)
-    const slider = (container as dynamic).getElementsByClassName("shadow-spread-slider")[0]
+
+    # Initialize sliders
+    const spreadSlider = (container as dynamic).getElementsByClassName("shadow-spread-slider")[0]
+    const blurSlider = (container as dynamic).getElementsByClassName("shadow-blur-slider")[0]
+
     const opts = Voronoi.Options.new
     const voronoi = createVoronoiGenerator(shadowCanvas, opts)
     const controller = DraggableTextDemoController.new(inputCanvas, outputCanvas)
 
-    var shadowSpread = 0.01
+    const minShadowSpread = 1
+    const minShadowBlur = 1
+    var shadowSpread = minShadowSpread
+    var shadowBlur = 22
 
-   var onDraw = (shadowSpread double, offset Vector) => {
+    var renderOutputCanvas = (shadowSpread double, shadowBlur double, offset Vector) => {
         voronoi.setSeedsFromCanvas(inputCanvas, Float32Array.new([1.0, 1.0, 1.0, 1.0]))
         voronoi.computeVoronoi
-        voronoi.drawShadowToOutputCanvas(shadowSpread)
+        voronoi.drawShadowToOutputCanvas(shadowSpread, shadowBlur)
 
         # Output canvas has a white background
         outputCanvasCtx.fillStyle = "white"
         outputCanvasCtx.fillRect(0, 0, outputCanvas.width / 2, outputCanvas.height / 2)
 
         # Draw the shadow of the text on the background
-        outputCanvasCtx.drawImage(shadowCanvas, 0, 0, outputCanvas.width / Browser.devicePixelRatio, outputCanvas.height / Browser.devicePixelRatio)
+        outputCanvasCtx.drawImage(
+            shadowCanvas,
+            0,
+            0,
+            outputCanvas.width / Browser.devicePixelRatio,
+            outputCanvas.height / Browser.devicePixelRatio
+        )
 
         # Draw the text to the center of the output canvas
         controller.drawTextToContext(outputCanvasCtx, controller.center)
     }
 
     controller.onDraw = => {
-        onDraw(shadowSpread, controller.lastKnownOffset)
+        renderOutputCanvas(shadowSpread, shadowBlur, controller.lastKnownOffset)
     }
 
-    noUiSlider.create(slider, {
+    noUiSlider.create(spreadSlider, {
         "start": shadowSpread,
         "range": {
-            "min": 0,
-            "max": 0.5
+            "min": minShadowSpread,
+            "max": 250
         }
     })
 
-    slider.noUiSlider.on("slide", => {
-        shadowSpread = slider.noUiSlider.get()
-        onDraw(shadowSpread, controller.lastKnownOffset)
+    spreadSlider.noUiSlider.on("slide", => {
+        shadowSpread = spreadSlider.noUiSlider.get()
+        renderOutputCanvas(shadowSpread, shadowBlur, controller.lastKnownOffset)
     })
 
-    onDraw(shadowSpread, controller.lastKnownOffset)
+    noUiSlider.create(blurSlider, {
+        "start": shadowBlur,
+        "range": {
+            "min": minShadowBlur,
+            "max": 125
+        }
+    })
+
+    blurSlider.noUiSlider.on("slide", => {
+        shadowBlur = blurSlider.noUiSlider.get()
+        renderOutputCanvas(shadowSpread, shadowBlur, controller.lastKnownOffset)
+    })
+
+    renderOutputCanvas(shadowSpread, shadowBlur, controller.lastKnownOffset)
 }
 
 def initializeSliderDemo(container HTMLElement) {

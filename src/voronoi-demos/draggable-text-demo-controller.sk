@@ -45,7 +45,7 @@ class DraggableTextDemoController {
         _textCanvas = drawTextCanvas
         _ctx = _inputCanvas.getContext2D
         _ctx.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
-        _logicalCanvasSize = inputCanvas.getBoundingClientRect.width
+        _logicalCanvasSize = outputCanvas.getBoundingClientRect.width
 
         # Figure out the width of the text and set _lastKnownOffset so that the text
         # is centered in the canvas

@@ -37,12 +37,16 @@ h1, h2, h3, .sans-serif {
     width: 256px;
 }
 
-.shadow-spread-label {
+.shadow-spread-controls, .shadow-blur-controls {
+    margin: 20px auto;
+}
+
+.shadow-spread-label, .shadow-blur-label {
     display: inline-block;
     margin-right: 40px;
 }
 
-.jfa-round-slider, .shadow-spread-slider {
+.jfa-round-slider, .shadow-spread-slider, .shadow-blur-slider {
     width: 226px;
     display: inline-block;
 }

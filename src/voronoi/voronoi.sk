@@ -162,11 +162,7 @@ class Voronoi {
         _drawTempTexture
     }
 
-    def drawShadowToOutputCanvas(shadowSpread double) {
-        if shadowSpread < 0 || shadowSpread > 1.0 {
-            throw Error.new("Invalid shadowSpread \(shadowSpread)")
-        }
-
+    def drawShadowToOutputCanvas(shadowSpread double, shadowBlur double) {
         # First draw _destTexture into _tempOutputTexture
         _framebuffer.attach(_tempOutputTexture)
         _checkFramebufferCompletion
@@ -177,6 +173,8 @@ class Voronoi {
                     .uniform("iCellGridTexture", 0)
                     .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
                     .uniform("iShadowSpread", shadowSpread)
+                    .uniform("iShadowBlur", shadowBlur)
+                    .uniform("iShadowColor", Float32Array.new([0.7, 0.7, 0.7, 1.0]))
                     .draw(_wham.ctx.TRIANGLE_STRIP, 4)
         _drawTempTexture
     }
