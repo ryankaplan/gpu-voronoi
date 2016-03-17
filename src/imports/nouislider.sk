@@ -2,3 +2,25 @@
 namespace noUiSlider {
     def create(slider HTMLElement, props StringMap<dynamic>)
 }
+
+# Wrapper around noUiSlider API to make it slightly friendlier in Skew
+class Slider {
+    const _element dynamic
+
+    def new(element HTMLElement, options StringMap<dynamic>) {
+        _element = element
+        noUiSlider.create(element, options)
+    }
+
+    def get double {
+        return _element.noUiSlider.get()
+    }
+
+    def set(value double) {
+        _element.noUiSlider.set(value)
+    }
+
+    def on(event string, callback fn()) {
+        _element.noUiSlider.on(event, callback)
+    }
+}
