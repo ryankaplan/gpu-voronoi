@@ -43,6 +43,8 @@ h1, h2, h3, .sans-serif {
 
 .shadow-spread-label, .shadow-blur-label {
     display: inline-block;
+    min-width: 55px;
+    text-align: right;
     margin-right: 40px;
 }
 
