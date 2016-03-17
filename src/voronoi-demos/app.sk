@@ -90,7 +90,8 @@ def initializeDistanceDemo(container HTMLElement) {
 def initializeShadowDemo(container HTMLElement) {
     # Initialize canvasses
     const gridSize = 256
-    const inputCanvas = getCanvas(container, "input-canvas", gridSize)
+    const inputCanvas = document.createElement("canvas") as HTMLCanvasElement
+    sizeCanvas(inputCanvas, gridSize)
     const outputCanvas = getCanvas(container, "output-canvas", gridSize)
     const outputCanvasCtx = outputCanvas.getContext2D
     outputCanvasCtx.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
