@@ -1,11 +1,11 @@
 namespace ShadowDemoController {
     const initialSpread = 1
     const minSpread = 1
-    const maxSpread = 250
+    const maxSpread = 256
 
     const initialBlur = 22
     const minBlur = 1
-    const maxBlur = 125
+    const maxBlur = 256
 }
 
 class ShadowDemoController {
