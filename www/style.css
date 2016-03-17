@@ -43,7 +43,9 @@ h1, h2, h3, .sans-serif {
 
 .shadow-spread-label, .shadow-blur-label {
     display: inline-block;
-    margin-right: 40px;
+    min-width: 55px;
+    text-align: right;
+    margin-right: 20px;
 }
 
 .jfa-round-slider, .shadow-spread-slider, .shadow-blur-slider {
