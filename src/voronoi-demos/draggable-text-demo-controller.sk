@@ -27,7 +27,8 @@ namespace DraggableTextDemoController {
 class DraggableTextDemoController {
     const _textCanvas HTMLCanvasElement
 
-    const _canvas HTMLCanvasElement
+    const _inputCanvas HTMLCanvasElement
+    const _outputCanvas HTMLCanvasElement
     const _ctx CanvasRenderingContext2D
     const _logicalCanvasSize int
     const _mouseBehaviorManager = MouseBehaviorManager.new
@@ -37,25 +38,26 @@ class DraggableTextDemoController {
     var lastKnownOffset Vector
     var onDraw fn()
 
-    def new(canvas HTMLCanvasElement, listenOn HTMLElement) {
-        _canvas = canvas
+    def new(inputCanvas HTMLCanvasElement, outputCanvas HTMLCanvasElement) {
+        _inputCanvas = inputCanvas
+        _outputCanvas = outputCanvas
 
         _textCanvas = drawTextCanvas
-        _ctx = _canvas.getContext2D
+        _ctx = _inputCanvas.getContext2D
         _ctx.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
-        _logicalCanvasSize = _canvas.getBoundingClientRect.width
+        _logicalCanvasSize = outputCanvas.getBoundingClientRect.width
 
         # Figure out the width of the text and set _lastKnownOffset so that the text
         # is centered in the canvas
-        const halfCanvas = Vector.new(_canvas.width, _canvas.height) / 2
+        const halfCanvas = Vector.new(_outputCanvas.width, _outputCanvas.height) / 2
         const halfTextSize = Vector.new(_textCanvas.width, _textCanvas.height) / 2
         center = (halfCanvas - halfTextSize) / Browser.devicePixelRatio
         lastKnownOffset = center.clone
 
-        _mouseBehaviorManager.listenOnElement(_canvas)
-        _mouseBehaviorManager.listenOnElement(listenOn)
+        _mouseBehaviorManager.listenOnElement(_inputCanvas)
+        _mouseBehaviorManager.listenOnElement(_outputCanvas)
 
-        dragBehavior = DragBehavior.new(listenOn)
+        dragBehavior = DragBehavior.new(_outputCanvas)
         dragBehavior.onUpdate = (type UpdateType) => {
             switch type {
                 case .CHANGE {
@@ -83,6 +85,6 @@ class DraggableTextDemoController {
     }
 
     def drawTextToContext(ctx CanvasRenderingContext2D, offset Vector) {
-        ctx.drawImage(_textCanvas, offset.x, offset.y, _textCanvas.width / Browser.devicePixelRatio, _textCanvas.height / Browser.devicePixelRatio)
+        ctx.drawImage(_textCanvas, offset.x, offset.y, _textCanvas.width / 2, _textCanvas.height / 2)
     }
 }
