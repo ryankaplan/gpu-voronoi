@@ -4,7 +4,7 @@ def isPowerOfTwo(number int) bool {
     return number != 0 && ((number & (number - 1)) == 0)
 }
 
-namespace Voronoi {
+namespace JumpFlood {
     enum Output {
         # Draw a Voronoi diagram as output
         VORONOI
@@ -44,7 +44,7 @@ namespace Voronoi {
     }
 }
 
-class Voronoi {
+class JumpFlood {
     const _wham Wham
 
     const _gridSize int

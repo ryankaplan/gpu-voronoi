@@ -13,10 +13,10 @@ def getCanvas(container HTMLElement, className string, canvasSize int) HTMLCanva
 
 # Builds a Voronoi generator and displays an error on the page if we can't
 # (likely because this browser doesn't support WebGL).
-def createVoronoiGenerator(outputCanvas HTMLCanvasElement) Voronoi {
-    var voronoi Voronoi = null
+def createVoronoiGenerator(outputCanvas HTMLCanvasElement) JumpFlood {
+    var voronoi JumpFlood = null
     try {
-        voronoi = Voronoi.new(outputCanvas)
+        voronoi = JumpFlood.new(outputCanvas)
     } catch temp dynamic {
         # Failed to initialize Web-GL. Display error.
         document.getElementById("demo-page").style.display = "none"
@@ -41,7 +41,7 @@ def initializePaintDemo(container HTMLElement) {
 def initializeFishDemo(container HTMLElement) {
     const inputCanvas = getCanvas(container, "input-canvas", 256)
     const outputCanvas = getCanvas(container, "output-canvas", 256)
-    const opts = Voronoi.Options.new
+    const opts = JumpFlood.Options.new
     opts.wrap = true
     const voronoi = createVoronoiGenerator(outputCanvas)
 
@@ -66,7 +66,7 @@ def initializeDistanceDemo(container HTMLElement) {
     const voronoi = createVoronoiGenerator(outputCanvas)
 
     FishGameController.new(inputCanvas, outputCanvas, => {
-        const opts = Voronoi.Options.new
+        const opts = JumpFlood.Options.new
         opts.wrap = true
         opts.output = .DISTANCE_FIELD
         voronoi.computeAndDraw(inputCanvas, opts)
@@ -107,7 +107,7 @@ def initializeSliderDemo(container HTMLElement) {
 
     const drawWithSteps = (steps int) => {
         label.textContent = "Round #\(slider.noUiSlider.get() as int)"
-        const opts = Voronoi.Options.new
+        const opts = JumpFlood.Options.new
         opts.maxRounds = steps
         voronooi.computeAndDraw(inputCanvas, opts)
     }

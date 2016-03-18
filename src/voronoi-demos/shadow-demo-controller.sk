@@ -16,7 +16,7 @@ class ShadowDemoController {
     const _jfaSeedCanvas HTMLCanvasElement
     const _shadowCanvas HTMLCanvasElement
     const _outputCanvasCtx CanvasRenderingContext2D
-    const _voronoi Voronoi
+    const _voronoi JumpFlood
     const _controller DraggableTextDemoController
 
     def new(gridSize int, outputCanvas HTMLCanvasElement, spreadSliderElement HTMLElement, blurSliderElement HTMLElement) {
@@ -64,7 +64,7 @@ class ShadowDemoController {
         const shadowSpread = _spreadSlider.get
         const shadowBlur = _blurSlider.get
 
-        const opts = Voronoi.Options.new
+        const opts = JumpFlood.Options.new
         opts.seedCanvasBackgroundColor = Color.white.toVec4
         opts.output = .DROP_SHADOW
         opts.shadowSpread = shadowSpread
