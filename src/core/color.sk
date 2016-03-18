@@ -5,6 +5,10 @@ class Color {
     var b double
     var a double
 
+    def toVec4 Float32Array {
+        return Float32Array.new([r, g, b, a])
+    }
+
     def toCSS string {
         return "rgba(\((r * 255) as int), \((g * 255) as int), \((b * 255) as int), \(a))"
     }
@@ -16,6 +20,9 @@ namespace Color {
     const lightGrey = Color.fromHex(0x999999)
     const veryLightGrey = Color.fromHex(0xA5A5A5)
     const purple = Color.fromHex(0x8F4CFF)
+    const white = Color.fromHex(0xFFFFFF)
+    const black = Color.fromHex(0x000000)
+    const clear = Color.new(0, 0, 0, 0)
 
     def encodeColorValues(a int, b int) int {
         if a < 0 || a > 255 {

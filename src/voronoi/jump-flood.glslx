@@ -11,7 +11,6 @@ uniform vec2 iGridSize;
 uniform vec2 iResolution;
 uniform vec2 iCellGridSize;
 uniform int iStepSize;
-uniform float iMinSeedDistanceThreshold;
 uniform float iShadowSpread;
 uniform float iShadowBlur;
 uniform vec4 iShadowColor;
@@ -209,7 +208,7 @@ export void fDrawJumpFloodData() {
     vec2 seedLocation = cell_closestSeed(object) + vec2(.5);
     float dist = torusDistance(seedLocation, gl_FragCoord.xy, iGridSize);
 
-    if (cell_isValid(object) && (iMinSeedDistanceThreshold < 0.) || (dist < iMinSeedDistanceThreshold)) {
+    if (cell_isValid(object)) {
         // Pixel shaders have fragments co-ordinates on the half pixel. We
         // lost the half pixel when encoding as an int, so add it back now
         // before we sample from the original pixel.

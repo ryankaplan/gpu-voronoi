@@ -5,43 +5,86 @@ def isPowerOfTwo(number int) bool {
 }
 
 namespace Voronoi {
+    enum Output {
+        # Draw a Voronoi diagram as output
+        VORONOI
+
+        # Draw a distance field as output. Pixels close to a seed are
+        # light and pixels far from a seed are dark.
+        DISTANCE_FIELD
+
+        # Draw a drop shadow as output. Each seed of the input casts
+        # shadow. The color of the seeds don't matter.
+        DROP_SHADOW
+    }
+
     class Options {
+        # If this is set to true then pixels on the left border of the input
+        # canvas are considered 'close to' pixels on the right border. Same
+        # for top and bottom.
         var wrap = false
 
-        # If this is set to a number greater than 0, then when you call
-        # Voronoi.drawToOutputCanvas we draw colors to pixels that are
-        # within `minSeedDistanceThreshold` of their closest seed
-        var minSeedDistanceThreshold = -1.0
+        # The input to the JFA algorithm is a canvas with seeds drawn onto it.
+        # This is the background color that the seeds are drawn onto. For example,
+        # you might draw blue and green seeds onto a red background and you want a
+        # voronoi diagram of blue and green cells. You pass red as the
+        # `seedCanvasBackgroundColor` to communicate that to the JFA algorithm.
+        var seedCanvasBackgroundColor Float32Array = Color.clear.toVec4
+
+        # Compute at most this many rounds of the JFA algorithm. This is useful
+        # for building a demo to illustrate how it works. -1 means no maximum.
+        var maxRounds = -1
+
+        # What kind of output to render.
+        var output Output = .VORONOI
+
+        # Used if output is .DROP_SHADOW
+        var shadowSpread = -1.0
+        var shadowBlur = -1.0
     }
 }
 
 class Voronoi {
-    const _options Options
-    var _wham Wham
+    const _wham Wham
 
-    var _gridSize int
+    const _gridSize int
 
-    var _prepJumpFloodData Wham.Program
-    var _jumpFlood Wham.Program
-    var _drawJumpFloodData Wham.Program
-    var _drawDistanceField Wham.Program
-    var _drawShadow Wham.Program
-    var _renderTexture Wham.Program
+    # Used to transform input data (seeds drawn onto a canvas) into information
+    # that's ready to be processed by JFA (a buffer of pixels where each red-green
+    # and blue-alpha pair specifies a grid location).
+    const _prepJumpFloodData Wham.Program
+
+    # Program that runs JFA on data output by _prepJumpFloodData.
+    const _jumpFlood Wham.Program
+
+    # Program that draws a Voronoi diagram from processed jump flood data.
+    const _drawVoronoi Wham.Program
+
+    # Program that draws a distance field from processed jump flood data.
+    # Light pixels are close to a seed and dark pixels are far.
+    const _drawDistanceField Wham.Program
+
+    # Program that draws a drop shadow from processed jump flood data.
+    const _drawDropShadow Wham.Program
+
+    # Just renders a texture. Useful for testing.
+    const _renderTexture Wham.Program
+
+    # WebGL doesn't let you write back to textures. So JFA ping-pongs data back
+    # and forth between these two textures.
+    var _sourceTexture Wham.Texture
+    var _destTexture Wham.Texture
 
     var _quadBuffer Wham.Buffer
-    var _sourceTexture Wham.Texture
-
-    var _destTexture Wham.Texture
     var _seedInputTexture Wham.Texture
     var _tempOutputTexture Wham.Texture
     var _framebuffer Wham.Framebuffer
     var _simulationStepper dynamic
 
-
     var _inputCanvas HTMLCanvasElement
     var _outputCanvas HTMLCanvasElement
 
-    def new(canvas HTMLCanvasElement, options Options) {
+    def new(canvas HTMLCanvasElement) {
         if canvas.width != canvas.height {
             throw Error.new("Voronoi canvas parameter must be square. Size is (\(canvas.width), \(canvas.height))")
         }
@@ -50,7 +93,6 @@ class Voronoi {
             throw Error.new("Voronoi canvas size must be a power of two. Size is \(canvas.width)")
         }
 
-        _options = options
         _gridSize = canvas.width
         _outputCanvas = canvas
 
@@ -67,9 +109,9 @@ class Voronoi {
         _jumpFlood = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_JUMP_FLOOD)
         _prepJumpFloodData = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_PREP_FOR_JFA)
         _renderTexture = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_RENDER_TEXTURE)
-        _drawJumpFloodData = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_JUMP_FLOOD_DATA)
+        _drawVoronoi = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_JUMP_FLOOD_DATA)
         _drawDistanceField = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_DISTANCE_FIELD)
-        _drawShadow = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_SHADOW)
+        _drawDropShadow = Wham.Program.new(_wham.ctx, GLSLX_SOURCE_V_COPY_POSITION, GLSLX_SOURCE_F_DRAW_SHADOW)
 
         _quadBuffer = Wham.Buffer.new(ctx)
         _quadBuffer.update(Wham.QUAD2, ctx.STATIC_DRAW)
@@ -91,21 +133,53 @@ class Voronoi {
         _framebuffer = Wham.Framebuffer.create(ctx)
     }
 
-    def _checkFramebufferCompletion {
-        if !RELEASE {
-            const ctx = _wham.ctx
-            var check = ctx.checkFramebufferStatus(ctx.FRAMEBUFFER)
-            if check != ctx.FRAMEBUFFER_COMPLETE {
-                throw Error.new("Framebuffer completion issue")
+    # Public API
+    ################################################################################
+
+    def computeAndDraw(seedInputCanvas HTMLCanvasElement) {
+        computeAndDraw(seedInputCanvas, Options.new)
+    }
+
+    def computeAndDraw(seedInputCanvas HTMLCanvasElement, options Options) {
+        _setSeedsFromCanvas(seedInputCanvas, options.seedCanvasBackgroundColor)
+        if options.maxRounds < 0 {
+            _computeVoronoi(options)
+        } else {
+            _resetVoronoiSteps(options)
+            for i in 0..options.maxRounds {
+                _stepVoronoi
+            }
+        }
+
+        switch options.output {
+            case .VORONOI {
+                _drawVoronoiDiagramToOutputCanvas
+            }
+            case .DISTANCE_FIELD {
+                _drawDistanceFieldToOutputCanvas
+            }
+            case .DROP_SHADOW {
+                if options.shadowSpread < 0 {
+                    throw Error.new("If options.output is .SHADOW, you must set options.shadowSpread")
+                }
+
+                if options.shadowBlur < 0 {
+                    throw Error.new("If options.output is .SHADOW, you must set options.shadowBlur")
+                }
+
+                _drawShadowToOutputCanvas(options.shadowSpread, options.shadowBlur)
             }
         }
     }
 
-    def setSeedsFromCanvas(inputCanvas HTMLCanvasElement) {
-        setSeedsFromCanvas(inputCanvas, Float32Array.new([0, 0, 0, 0]))
+    # Private API
+    ################################################################################
+
+    def _setSeedsFromCanvas(inputCanvas HTMLCanvasElement) {
+        _setSeedsFromCanvas(inputCanvas, Color.clear.toVec4)
     }
 
-    def setSeedsFromCanvas(inputCanvas HTMLCanvasElement, backgroundColor Float32Array) {
+    def _setSeedsFromCanvas(inputCanvas HTMLCanvasElement, backgroundColor Float32Array) {
         _inputCanvas = inputCanvas
         _framebuffer.attach(_sourceTexture)
         _checkFramebufferCompletion
@@ -123,7 +197,7 @@ class Voronoi {
                           .draw(_wham.ctx.TRIANGLE_STRIP, 4)
     }
 
-    def drawToOutputCanvas {
+    def _drawVoronoiDiagramToOutputCanvas {
         # First draw _destTexture into _tempOutputTexture
         _framebuffer.attach(_tempOutputTexture)
         _checkFramebufferCompletion
@@ -135,18 +209,17 @@ class Voronoi {
         _destTexture.bind(1)
 
         _wham.ctx.viewport(0, 0, _gridSize, _gridSize)
-        _drawJumpFloodData.use
+        _drawVoronoi.use
                           .attrib("quad", _quadBuffer, 2)
                           .uniform("iSeedInputTexture", 0)
                           .uniform("iCellGridTexture", 1)
                           .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
-                          .uniform("iMinSeedDistanceThreshold", _options.minSeedDistanceThreshold * Browser.devicePixelRatio)
                           .draw(_wham.ctx.TRIANGLE_STRIP, 4)
 
         _drawTempTexture
     }
 
-    def drawDistanceFieldToOutputCanvas {
+    def _drawDistanceFieldToOutputCanvas {
         # First draw _destTexture into _tempOutputTexture
         _framebuffer.attach(_tempOutputTexture)
         _checkFramebufferCompletion
@@ -162,13 +235,13 @@ class Voronoi {
         _drawTempTexture
     }
 
-    def drawShadowToOutputCanvas(shadowSpread double, shadowBlur double) {
+    def _drawShadowToOutputCanvas(shadowSpread double, shadowBlur double) {
         # First draw _destTexture into _tempOutputTexture
         _framebuffer.attach(_tempOutputTexture)
         _checkFramebufferCompletion
         _destTexture.bind(0)
         _wham.ctx.viewport(0, 0, _gridSize, _gridSize)
-        _drawShadow.use
+        _drawDropShadow.use
                     .attrib("quad", _quadBuffer, 2)
                     .uniform("iCellGridTexture", 0)
                     .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
@@ -195,38 +268,38 @@ class Voronoi {
     }
 
     # Useful if you want to compute Voronoi in one step.
-    def computeVoronoi {
+    def _computeVoronoi(options Options) {
         var stepSize int = _gridSize / 2
         while stepSize >= 1 {
-            _runJumpFloodStep(stepSize)
+            _runJumpFloodStep(stepSize, options)
             stepSize /= 2
         }
-        _runJumpFloodStep(2)
-        _runJumpFloodStep(1)
+        _runJumpFloodStep(2, options)
+        _runJumpFloodStep(1, options)
     }
 
     # Use resetVoronoiSteps and stepVoronoi to move foward
     # through iterations of the JFA algorithm. Useful, for
     # example, if you're showing an explanation of the
     # algorithm.
-    def resetVoronoiSteps {
+    def _resetVoronoiSteps(options Options) {
         var stepSize double = _gridSize / 2
         _simulationStepper = () => {
             if stepSize >= 1 {
-                _runJumpFloodStep(stepSize as int)
+                _runJumpFloodStep(stepSize as int, options)
                 stepSize /= 2
             } else if stepSize < 1 {
-                _runJumpFloodStep(2)
-                _runJumpFloodStep(1)
+                _runJumpFloodStep(2, options)
+                _runJumpFloodStep(1, options)
             }
         }
     }
 
-    def stepVoronoi {
+    def _stepVoronoi {
         _simulationStepper()
     }
 
-    def _runJumpFloodStep(stepSize int) {
+    def _runJumpFloodStep(stepSize int, options Options) {
         # The current simulation state is always in _sourceTexture
         # and we draw onto _destTexture. So...
         #
@@ -238,6 +311,7 @@ class Voronoi {
         #    cellGridTexture uniform below.
         #
         _framebuffer.attach(_destTexture)
+        _checkFramebufferCompletion
 
         if !RELEASE {
             const gl = _wham.ctx
@@ -255,16 +329,25 @@ class Voronoi {
             .uniform("iCellGridTexture", 0)
             .uniform("iStepSize", stepSize)
             .uniform("iCellGridSize", Float32Array.new([_gridSize, _gridSize]))
-            .uniform("iUseTorusDistanceForSeeds", _options.wrap ? 1 : 0)
+            .uniform("iUseTorusDistanceForSeeds", options.wrap ? 1 : 0)
             .draw(_wham.ctx.TRIANGLE_STRIP, 4)
 
         self._swapBuffers
     }
 
     def _swapBuffers {
-        # Swap the source and destination textures
         const tmp = _sourceTexture
         _sourceTexture = _destTexture
         _destTexture = tmp
+    }
+
+    def _checkFramebufferCompletion {
+        if !RELEASE {
+            const ctx = _wham.ctx
+            var check = ctx.checkFramebufferStatus(ctx.FRAMEBUFFER)
+            if check != ctx.FRAMEBUFFER_COMPLETE {
+                throw Error.new("Framebuffer completion error")
+            }
+        }
     }
 }

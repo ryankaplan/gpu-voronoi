@@ -35,8 +35,7 @@ class ShadowDemoController {
         _outputCanvasCtx = _outputCanvas.getContext2D
 
         # Initialize the Voronoi generator
-        const opts = Voronoi.Options.new
-        _voronoi = createVoronoiGenerator(_shadowCanvas, opts)
+        _voronoi = createVoronoiGenerator(_shadowCanvas)
         _controller = DraggableTextDemoController.new(_jfaSeedCanvas, outputCanvas)
         _controller.onDraw = => { render }
 
@@ -65,9 +64,12 @@ class ShadowDemoController {
         const shadowSpread = _spreadSlider.get
         const shadowBlur = _blurSlider.get
 
-        _voronoi.setSeedsFromCanvas(_jfaSeedCanvas, Float32Array.new([1.0, 1.0, 1.0, 1.0]))
-        _voronoi.computeVoronoi
-        _voronoi.drawShadowToOutputCanvas(shadowSpread, shadowBlur)
+        const opts = Voronoi.Options.new
+        opts.seedCanvasBackgroundColor = Color.white.toVec4
+        opts.output = .DROP_SHADOW
+        opts.shadowSpread = shadowSpread
+        opts.shadowBlur = shadowBlur
+        _voronoi.computeAndDraw(_jfaSeedCanvas, opts)
 
         # Output canvas has a white background
         _outputCanvasCtx.fillStyle = "white"
