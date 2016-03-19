@@ -81,13 +81,7 @@
           It's interesting to see what the JFA grid looks like at the end of each round. Below is a demo like the one at the top of the page, except there's a slider to set the maximum JFA round number. If you set it to 5, then we stop computing JFA at round 5 and show the result in the second canvas. Try adding a few seeds and moving the slider slowly from round 0 to see what JFA does at each step. I find it really interesting how it all comes together in the last two steps -- before that it doesn't look much like a Voronoi diagram at all.
       </p>
 
-      <div id="slider-demo-container" class="demo-container">
-        <canvas class="input-canvas"></canvas>
-        <canvas class="output-canvas"></canvas>
-        <div class="demo-controls">
-            <span class="jfa-round-label label"></span><div class="jfa-round-slider" />
-        </div>
-      </div>
+      <div id="slider-demo-container"></div>
 
       <h2>
         Distance fields
@@ -107,15 +101,7 @@
           We use JFA to generate a distance field - each pixel in the shape casting the shadow is a &lsquo;seed&rsquo; our JFA input. The distance field tells us how far away each pixel is from the geometry casting the shadow. When the spread is big, we know that we should blur shadow pixels only if they're far from the geometry, and vice versa.
       </p>
 
-      <div id="shadow-demo-container" class="demo-container">
-        <canvas class="output-canvas"></canvas>
-        <div class="shadow-spread-controls">
-            <span class="shadow-spread-label label">Spread</span><div class="shadow-spread-slider" ></div>
-        </div>
-        <div class="shadow-blur-controls">
-            <span class="shadow-blur-label label">Blur</span><div class="shadow-blur-slider" ></div>
-        </div>
-      </div>
+      <div id="shadow-demo-container"></div>
 
       <p>
           You can drag the canvas above the move the drop shadow, or use the sliders to control spread and blur.

@@ -26,6 +26,10 @@ class XMLDomElement {
         }
     }
 
+    def <>...</>(child string) {
+        _element.textContent = child
+    }
+
     def <>...</>(child XMLDomElement) {
         _children.append(child)
         _element.appendChild(child._element)

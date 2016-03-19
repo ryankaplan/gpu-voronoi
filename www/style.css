@@ -31,13 +31,17 @@ h1, h2, h3, .sans-serif {
     font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Geneva, Verdana, sans-serif;
 }
 
+.demo-controls {
+    margin-top: 20px;
+}
+
 .jfa-round-label {
     display: inline-block;
     text-align: center;
     width: 256px;
 }
 
-.jfa-round-slider, .shadow-spread-slider, .shadow-blur-slider {
+.shadow-spread-slider, .shadow-blur-slider {
     width: 226px;
     display: inline-block;
 }
@@ -53,10 +57,6 @@ h1, h2, h3, .sans-serif {
     margin-right: 40px;
 }
 
-.jfa-round-slider, .shadow-spread-slider, .shadow-blur-slider {
-    width: 226px;
-    display: inline-block;
-}
 
 .step-size-label {
     margin-top: 20px;
@@ -89,10 +89,6 @@ h2 {
 
 h1, h2 {
     letter-spacing: 2px;
-}
-
-.demo-controls {
-    margin-top: 20px;
 }
 
 /* Demo index page */
