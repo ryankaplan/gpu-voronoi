@@ -98,8 +98,6 @@ class Vector {
 		return self
 	}
 
-    # TODO(ryan): Rename this to something that makes it clear that
-    # it doesn't edit `self`
     def rotated(angleRad double) Vector {
         return new(
             x * Math.cos(angleRad) - y * Math.sin(angleRad),

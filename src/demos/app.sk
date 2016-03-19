@@ -11,12 +11,16 @@ def getCanvas(container HTMLElement, className string, canvasSize int) HTMLCanva
     return canvas
 }
 
+def displayError(container HTMLElement) {
+    container.innerHTML = ""
+    container.textContent = "Demo disabled. Couldn't enable WebGL."
+}
+
 def tryOrDisplayError(container HTMLElement, tryBlock fn()) {
     try {
         tryBlock()
     } catch temp dynamic {
-        container.innerHTML = ""
-        container.textContent = "Demo disabled. Couldn't enable WebGL."
+        displayError(container)
     }
 }
 
@@ -106,46 +110,14 @@ def initializeSliderDemo(container HTMLElement) {
     const gridSize = 256
     const inputCanvas = getCanvas(container, "input-canvas", gridSize)
     const outputCanvas = getCanvas(container, "output-canvas", gridSize)
-    var jfa JumpFlood = null
-    tryOrDisplayError(container, => {
-        jfa = JumpFlood.new(outputCanvas)
-    })
-
-    if jfa == null {
-        return
-    }
-
-    const label = (container as dynamic).getElementsByClassName("jfa-round-label")[0] as HTMLElement
-    const slider = (container as dynamic).getElementsByClassName("jfa-round-slider")[0]
-
-    const max = Math.log2(gridSize) + 1
-    noUiSlider.create(slider, {
-        "start": max,
-        "step": 1,
-        "range": {
-            "min": 1,
-            "max": max
-        }
-    })
-
-    const drawWithSteps = (steps int) => {
-        label.textContent = "Round #\(slider.noUiSlider.get() as int)"
-        const opts = JumpFlood.Options.new
-        opts.maxRounds = steps
-        jfa.computeAndDraw(inputCanvas, opts)
-    }
-
-    slider.noUiSlider.on("slide", => {
-        drawWithSteps(slider.noUiSlider.get() as int)
-    })
-
-    # A CanvasDrawController handles user draw-actions on the input canvas
-    # Whenever the user draws, we re-render the voronoi diagram for the input
-    CanvasDrawController.new(inputCanvas, outputCanvas, => {
-        drawWithSteps(slider.noUiSlider.get() as int)
-    })
-
-    drawWithSteps(max)
+    SlidableMaxJFARoundDemoController.new(
+        inputCanvas,
+        outputCanvas,
+        gridSize,
+        (container as dynamic).getElementsByClassName("jfa-round-label")[0] as HTMLElement,
+        (container as dynamic).getElementsByClassName("jfa-round-slider")[0] as HTMLElement,
+        => { displayError(container) }
+    )
 }
 
 def initializeJfaPatternDemo(element HTMLElement) {

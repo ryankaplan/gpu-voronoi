@@ -1,0 +1,48 @@
+
+class SlidableMaxJFARoundDemoController {
+    const _inputCanvas HTMLCanvasElement
+    const _outputCanvas HTMLCanvasElement
+    const _jfa JumpFlood
+    const _label HTMLElement
+    const _slider Slider
+
+    def new(inputCanvas HTMLCanvasElement, outputCanvas HTMLCanvasElement, gridSize int, label HTMLElement, slider HTMLElement, onError fn()) {
+        _inputCanvas = inputCanvas
+        _label = label
+
+        try {
+            _jfa = JumpFlood.new(outputCanvas)
+        } catch temp dynamic {
+            onError()
+        }
+
+        const maxJfaRound = Math.log2(gridSize) + 1
+        _slider = Slider.new(slider, {
+            "start": maxJfaRound,
+            "step": 1,
+            "range": {
+                "min": 1,
+                "max": maxJfaRound
+            }
+        })
+
+        _slider.on("slide", => {
+            _drawWithSteps(_slider.get as int)
+        })
+
+        # A CanvasDrawController handles user draw-actions on the input canvas
+        # Whenever the user draws, we re-render the voronoi diagram for the input
+        CanvasDrawController.new(inputCanvas, outputCanvas, => {
+            _drawWithSteps(_slider.get as int)
+        })
+
+        _drawWithSteps(maxJfaRound)
+    }
+
+    def _drawWithSteps(steps int) {
+        _label.textContent = "Round #\(_slider.get as int)"
+        const opts = JumpFlood.Options.new
+        opts.maxRounds = steps
+        _jfa.computeAndDraw(_inputCanvas, opts)
+    }
+}
