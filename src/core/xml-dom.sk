@@ -1,0 +1,72 @@
+# Really small DOM that supports Skew XML syntax. Just playing around.
+
+class XMLDomElement {
+    const _tag string = null
+    const _children = List<XMLDomElement>.new
+    const _element HTMLElement = null
+
+    # Public HTMLElement attributes
+    var style Style = Style.new
+    var id string = null
+    var class string = null
+
+    def new(tag string) {
+        _element = document.createElement(tag)
+    }
+
+    def rawElement HTMLElement {
+        _applyStyles
+        return _element
+    }
+
+    def _applyStyles {
+        style.applyToElement(_element)
+        for child in _children {
+            child._applyStyles
+        }
+    }
+
+    def <>...</>(child XMLDomElement) {
+        _children.append(child)
+        _element.appendChild(child._element)
+    }
+
+    def getBoundingClientRect BoundingRect {
+        return _element.getBoundingClientRect
+    }
+
+    def addEventListener(type string, listener fn()) { HTML.on(_element, type, listener) }
+    def addEventListener(type string, listener fn(HTMLEvent)) { HTML.on(_element, type, listener) }
+    def addEventListener(type string, listener fn(HTMLKeyboardEvent)) { HTML.on(_element, type, listener) }
+    def addEventListener(type string, listener fn(HTMLMouseEvent)) { HTML.on(_element, type, listener) }
+    def addEventListener(type string, listener fn(HTMLTouchEvent)) { HTML.on(_element, type, listener) }
+    def addEventListener(type string, listener fn(HTMLWheelEvent)) { HTML.on(_element, type, listener) }
+
+    def removeEventListener(type string, listener fn()) { HTML.off(_element, type, listener) }
+    def removeEventListener(type string, listener fn(HTMLEvent)) { HTML.off(_element, type, listener) }
+    def removeEventListener(type string, listener fn(HTMLKeyboardEvent)) { HTML.off(_element, type, listener) }
+    def removeEventListener(type string, listener fn(HTMLMouseEvent)) { HTML.off(_element, type, listener) }
+    def removeEventListener(type string, listener fn(HTMLTouchEvent)) { HTML.off(_element, type, listener) }
+    def removeEventListener(type string, listener fn(HTMLWheelEvent)) { HTML.off(_element, type, listener) }
+}
+
+class div : XMLDomElement {
+    def new { super("div") }
+}
+
+class span : XMLDomElement {
+    def new { super("span") }
+}
+
+class canvas : XMLDomElement {
+    def new { super("canvas") }
+
+    def element HTMLCanvasElement {
+        return _element as HTMLCanvasElement
+    }
+
+    def width dynamic { return element.width }
+    def width=(value dynamic) { element.width = value }
+    def height dynamic { return element.height }
+    def height=(value dynamic) { element.height = value }
+}

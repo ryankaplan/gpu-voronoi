@@ -5,6 +5,14 @@ def sizeCanvas(canvas HTMLCanvasElement, size int) {
     canvas.style.height = "\(size)px"
 }
 
+def sizeCanvas(canvas canvas, size int) canvas {
+    canvas.width = (size * Browser.devicePixelRatio) as int
+    canvas.height = (size * Browser.devicePixelRatio) as int
+    canvas.style.width = "\(size)px"
+    canvas.style.height = "\(size)px"
+    return canvas
+}
+
 def getCanvas(container HTMLElement, className string, canvasSize int) HTMLCanvasElement {
     const canvas = (container as dynamic).getElementsByClassName(className)[0] as HTMLCanvasElement
     sizeCanvas(canvas, canvasSize)
@@ -25,35 +33,47 @@ def tryOrDisplayError(container HTMLElement, tryBlock fn()) {
 }
 
 def initializePaintDemo(container HTMLElement) {
-    const inputCanvas = getCanvas(container, "input-canvas", 256)
-    const outputCanvas = getCanvas(container, "output-canvas", 256)
+    const inputCanvas = sizeCanvas(<canvas />, 256)
+    const outputCanvas = sizeCanvas(<canvas />, 256)
+    container.appendChild((
+        <div style={ "text-align": "center" }>
+            inputCanvas
+            outputCanvas
+        </div>
+    ).rawElement)
 
     var jfa JumpFlood = null
     tryOrDisplayError(container, => {
-        jfa = JumpFlood.new(outputCanvas)
+        jfa = JumpFlood.new(outputCanvas.element)
     })
 
     if jfa != null {
-        CanvasDrawController.new(inputCanvas, outputCanvas, => {
-            jfa.computeAndDraw(inputCanvas)
+        CanvasDrawController.new(inputCanvas.element, outputCanvas.element, => {
+            jfa.computeAndDraw(inputCanvas.element)
         })
     }
 }
 
 def initializeFishDemo(container HTMLElement) {
-    const inputCanvas = getCanvas(container, "input-canvas", 256)
-    const outputCanvas = getCanvas(container, "output-canvas", 256)
+    const inputCanvas = sizeCanvas(<canvas />, 256)
+    const outputCanvas = sizeCanvas(<canvas />, 256)
+    container.appendChild((
+        <div style={ "text-align": "center" }>
+            inputCanvas
+            outputCanvas
+        </div>
+    ).rawElement)
 
     var jfa JumpFlood = null
     tryOrDisplayError(container, => {
-        jfa = JumpFlood.new(outputCanvas)
+        jfa = JumpFlood.new(outputCanvas.element)
     })
 
     if jfa != null {
-        FishGameController.new(inputCanvas, outputCanvas, => {
+        FishGameController.new(inputCanvas.element, outputCanvas.element, => {
             const opts = JumpFlood.Options.new
             opts.wrap = true
-            jfa.computeAndDraw(inputCanvas, opts)
+            jfa.computeAndDraw(inputCanvas.element, opts)
         })
     }
 }
@@ -121,7 +141,7 @@ def initializeSliderDemo(container HTMLElement) {
 }
 
 def initializeJfaPatternDemo(element HTMLElement) {
-    const canvas = (element as dynamic).getElementsByTagName("canvas")[0]
+    const canvas = ((element as dynamic).getElementsByTagName("canvas")[0]) as HTMLCanvasElement
     const gridSize = 16
     sizeCanvas(canvas, 256)
     JFAPatternDemoController.new(

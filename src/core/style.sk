@@ -1,0 +1,342 @@
+class Style {
+    const _inner = StringMap<dynamic>.new
+
+    def {new}(keys List<string>, values List<dynamic>) {
+        for i in 0..keys.count {
+            _inner[keys[i]] = values[i]
+        }
+    }
+
+    def applyToElement(element HTMLElement) {
+        _inner.each((key string, value dynamic) => {
+            (element.style as dynamic)[key] = value
+        })
+    }
+
+    def toCSS string {
+        const builder = StringBuilder.new
+        _inner.each((key string, value dynamic) => {
+            builder.append("\(key): \(value);\n")
+        })
+        return builder.toString
+    }
+
+    # Generated with
+
+    # import re
+    # def camelCaseToCSSName(name):
+    #     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1-\2', name)
+    #     return re.sub('([a-z0-9])([A-Z])', r'\1-\2', s1).lower()
+    # def printGetter(name):
+    #     cssName = camelCaseToCSSName(name)
+    #     print '    def %s dynamic { return _inner.get("%s", null) }' % (name, cssName)
+    # def printSetter(name):
+    #     cssName = camelCaseToCSSName(name)
+    #     print '    def %s=(value dynamic) { _inner["%s"] = value }' % (name, cssName)
+    # f = open('style.txt', 'r')
+    # for line in f.readlines():
+    #     name = line.split()[0]
+    #     printGetter(name)
+    #     printSetter(name)
+
+    def alignmentBaseline dynamic { return _inner.get("alignment-baseline", null) }
+    def alignmentBaseline=(value dynamic) { _inner["alignment-baseline"] = value }
+    def background dynamic { return _inner.get("background", null) }
+    def background=(value dynamic) { _inner["background"] = value }
+    def backgroundAttachment dynamic { return _inner.get("background-attachment", null) }
+    def backgroundAttachment=(value dynamic) { _inner["background-attachment"] = value }
+    def backgroundClip dynamic { return _inner.get("background-clip", null) }
+    def backgroundClip=(value dynamic) { _inner["background-clip"] = value }
+    def backgroundColor dynamic { return _inner.get("background-color", null) }
+    def backgroundColor=(value dynamic) { _inner["background-color"] = value }
+    def backgroundImage dynamic { return _inner.get("background-image", null) }
+    def backgroundImage=(value dynamic) { _inner["background-image"] = value }
+    def backgroundOrigin dynamic { return _inner.get("background-origin", null) }
+    def backgroundOrigin=(value dynamic) { _inner["background-origin"] = value }
+    def backgroundPosition dynamic { return _inner.get("background-position", null) }
+    def backgroundPosition=(value dynamic) { _inner["background-position"] = value }
+    def backgroundRepeat dynamic { return _inner.get("background-repeat", null) }
+    def backgroundRepeat=(value dynamic) { _inner["background-repeat"] = value }
+    def backgroundSize dynamic { return _inner.get("background-size", null) }
+    def backgroundSize=(value dynamic) { _inner["background-size"] = value }
+    def baselineShift dynamic { return _inner.get("baseline-shift", null) }
+    def baselineShift=(value dynamic) { _inner["baseline-shift"] = value }
+    def border dynamic { return _inner.get("border", null) }
+    def border=(value dynamic) { _inner["border"] = value }
+    def borderBottom dynamic { return _inner.get("border-bottom", null) }
+    def borderBottom=(value dynamic) { _inner["border-bottom"] = value }
+    def borderBottomColor dynamic { return _inner.get("border-bottom-color", null) }
+    def borderBottomColor=(value dynamic) { _inner["border-bottom-color"] = value }
+    def borderBottomLeftRadius dynamic { return _inner.get("border-bottom-left-radius", null) }
+    def borderBottomLeftRadius=(value dynamic) { _inner["border-bottom-left-radius"] = value }
+    def borderBottomRightRadius dynamic { return _inner.get("border-bottom-right-radius", null) }
+    def borderBottomRightRadius=(value dynamic) { _inner["border-bottom-right-radius"] = value }
+    def borderBottomStyle dynamic { return _inner.get("border-bottom-style", null) }
+    def borderBottomStyle=(value dynamic) { _inner["border-bottom-style"] = value }
+    def borderBottomWidth dynamic { return _inner.get("border-bottom-width", null) }
+    def borderBottomWidth=(value dynamic) { _inner["border-bottom-width"] = value }
+    def borderCollapse dynamic { return _inner.get("border-collapse", null) }
+    def borderCollapse=(value dynamic) { _inner["border-collapse"] = value }
+    def borderColor dynamic { return _inner.get("border-color", null) }
+    def borderColor=(value dynamic) { _inner["border-color"] = value }
+    def borderLeft dynamic { return _inner.get("border-left", null) }
+    def borderLeft=(value dynamic) { _inner["border-left"] = value }
+    def borderLeftColor dynamic { return _inner.get("border-left-color", null) }
+    def borderLeftColor=(value dynamic) { _inner["border-left-color"] = value }
+    def borderLeftStyle dynamic { return _inner.get("border-left-style", null) }
+    def borderLeftStyle=(value dynamic) { _inner["border-left-style"] = value }
+    def borderLeftWidth dynamic { return _inner.get("border-left-width", null) }
+    def borderLeftWidth=(value dynamic) { _inner["border-left-width"] = value }
+    def borderRadius dynamic { return _inner.get("border-radius", null) }
+    def borderRadius=(value dynamic) { _inner["border-radius"] = value }
+    def borderRight dynamic { return _inner.get("border-right", null) }
+    def borderRight=(value dynamic) { _inner["border-right"] = value }
+    def borderRightColor dynamic { return _inner.get("border-right-color", null) }
+    def borderRightColor=(value dynamic) { _inner["border-right-color"] = value }
+    def borderRightStyle dynamic { return _inner.get("border-right-style", null) }
+    def borderRightStyle=(value dynamic) { _inner["border-right-style"] = value }
+    def borderRightWidth dynamic { return _inner.get("border-right-width", null) }
+    def borderRightWidth=(value dynamic) { _inner["border-right-width"] = value }
+    def borderSpacing dynamic { return _inner.get("border-spacing", null) }
+    def borderSpacing=(value dynamic) { _inner["border-spacing"] = value }
+    def borderStyle dynamic { return _inner.get("border-style", null) }
+    def borderStyle=(value dynamic) { _inner["border-style"] = value }
+    def borderTop dynamic { return _inner.get("border-top", null) }
+    def borderTop=(value dynamic) { _inner["border-top"] = value }
+    def borderTopColor dynamic { return _inner.get("border-top-color", null) }
+    def borderTopColor=(value dynamic) { _inner["border-top-color"] = value }
+    def borderTopLeftRadius dynamic { return _inner.get("border-top-left-radius", null) }
+    def borderTopLeftRadius=(value dynamic) { _inner["border-top-left-radius"] = value }
+    def borderTopRightRadius dynamic { return _inner.get("border-top-right-radius", null) }
+    def borderTopRightRadius=(value dynamic) { _inner["border-top-right-radius"] = value }
+    def borderTopStyle dynamic { return _inner.get("border-top-style", null) }
+    def borderTopStyle=(value dynamic) { _inner["border-top-style"] = value }
+    def borderTopWidth dynamic { return _inner.get("border-top-width", null) }
+    def borderTopWidth=(value dynamic) { _inner["border-top-width"] = value }
+    def borderWidth dynamic { return _inner.get("border-width", null) }
+    def borderWidth=(value dynamic) { _inner["border-width"] = value }
+    def bottom dynamic { return _inner.get("bottom", null) }
+    def bottom=(value dynamic) { _inner["bottom"] = value }
+    def boxShadow dynamic { return _inner.get("box-shadow", null) }
+    def boxShadow=(value dynamic) { _inner["box-shadow"] = value }
+    def boxSizing dynamic { return _inner.get("box-sizing", null) }
+    def boxSizing=(value dynamic) { _inner["box-sizing"] = value }
+    def captionSide dynamic { return _inner.get("caption-side", null) }
+    def captionSide=(value dynamic) { _inner["caption-side"] = value }
+    def clear dynamic { return _inner.get("clear", null) }
+    def clear=(value dynamic) { _inner["clear"] = value }
+    def clip dynamic { return _inner.get("clip", null) }
+    def clip=(value dynamic) { _inner["clip"] = value }
+    def clipPath dynamic { return _inner.get("clip-path", null) }
+    def clipPath=(value dynamic) { _inner["clip-path"] = value }
+    def clipRule dynamic { return _inner.get("clip-rule", null) }
+    def clipRule=(value dynamic) { _inner["clip-rule"] = value }
+    def color dynamic { return _inner.get("color", null) }
+    def color=(value dynamic) { _inner["color"] = value }
+    def content dynamic { return _inner.get("content", null) }
+    def content=(value dynamic) { _inner["content"] = value }
+    def counterIncrement dynamic { return _inner.get("counter-increment", null) }
+    def counterIncrement=(value dynamic) { _inner["counter-increment"] = value }
+    def counterReset dynamic { return _inner.get("counter-reset", null) }
+    def counterReset=(value dynamic) { _inner["counter-reset"] = value }
+    def cssFloat dynamic { return _inner.get("css-float", null) }
+    def cssFloat=(value dynamic) { _inner["css-float"] = value }
+    def cssText dynamic { return _inner.get("css-text", null) }
+    def cssText=(value dynamic) { _inner["css-text"] = value }
+    def cursor dynamic { return _inner.get("cursor", null) }
+    def cursor=(value dynamic) { _inner["cursor"] = value }
+    def direction dynamic { return _inner.get("direction", null) }
+    def direction=(value dynamic) { _inner["direction"] = value }
+    def display dynamic { return _inner.get("display", null) }
+    def display=(value dynamic) { _inner["display"] = value }
+    def dominantBaseline dynamic { return _inner.get("dominant-baseline", null) }
+    def dominantBaseline=(value dynamic) { _inner["dominant-baseline"] = value }
+    def emptyCells dynamic { return _inner.get("empty-cells", null) }
+    def emptyCells=(value dynamic) { _inner["empty-cells"] = value }
+    def fill dynamic { return _inner.get("fill", null) }
+    def fill=(value dynamic) { _inner["fill"] = value }
+    def fillOpacity dynamic { return _inner.get("fill-opacity", null) }
+    def fillOpacity=(value dynamic) { _inner["fill-opacity"] = value }
+    def fillRule dynamic { return _inner.get("fill-rule", null) }
+    def fillRule=(value dynamic) { _inner["fill-rule"] = value }
+    def font dynamic { return _inner.get("font", null) }
+    def font=(value dynamic) { _inner["font"] = value }
+    def fontFamily dynamic { return _inner.get("font-family", null) }
+    def fontFamily=(value dynamic) { _inner["font-family"] = value }
+    def fontSize dynamic { return _inner.get("font-size", null) }
+    def fontSize=(value dynamic) { _inner["font-size"] = value }
+    def fontSizeAdjust dynamic { return _inner.get("font-size-adjust", null) }
+    def fontSizeAdjust=(value dynamic) { _inner["font-size-adjust"] = value }
+    def fontStretch dynamic { return _inner.get("font-stretch", null) }
+    def fontStretch=(value dynamic) { _inner["font-stretch"] = value }
+    def fontStyle dynamic { return _inner.get("font-style", null) }
+    def fontStyle=(value dynamic) { _inner["font-style"] = value }
+    def fontVariant dynamic { return _inner.get("font-variant", null) }
+    def fontVariant=(value dynamic) { _inner["font-variant"] = value }
+    def fontWeight dynamic { return _inner.get("font-weight", null) }
+    def fontWeight=(value dynamic) { _inner["font-weight"] = value }
+    def glyphOrientationHorizontal dynamic { return _inner.get("glyph-orientation-horizontal", null) }
+    def glyphOrientationHorizontal=(value dynamic) { _inner["glyph-orientation-horizontal"] = value }
+    def glyphOrientationVertical dynamic { return _inner.get("glyph-orientation-vertical", null) }
+    def glyphOrientationVertical=(value dynamic) { _inner["glyph-orientation-vertical"] = value }
+    def height dynamic { return _inner.get("height", null) }
+    def height=(value dynamic) { _inner["height"] = value }
+    def kerning dynamic { return _inner.get("kerning", null) }
+    def kerning=(value dynamic) { _inner["kerning"] = value }
+    def left dynamic { return _inner.get("left", null) }
+    def left=(value dynamic) { _inner["left"] = value }
+    def letterSpacing dynamic { return _inner.get("letter-spacing", null) }
+    def letterSpacing=(value dynamic) { _inner["letter-spacing"] = value }
+    def lineHeight dynamic { return _inner.get("line-height", null) }
+    def lineHeight=(value dynamic) { _inner["line-height"] = value }
+    def listStyle dynamic { return _inner.get("list-style", null) }
+    def listStyle=(value dynamic) { _inner["list-style"] = value }
+    def listStyleImage dynamic { return _inner.get("list-style-image", null) }
+    def listStyleImage=(value dynamic) { _inner["list-style-image"] = value }
+    def listStylePosition dynamic { return _inner.get("list-style-position", null) }
+    def listStylePosition=(value dynamic) { _inner["list-style-position"] = value }
+    def listStyleType dynamic { return _inner.get("list-style-type", null) }
+    def listStyleType=(value dynamic) { _inner["list-style-type"] = value }
+    def margin dynamic { return _inner.get("margin", null) }
+    def margin=(value dynamic) { _inner["margin"] = value }
+    def marginBottom dynamic { return _inner.get("margin-bottom", null) }
+    def marginBottom=(value dynamic) { _inner["margin-bottom"] = value }
+    def marginLeft dynamic { return _inner.get("margin-left", null) }
+    def marginLeft=(value dynamic) { _inner["margin-left"] = value }
+    def marginRight dynamic { return _inner.get("margin-right", null) }
+    def marginRight=(value dynamic) { _inner["margin-right"] = value }
+    def marginTop dynamic { return _inner.get("margin-top", null) }
+    def marginTop=(value dynamic) { _inner["margin-top"] = value }
+    def marker dynamic { return _inner.get("marker", null) }
+    def marker=(value dynamic) { _inner["marker"] = value }
+    def markerEnd dynamic { return _inner.get("marker-end", null) }
+    def markerEnd=(value dynamic) { _inner["marker-end"] = value }
+    def markerMid dynamic { return _inner.get("marker-mid", null) }
+    def markerMid=(value dynamic) { _inner["marker-mid"] = value }
+    def markerStart dynamic { return _inner.get("marker-start", null) }
+    def markerStart=(value dynamic) { _inner["marker-start"] = value }
+    def mask dynamic { return _inner.get("mask", null) }
+    def mask=(value dynamic) { _inner["mask"] = value }
+    def maxHeight dynamic { return _inner.get("max-height", null) }
+    def maxHeight=(value dynamic) { _inner["max-height"] = value }
+    def maxWidth dynamic { return _inner.get("max-width", null) }
+    def maxWidth=(value dynamic) { _inner["max-width"] = value }
+    def minHeight dynamic { return _inner.get("min-height", null) }
+    def minHeight=(value dynamic) { _inner["min-height"] = value }
+    def minWidth dynamic { return _inner.get("min-width", null) }
+    def minWidth=(value dynamic) { _inner["min-width"] = value }
+    def msTransform dynamic { return _inner.get("ms-transform", null) }
+    def msTransform=(value dynamic) { _inner["ms-transform"] = value }
+    def msTransformOrigin dynamic { return _inner.get("ms-transform-origin", null) }
+    def msTransformOrigin=(value dynamic) { _inner["ms-transform-origin"] = value }
+    def opacity dynamic { return _inner.get("opacity", null) }
+    def opacity=(value dynamic) { _inner["opacity"] = value }
+    def orphans dynamic { return _inner.get("orphans", null) }
+    def orphans=(value dynamic) { _inner["orphans"] = value }
+    def outline dynamic { return _inner.get("outline", null) }
+    def outline=(value dynamic) { _inner["outline"] = value }
+    def outlineColor dynamic { return _inner.get("outline-color", null) }
+    def outlineColor=(value dynamic) { _inner["outline-color"] = value }
+    def outlineStyle dynamic { return _inner.get("outline-style", null) }
+    def outlineStyle=(value dynamic) { _inner["outline-style"] = value }
+    def outlineWidth dynamic { return _inner.get("outline-width", null) }
+    def outlineWidth=(value dynamic) { _inner["outline-width"] = value }
+    def overflow dynamic { return _inner.get("overflow", null) }
+    def overflow=(value dynamic) { _inner["overflow"] = value }
+    def overflowX dynamic { return _inner.get("overflow-x", null) }
+    def overflowX=(value dynamic) { _inner["overflow-x"] = value }
+    def overflowY dynamic { return _inner.get("overflow-y", null) }
+    def overflowY=(value dynamic) { _inner["overflow-y"] = value }
+    def padding dynamic { return _inner.get("padding", null) }
+    def padding=(value dynamic) { _inner["padding"] = value }
+    def paddingBottom dynamic { return _inner.get("padding-bottom", null) }
+    def paddingBottom=(value dynamic) { _inner["padding-bottom"] = value }
+    def paddingLeft dynamic { return _inner.get("padding-left", null) }
+    def paddingLeft=(value dynamic) { _inner["padding-left"] = value }
+    def paddingRight dynamic { return _inner.get("padding-right", null) }
+    def paddingRight=(value dynamic) { _inner["padding-right"] = value }
+    def paddingTop dynamic { return _inner.get("padding-top", null) }
+    def paddingTop=(value dynamic) { _inner["padding-top"] = value }
+    def pageBreakAfter dynamic { return _inner.get("page-break-after", null) }
+    def pageBreakAfter=(value dynamic) { _inner["page-break-after"] = value }
+    def pageBreakBefore dynamic { return _inner.get("page-break-before", null) }
+    def pageBreakBefore=(value dynamic) { _inner["page-break-before"] = value }
+    def pageBreakInside dynamic { return _inner.get("page-break-inside", null) }
+    def pageBreakInside=(value dynamic) { _inner["page-break-inside"] = value }
+    def pointerEvents dynamic { return _inner.get("pointer-events", null) }
+    def pointerEvents=(value dynamic) { _inner["pointer-events"] = value }
+    def position dynamic { return _inner.get("position", null) }
+    def position=(value dynamic) { _inner["position"] = value }
+    def quotes dynamic { return _inner.get("quotes", null) }
+    def quotes=(value dynamic) { _inner["quotes"] = value }
+    def right dynamic { return _inner.get("right", null) }
+    def right=(value dynamic) { _inner["right"] = value }
+    def rubyAlign dynamic { return _inner.get("ruby-align", null) }
+    def rubyAlign=(value dynamic) { _inner["ruby-align"] = value }
+    def rubyOverhang dynamic { return _inner.get("ruby-overhang", null) }
+    def rubyOverhang=(value dynamic) { _inner["ruby-overhang"] = value }
+    def rubyPosition dynamic { return _inner.get("ruby-position", null) }
+    def rubyPosition=(value dynamic) { _inner["ruby-position"] = value }
+    def stopColor dynamic { return _inner.get("stop-color", null) }
+    def stopColor=(value dynamic) { _inner["stop-color"] = value }
+    def stopOpacity dynamic { return _inner.get("stop-opacity", null) }
+    def stopOpacity=(value dynamic) { _inner["stop-opacity"] = value }
+    def stroke dynamic { return _inner.get("stroke", null) }
+    def stroke=(value dynamic) { _inner["stroke"] = value }
+    def strokeDasharray dynamic { return _inner.get("stroke-dasharray", null) }
+    def strokeDasharray=(value dynamic) { _inner["stroke-dasharray"] = value }
+    def strokeDashoffset dynamic { return _inner.get("stroke-dashoffset", null) }
+    def strokeDashoffset=(value dynamic) { _inner["stroke-dashoffset"] = value }
+    def strokeLinecap dynamic { return _inner.get("stroke-linecap", null) }
+    def strokeLinecap=(value dynamic) { _inner["stroke-linecap"] = value }
+    def strokeLinejoin dynamic { return _inner.get("stroke-linejoin", null) }
+    def strokeLinejoin=(value dynamic) { _inner["stroke-linejoin"] = value }
+    def strokeMiterlimit dynamic { return _inner.get("stroke-miterlimit", null) }
+    def strokeMiterlimit=(value dynamic) { _inner["stroke-miterlimit"] = value }
+    def strokeOpacity dynamic { return _inner.get("stroke-opacity", null) }
+    def strokeOpacity=(value dynamic) { _inner["stroke-opacity"] = value }
+    def strokeWidth dynamic { return _inner.get("stroke-width", null) }
+    def strokeWidth=(value dynamic) { _inner["stroke-width"] = value }
+    def tableLayout dynamic { return _inner.get("table-layout", null) }
+    def tableLayout=(value dynamic) { _inner["table-layout"] = value }
+    def textAlign dynamic { return _inner.get("text-align", null) }
+    def textAlign=(value dynamic) { _inner["text-align"] = value }
+    def textAlignLast dynamic { return _inner.get("text-align-last", null) }
+    def textAlignLast=(value dynamic) { _inner["text-align-last"] = value }
+    def textAnchor dynamic { return _inner.get("text-anchor", null) }
+    def textAnchor=(value dynamic) { _inner["text-anchor"] = value }
+    def textDecoration dynamic { return _inner.get("text-decoration", null) }
+    def textDecoration=(value dynamic) { _inner["text-decoration"] = value }
+    def textIndent dynamic { return _inner.get("text-indent", null) }
+    def textIndent=(value dynamic) { _inner["text-indent"] = value }
+    def textJustify dynamic { return _inner.get("text-justify", null) }
+    def textJustify=(value dynamic) { _inner["text-justify"] = value }
+    def textOverflow dynamic { return _inner.get("text-overflow", null) }
+    def textOverflow=(value dynamic) { _inner["text-overflow"] = value }
+    def textTransform dynamic { return _inner.get("text-transform", null) }
+    def textTransform=(value dynamic) { _inner["text-transform"] = value }
+    def textUnderlinePosition dynamic { return _inner.get("text-underline-position", null) }
+    def textUnderlinePosition=(value dynamic) { _inner["text-underline-position"] = value }
+    def top dynamic { return _inner.get("top", null) }
+    def top=(value dynamic) { _inner["top"] = value }
+    def unicodeBidi dynamic { return _inner.get("unicode-bidi", null) }
+    def unicodeBidi=(value dynamic) { _inner["unicode-bidi"] = value }
+    def verticalAlign dynamic { return _inner.get("vertical-align", null) }
+    def verticalAlign=(value dynamic) { _inner["vertical-align"] = value }
+    def visibility dynamic { return _inner.get("visibility", null) }
+    def visibility=(value dynamic) { _inner["visibility"] = value }
+    def whiteSpace dynamic { return _inner.get("white-space", null) }
+    def whiteSpace=(value dynamic) { _inner["white-space"] = value }
+    def widows dynamic { return _inner.get("widows", null) }
+    def widows=(value dynamic) { _inner["widows"] = value }
+    def width dynamic { return _inner.get("width", null) }
+    def width=(value dynamic) { _inner["width"] = value }
+    def wordBreak dynamic { return _inner.get("word-break", null) }
+    def wordBreak=(value dynamic) { _inner["word-break"] = value }
+    def wordSpacing dynamic { return _inner.get("word-spacing", null) }
+    def wordSpacing=(value dynamic) { _inner["word-spacing"] = value }
+    def wordWrap dynamic { return _inner.get("word-wrap", null) }
+    def wordWrap=(value dynamic) { _inner["word-wrap"] = value }
+    def zIndex dynamic { return _inner.get("z-index", null) }
+    def zIndex=(value dynamic) { _inner["z-index"] = value }
+}
