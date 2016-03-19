@@ -11,74 +11,90 @@ def getCanvas(container HTMLElement, className string, canvasSize int) HTMLCanva
     return canvas
 }
 
-# Builds a Voronoi generator and displays an error on the page if we can't
-# (likely because this browser doesn't support WebGL).
-def createVoronoiGenerator(outputCanvas HTMLCanvasElement) JumpFlood {
-    var voronoi JumpFlood = null
+def tryOrDisplayError(container HTMLElement, tryBlock fn()) {
     try {
-        voronoi = JumpFlood.new(outputCanvas)
+        tryBlock()
     } catch temp dynamic {
-        # Failed to initialize Web-GL. Display error.
-        document.getElementById("demo-page").style.display = "none"
-        document.getElementById("webgl-error").style.display = null
-        throw temp
+        container.innerHTML = ""
+        container.textContent = "Demo disabled. Couldn't enable WebGL."
     }
-    return voronoi
 }
 
 def initializePaintDemo(container HTMLElement) {
     const inputCanvas = getCanvas(container, "input-canvas", 256)
     const outputCanvas = getCanvas(container, "output-canvas", 256)
-    const voronoi = createVoronoiGenerator(outputCanvas)
 
-    # A CanvasDrawController handles user draw-actions on the input canvas
-    # Whenever the user draws, we re-render the voronoi diagram for the input
-    CanvasDrawController.new(inputCanvas, outputCanvas, => {
-        voronoi.computeAndDraw(inputCanvas)
+    var jfa JumpFlood = null
+    tryOrDisplayError(container, => {
+        jfa = JumpFlood.new(outputCanvas)
     })
+
+    if jfa != null {
+        CanvasDrawController.new(inputCanvas, outputCanvas, => {
+            jfa.computeAndDraw(inputCanvas)
+        })
+    }
 }
 
 def initializeFishDemo(container HTMLElement) {
     const inputCanvas = getCanvas(container, "input-canvas", 256)
     const outputCanvas = getCanvas(container, "output-canvas", 256)
-    const opts = JumpFlood.Options.new
-    opts.wrap = true
-    const voronoi = createVoronoiGenerator(outputCanvas)
 
-    FishGameController.new(inputCanvas, outputCanvas, => {
-        voronoi.computeAndDraw(inputCanvas)
+    var jfa JumpFlood = null
+    tryOrDisplayError(container, => {
+        jfa = JumpFlood.new(outputCanvas)
     })
+
+    if jfa != null {
+        FishGameController.new(inputCanvas, outputCanvas, => {
+            const opts = JumpFlood.Options.new
+            opts.wrap = true
+            jfa.computeAndDraw(inputCanvas, opts)
+        })
+    }
 }
 
 def initializePhotoDemo(container HTMLElement) {
     const inputCanvas = getCanvas(container, "input-canvas", 256)
     const outputCanvas = getCanvas(container, "output-canvas", 256)
-    const voronoi = createVoronoiGenerator(outputCanvas)
 
-    PhotoDemoController.new(inputCanvas, outputCanvas, (photoController PhotoDemoController) => {
-        voronoi.computeAndDraw(photoController.seedCanvas)
+    var jfa JumpFlood = null
+    tryOrDisplayError(container, => {
+        jfa = JumpFlood.new(outputCanvas)
     })
+
+    if jfa != null {
+        PhotoDemoController.new(inputCanvas, outputCanvas, (photoController PhotoDemoController) => {
+            jfa.computeAndDraw(photoController.seedCanvas)
+        })
+    }
 }
 
 def initializeDistanceDemo(container HTMLElement) {
     const inputCanvas = getCanvas(container, "input-canvas", 256)
     const outputCanvas = getCanvas(container, "output-canvas", 256)
-    const voronoi = createVoronoiGenerator(outputCanvas)
 
-    FishGameController.new(inputCanvas, outputCanvas, => {
-        const opts = JumpFlood.Options.new
-        opts.wrap = true
-        opts.output = .DISTANCE_FIELD
-        voronoi.computeAndDraw(inputCanvas, opts)
+    var jfa JumpFlood = null
+    tryOrDisplayError(container, => {
+        jfa = JumpFlood.new(outputCanvas)
     })
+
+    if jfa != null {
+        FishGameController.new(inputCanvas, outputCanvas, => {
+            const opts = JumpFlood.Options.new
+            opts.wrap = true
+            opts.output = .DISTANCE_FIELD
+            jfa.computeAndDraw(inputCanvas, opts)
+        })
+    }
 }
 
 def initializeShadowDemo(container HTMLElement) {
     const gridSize = 256
     const outputCanvas = getCanvas(container, "output-canvas", gridSize)
     outputCanvas.getContext2D.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
-
     ShadowDemoController.new(
+        container,
         gridSize,
         outputCanvas,
         (container as dynamic).getElementsByClassName("shadow-spread-slider")[0],
@@ -90,7 +106,14 @@ def initializeSliderDemo(container HTMLElement) {
     const gridSize = 256
     const inputCanvas = getCanvas(container, "input-canvas", gridSize)
     const outputCanvas = getCanvas(container, "output-canvas", gridSize)
-    const voronooi = createVoronoiGenerator(outputCanvas)
+    var jfa JumpFlood = null
+    tryOrDisplayError(container, => {
+        jfa = JumpFlood.new(outputCanvas)
+    })
+
+    if jfa == null {
+        return
+    }
 
     const label = (container as dynamic).getElementsByClassName("jfa-round-label")[0] as HTMLElement
     const slider = (container as dynamic).getElementsByClassName("jfa-round-slider")[0]
@@ -109,7 +132,7 @@ def initializeSliderDemo(container HTMLElement) {
         label.textContent = "Round #\(slider.noUiSlider.get() as int)"
         const opts = JumpFlood.Options.new
         opts.maxRounds = steps
-        voronooi.computeAndDraw(inputCanvas, opts)
+        jfa.computeAndDraw(inputCanvas, opts)
     }
 
     slider.noUiSlider.on("slide", => {

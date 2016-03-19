@@ -9,6 +9,7 @@ namespace ShadowDemoController {
 }
 
 class ShadowDemoController {
+    const _jfa JumpFlood
     const _gridSize int
     const _outputCanvas HTMLCanvasElement
     const _spreadSlider Slider
@@ -19,7 +20,7 @@ class ShadowDemoController {
     const _voronoi JumpFlood
     const _controller DraggableTextDemoController
 
-    def new(gridSize int, outputCanvas HTMLCanvasElement, spreadSliderElement HTMLElement, blurSliderElement HTMLElement) {
+    def new(container HTMLElement, gridSize int, outputCanvas HTMLCanvasElement, spreadSliderElement HTMLElement, blurSliderElement HTMLElement) {
         _gridSize = gridSize
         _outputCanvas = outputCanvas
 
@@ -35,7 +36,13 @@ class ShadowDemoController {
         _outputCanvasCtx = _outputCanvas.getContext2D
 
         # Initialize the Voronoi generator
-        _voronoi = createVoronoiGenerator(_shadowCanvas)
+        tryOrDisplayError(container, => {
+            _jfa = JumpFlood.new(_shadowCanvas)
+        })
+        if _jfa == null {
+            return
+        }
+
         _controller = DraggableTextDemoController.new(_jfaSeedCanvas, outputCanvas)
         _controller.onDraw = => { render }
 
@@ -69,7 +76,7 @@ class ShadowDemoController {
         opts.output = .DROP_SHADOW
         opts.shadowSpread = shadowSpread
         opts.shadowBlur = shadowBlur
-        _voronoi.computeAndDraw(_jfaSeedCanvas, opts)
+        _jfa.computeAndDraw(_jfaSeedCanvas, opts)
 
         # Output canvas has a white background
         _outputCanvasCtx.fillStyle = "white"
