@@ -66,30 +66,40 @@ namespace JFAPatternDemoController {
     }
 }
 
+enum UpdateSource {
+    SIMULATION
+    SLIDER
+}
+
 class JFAPatternDemoController {
     const _canvas HTMLCanvasElement
     const _gridSize int
+    const _label HTMLElement
+    const _slider Slider
     const _logicalCanvasSize int
     const _mouseBehaviorManager MouseBehaviorManager
-    var state State
-    var onJfaRoundChange fn()
+    var _state State
+    var _isUserDraggingSlider bool
     var _elapsedSinceLastRender double = 0.0
 
-    def new(canvas HTMLCanvasElement, logicalCanvasSize int, gridSize int) {
+    def new(canvas HTMLCanvasElement, logicalCanvasSize int, gridSize int, label HTMLElement, slider HTMLElement) {
         _canvas = canvas
         _canvas.getContext2D.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
         _logicalCanvasSize = logicalCanvasSize
         _gridSize = gridSize
-        state = State.new(IntPair.new(0, 0), 0)
+        _label = label
+
+        _state = State.new(IntPair.new(0, 0), 0)
         Browser.renderWhileElementOnScreen(canvas, (elapsedMs double) => {
             self._render(elapsedMs)
         })
 
+        # Initialize mouse interactions
         _mouseBehaviorManager = MouseBehaviorManager.new
         _mouseBehaviorManager.listenOnElement(canvas)
         const moveToStateUnderMouse = (event MouseEvent) => {
             const cellLocation = event.location / _cellSize
-            state.center = IntPair.new(cellLocation.x as int - 1, cellLocation.y as int)
+            _state.center = IntPair.new(cellLocation.x as int - 1, cellLocation.y as int)
         }
         _mouseBehaviorManager.onDown(moveToStateUnderMouse)
         _mouseBehaviorManager.onMove((event MouseEvent) => {
@@ -97,6 +107,47 @@ class JFAPatternDemoController {
                 moveToStateUnderMouse(event)
             }
         })
+
+
+        # Initialize UI
+        const max = JFAPatternDemoController.computeMaxRoundInclusive(gridSize)
+        _slider = Slider.new(slider, {
+            "start": 0,
+            "step": 1,
+            "range": {
+                "min": 0,
+                "max": max
+            }
+        })
+
+        # 2 way data binding between slider and simulation
+
+        _slider.on("start", => {
+            _isUserDraggingSlider = true
+            _state.jfaRound = _slider.get as int
+            _updateUI(.SLIDER)
+        })
+
+        _slider.on("end", => {
+            _state.jfaRound = _slider.get as int
+            _updateUI(.SLIDER)
+            _isUserDraggingSlider = false
+        })
+
+        _slider.on("slide", => {
+            _state.jfaRound = _slider.get as int
+            _updateUI(.SLIDER)
+        })
+
+        _updateUI(.SIMULATION)
+    }
+
+    def _updateUI(source UpdateSource) {
+        const stepLength = JFAPatternDemoController.computeStepLength(_state.jfaRound, _gridSize)
+        _label.textContent = "JFA round \(_state.jfaRound), step length is \(stepLength)"
+        if source != .SLIDER {
+            _slider.set(_state.jfaRound)
+        }
     }
 
     def nextState(state State) State {
@@ -124,17 +175,16 @@ class JFAPatternDemoController {
     }
 
     def _render(elapsedMs double) {
-
         _elapsedSinceLastRender += elapsedMs
 
         if _elapsedSinceLastRender > frameDurationMs {
             _elapsedSinceLastRender = 0
 
-            const oldJfaRound = state.jfaRound
-            state = nextState(state)
+            const oldJfaRound = _state.jfaRound
+            _state = nextState(_state)
 
-            if oldJfaRound != state.jfaRound && onJfaRoundChange != null {
-                onJfaRoundChange()
+            if oldJfaRound != _state.jfaRound {
+                _updateUI(.SIMULATION)
             }
 
             const ctx = _canvas.getContext2D
@@ -174,7 +224,7 @@ class JFAPatternDemoController {
 
         # Draw center square
         ctx.beginPath
-        ctx.rect(state.center.x * cellSize, state.center.y * cellSize, cellSize, cellSize)
+        ctx.rect(_state.center.x * cellSize, _state.center.y * cellSize, cellSize, cellSize)
         ctx.strokeStyle = Color.veryLightGrey.toCSS
         ctx.stroke
 
@@ -182,11 +232,11 @@ class JFAPatternDemoController {
         ctx.beginPath
         ctx.lineWidth = gridLineWidth
         ctx.strokeStyle = Color.purple.toCSS
-        const k = computeStepLength(state.jfaRound, _gridSize)
+        const k = computeStepLength(_state.jfaRound, _gridSize)
         for deltaX in [-k, 0, k] {
             for deltaY in [-k, 0, k] {
-                const cellX = state.center.x + deltaX
-                const cellY = state.center.y + deltaY
+                const cellX = _state.center.x + deltaX
+                const cellY = _state.center.y + deltaY
                 ctx.rect(
                     cellX * cellSize + gridLineWidth,
                     cellY * cellSize + gridLineWidth,
@@ -199,7 +249,7 @@ class JFAPatternDemoController {
     }
 
     def _drawArrows(ctx CanvasRenderingContext2D) {
-        const k = computeStepLength(state.jfaRound, _gridSize)
+        const k = computeStepLength(_state.jfaRound, _gridSize)
         const cellSize = _cellSize
 
         # Draw the lines to arrows to the cells
@@ -213,15 +263,15 @@ class JFAPatternDemoController {
                     continue
                 }
 
-                const cellX = state.center.x + deltaX
-                const cellY = state.center.y + deltaY
+                const cellX = _state.center.x + deltaX
+                const cellY = _state.center.y + deltaY
                 const rectX = cellX * cellSize
                 const rectY = cellY * cellSize
                 const extraX = (deltaX == -k ? 0 : deltaX == 0 ? cellSize / 2 : cellSize)
                 const extraY = (deltaY == -k ? 0 : deltaY == 0 ? cellSize / 2 : cellSize)
                 fillAndStrokeArrow(
                     ctx,
-                    IntPair.new(state.center.x * cellSize + extraX, state.center.y * cellSize + extraY),
+                    IntPair.new(_state.center.x * cellSize + extraX, _state.center.y * cellSize + extraY),
                     IntPair.new(rectX + cellSize / 2, rectY + cellSize / 2)
                 )
             }

@@ -152,60 +152,13 @@ def initializeJfaPatternDemo(element HTMLElement) {
     const canvas = (element as dynamic).getElementsByTagName("canvas")[0]
     const gridSize = 16
     sizeCanvas(canvas, 256)
-    const controller = JFAPatternDemoController.new(canvas, 256, gridSize)
-    const slider = (element as dynamic).getElementsByClassName("step-size-slider")[0]
-    const label = (element as dynamic).getElementsByClassName("step-size-label")[0] as HTMLElement
-
-    const max = JFAPatternDemoController.computeMaxRoundInclusive(gridSize)
-    noUiSlider.create(slider, {
-        "start": 0,
-        "step": 1,
-        "range": {
-            "min": 0,
-            "max": max
-        }
-    })
-
-    # 2 way data binding between slider and simulation
-
-    var updateLabel = (round int) => {
-        const stepLength = JFAPatternDemoController.computeStepLength(round, gridSize)
-        label.textContent = "JFA round \(round), step length is \(stepLength)"
-    }
-
-
-    var uiToModel = (round int) => {
-        updateLabel(round)
-        controller.state.jfaRound = round
-    }
-
-    var modelToUi = (round int) => {
-        updateLabel(round)
-
-    }
-
-    var isUserDragging = false
-    slider.noUiSlider.on("start", => {
-        isUserDragging = true
-    })
-
-    slider.noUiSlider.on("end", => {
-        uiToModel(slider.noUiSlider.get() as int)
-        isUserDragging = false
-    })
-
-    slider.noUiSlider.on("slide", => {
-        uiToModel(slider.noUiSlider.get() as int)
-    })
-
-    controller.onJfaRoundChange = => {
-        if !isUserDragging {
-            modelToUi(controller.state.jfaRound)
-            slider.noUiSlider.set(controller.state.jfaRound)
-        }
-    }
-
-    modelToUi(0)
+    JFAPatternDemoController.new(
+        canvas,
+        256,
+        gridSize,
+        (element as dynamic).getElementsByClassName("step-size-label")[0] as HTMLElement,
+        (element as dynamic).getElementsByClassName("step-size-slider")[0] as HTMLElement
+    )
 }
 
 @entry
