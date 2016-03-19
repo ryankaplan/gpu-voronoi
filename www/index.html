@@ -38,13 +38,7 @@
         Here's one more demo that I think is fun. In the left canvas there are seeds in a radial pattern overlaid on top of a photo. Each seed takes the color of the underlying pixel in the image. Move the circular handle to move the seeds and move the square handle to rotate them.
       </p>
 
-      <div id="photo-demo-container" class="demo-container">
-        <div class="input-canvas-container">
-          <img id="eye" src="images/eye.jpg"></img>
-          <canvas class="input-canvas"></canvas>
-        </div>
-        <canvas class="output-canvas"></canvas>
-      </div>
+      <div id="photo-demo-container"></div>
 
       <h2>
         How does it work?
@@ -77,11 +71,7 @@
         The first round of JFA has step length N / 2, where N is the size of the grid. The next one has step length N / 4. The following has N / 8, and so on until N / k is 1. In total there are log(N) rounds. Below is an interactive demo showing the pattern in which JFA moves through the grid for each round. At each step, it shows the grid cell that we're currently processing and the 8 cells around it that it visits to look for seeds. Use the slider to change which round you're on.
       </p>
 
-      <div id="jfa-pattern-demo-container" class="demo-container">
-        <canvas></canvas>
-        <div class="step-size-label label" ></div>
-        <div class="step-size-slider" ></div>
-      </div>
+      <div id="jfa-pattern-demo-container"></div>
 
       <p>
           To summarize, JFA works as follows: you walk through every pixel in the grid log(N) times. The first time, you look for seeds in the 8 &lsquo;neighbours&rsquo; roughly N / 2 pixels away from the current pixel. The next round you look at the neighbours roughly N / 4 pixels away, and so on. Every pixel holds on to the closest seed that it's found so far and during the course of the algorithm passes that information on to other cells in the grid.
@@ -107,10 +97,7 @@
         JFA gives us two things for every pixel: the color of the closest seed, and the location of the closest seed. I used the color of the closest seed in the demos above. Below is a demo that colors pixels by how far they are from the closest seed. A bright pixel means its close to a seed.
       </p>
 
-      <div id="distance-demo-container" class="demo-container">
-        <canvas class="input-canvas"></canvas>
-        <canvas class="output-canvas"></canvas>
-      </div>
+      <div id="distance-demo-container" ></div>
 
       <p>
         We can use this to build drop shadows for artbitrary shapes. One of the tricky parts of rendering drop shadows (in CSS) is that they have a "spread" value. The bigger the spread, the farther the shadow reaches before fading out. This means that you can't implement a drop shadow just by blurring the shape casting the shadow.

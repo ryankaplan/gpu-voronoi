@@ -70,3 +70,16 @@ class canvas : XMLDomElement {
     def height dynamic { return element.height }
     def height=(value dynamic) { element.height = value }
 }
+
+class img : XMLDomElement {
+    def new { super("img") }
+
+    def element HTMLImageElement {
+        return _element as HTMLImageElement
+    }
+
+    def src string { return element.src }
+    def src=(value string) { element.src = value }
+    def onload fn() { return element.onload }
+    def onload=(value fn()) { element.onload = value }
+}

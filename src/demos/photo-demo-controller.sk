@@ -233,30 +233,38 @@ class SeedSpiralMouseBehavior :: MouseBehavior {
 
 class PhotoDemoController {
     # Canvas that user sees
-    var inputCanvas HTMLCanvasElement
-    var outputCanvas HTMLCanvasElement
-    var inputContext CanvasRenderingContext2D
+    const inputCanvas HTMLCanvasElement
+    const outputCanvas HTMLCanvasElement
+    const inputContext CanvasRenderingContext2D
 
     # Canvas that isn't displayed to user. We pass this to the
     # Voronoi generator.
-    var _seedCanvas HTMLCanvasElement
-    var _seedCtx CanvasRenderingContext2D
+    const _seedCanvas HTMLCanvasElement
+    const _seedCtx CanvasRenderingContext2D
 
     # Cached for performance since we use these on every draw
-    var sourceImg HTMLImageElement
-    var sourcePattern CanvasPattern
+    const sourceImg HTMLImageElement
+    const sourcePattern CanvasPattern
 
     # Set by someone else to hear when we draw
-    var onDraw fn(PhotoDemoController)
+    const onDraw fn(PhotoDemoController)
 
     const _mouseBehaviorManager = MouseBehaviorManager.new
 
-    def new(inputCanvas_ HTMLCanvasElement, outputCanvas_ HTMLCanvasElement, onDraw_ fn(PhotoDemoController)) {
+    def new(
+            inputCanvas_ HTMLCanvasElement,
+            outputCanvas_ HTMLCanvasElement,
+            sourceImage_ HTMLImageElement,
+            onDraw_ fn(PhotoDemoController)
+        ) {
         inputCanvas = inputCanvas_
         outputCanvas = outputCanvas_
+        sourceImg = sourceImage_
+        onDraw = onDraw_
+
         _mouseBehaviorManager.listenOnElement(inputCanvas)
         _mouseBehaviorManager.listenOnElement(outputCanvas)
-        onDraw = onDraw_
+
         inputContext = inputCanvas.getContext2D
         inputContext.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
 
@@ -265,8 +273,6 @@ class PhotoDemoController {
         _seedCanvas.width = inputCanvas.width
         _seedCanvas.height = inputCanvas.height
         # Do not scale the _seedCanvas. We want to be able to draw 1px blocks on it.
-
-        sourceImg = document.getElementById("eye") as HTMLImageElement
 
         const patternCanvas = document.createElement("canvas") as HTMLCanvasElement
         patternCanvas.width = _seedCanvas.width

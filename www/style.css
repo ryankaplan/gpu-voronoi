@@ -37,6 +37,11 @@ h1, h2, h3, .sans-serif {
     width: 256px;
 }
 
+.jfa-round-slider, .shadow-spread-slider, .shadow-blur-slider {
+    width: 226px;
+    display: inline-block;
+}
+
 .shadow-spread-controls, .shadow-blur-controls {
     margin: 20px auto;
 }
@@ -123,32 +128,9 @@ hr {
 
 /* Demo pages */
 
-.demo-container {
-    text-align: center;
-}
-
 canvas {
     display: inline-block;
 }
-
-/* Photo demo */
-
-.input-canvas-container {
-    display: inline-block;
-    position: relative;
-    width: 256px;
-    height: 256px;
-}
-
-.input-canvas-container #eye,
-.input-canvas-container .input-canvas {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-}
-
 
 #fish-demo-container .input-canvas {
     background-color: #111;

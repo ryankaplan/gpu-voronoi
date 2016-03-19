@@ -21,6 +21,13 @@ class Style {
         return builder.toString
     }
 
+    def take(other Style) Style {
+        other._inner.each((key string, value dynamic) => {
+            _inner[key] = value
+        })
+        return self
+    }
+
     # Generated with
 
     # import re

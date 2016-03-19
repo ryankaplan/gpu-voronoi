@@ -79,36 +79,96 @@ def initializeFishDemo(container HTMLElement) {
 }
 
 def initializePhotoDemo(container HTMLElement) {
-    const inputCanvas = getCanvas(container, "input-canvas", 256)
-    const outputCanvas = getCanvas(container, "output-canvas", 256)
+    const inputCanvasStyle Style = {
+        "width": "100%",
+        "height": "100%",
+        "position": "absolute",
+        "top": "0",
+        "left": "0"
+    }
+
+    const inputCanvas = sizeCanvas(<canvas style=inputCanvasStyle />, 256)
+    const image = <img id="eye" src="images/eye.jpg" style=inputCanvasStyle />
+    const outputCanvas = sizeCanvas(<canvas />, 256)
+
+    container.appendChild((
+        <div style={ "text-align": "center" }>
+            <div style={ "display": "inline-block", "position": "relative", "width": "256px", "height": "256px" }>
+                image
+                inputCanvas
+            </div>
+            outputCanvas
+        </div>
+    ).rawElement)
 
     var jfa JumpFlood = null
     tryOrDisplayError(container, => {
-        jfa = JumpFlood.new(outputCanvas)
+        jfa = JumpFlood.new(outputCanvas.element)
     })
 
     if jfa != null {
-        PhotoDemoController.new(inputCanvas, outputCanvas, (photoController PhotoDemoController) => {
-            jfa.computeAndDraw(photoController.seedCanvas)
-        })
+        image.onload = => {
+            PhotoDemoController.new(inputCanvas.element, outputCanvas.element, image.element, (photoController PhotoDemoController) => {
+                jfa.computeAndDraw(photoController.seedCanvas)
+            })
+        }
     }
 }
 
+def initializeJfaPatternDemo(container HTMLElement) {
+    const labelStyle Style = {
+        "font-family": "'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Geneva, Verdana, sans-serif"
+    }
+
+    const patternLabelStyle Style = {
+        "margin-top": "20px",
+        "display": "block",
+        "margin": "20px auto"
+    }
+    patternLabelStyle.take(labelStyle)
+
+    const patternSliderStyle Style = {
+        "width": "226px",
+        "display": "inline-block"
+    }
+
+    const patternCanvas = sizeCanvas(<canvas />, 256)
+    const label = <div style=patternLabelStyle />
+    const slider = <div style=patternSliderStyle />
+    container.appendChild((
+        <div style={ "text-align": "center" }>
+            patternCanvas
+            label
+            slider
+        </div>
+    ).rawElement)
+
+    const gridSize = 16
+    const logicalCanvasSize = 256
+    JFAPatternDemoController.new(patternCanvas.element, logicalCanvasSize, gridSize, label.rawElement, slider.rawElement)
+}
+
 def initializeDistanceDemo(container HTMLElement) {
-    const inputCanvas = getCanvas(container, "input-canvas", 256)
-    const outputCanvas = getCanvas(container, "output-canvas", 256)
+    const inputCanvas = sizeCanvas(<canvas />, 256)
+    const outputCanvas = sizeCanvas(<canvas />, 256)
+    container.appendChild((
+        <div style={ "text-align": "center" }>
+            inputCanvas
+            outputCanvas
+        </div>
+    ).rawElement)
 
     var jfa JumpFlood = null
     tryOrDisplayError(container, => {
-        jfa = JumpFlood.new(outputCanvas)
+        jfa = JumpFlood.new(outputCanvas.element)
     })
 
     if jfa != null {
-        FishGameController.new(inputCanvas, outputCanvas, => {
+        FishGameController.new(inputCanvas.element, outputCanvas.element, => {
             const opts = JumpFlood.Options.new
             opts.wrap = true
             opts.output = .DISTANCE_FIELD
-            jfa.computeAndDraw(inputCanvas, opts)
+            jfa.computeAndDraw(inputCanvas.element, opts)
         })
     }
 }
@@ -140,18 +200,6 @@ def initializeSliderDemo(container HTMLElement) {
     )
 }
 
-def initializeJfaPatternDemo(element HTMLElement) {
-    const canvas = ((element as dynamic).getElementsByTagName("canvas")[0]) as HTMLCanvasElement
-    const gridSize = 16
-    sizeCanvas(canvas, 256)
-    JFAPatternDemoController.new(
-        canvas,
-        256,
-        gridSize,
-        (element as dynamic).getElementsByClassName("step-size-label")[0] as HTMLElement,
-        (element as dynamic).getElementsByClassName("step-size-slider")[0] as HTMLElement
-    )
-}
 
 @entry
 def main {
