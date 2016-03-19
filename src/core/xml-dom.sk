@@ -1,5 +1,33 @@
 # Really small DOM that supports Skew XML syntax. Just playing around.
 
+enum TraverseInstruction {
+    CONTINUE
+    STOP
+}
+
+def traverse(node XMLDomElement, callback fn(XMLDomElement)) {
+    traverse(node, (descendent XMLDomElement) TraverseInstruction => {
+        callback(descendent)
+        return .CONTINUE
+    })
+}
+
+def traverse(node XMLDomElement, callback fn(XMLDomElement) TraverseInstruction) {
+    const queue = List<XMLDomElement>.new
+    queue.append(node)
+
+    while queue.count != 0 {
+        const next = queue.takeFirst
+        if callback(next) == .STOP {
+            return
+        }
+
+        for child in next.children {
+            queue.append(child)
+        }
+    }
+}
+
 class XMLDomElement {
     const _tag string = null
     const _children = List<XMLDomElement>.new
@@ -12,6 +40,10 @@ class XMLDomElement {
 
     def new(tag string) {
         _element = document.createElement(tag)
+    }
+
+    def children List<XMLDomElement> {
+        return _children
     }
 
     def rawElement HTMLElement {
@@ -37,6 +69,33 @@ class XMLDomElement {
 
     def getBoundingClientRect BoundingRect {
         return _element.getBoundingClientRect
+    }
+
+    def findDescendentById(id_ string) XMLDomElement {
+        return _findDescendent((descendent XMLDomElement) bool => {
+            return descendent.id == id_
+        })
+    }
+
+    # TODO(ryan): This assumes that elements have at most one class. That's no good.
+    def findDescendentByClassName(className_ string) XMLDomElement {
+        return _findDescendent((descendent XMLDomElement) bool => {
+            return descendent.class == className_
+        })
+    }
+
+    def _findDescendent(check fn(XMLDomElement)bool) XMLDomElement {
+        var result XMLDomElement = null
+
+        traverse(self, (descendent XMLDomElement) TraverseInstruction => {
+            if check(descendent) {
+                result = descendent
+                return .STOP
+            }
+            return .CONTINUE
+        })
+
+        return result
     }
 
     def addEventListener(type string, listener fn()) { HTML.on(_element, type, listener) }

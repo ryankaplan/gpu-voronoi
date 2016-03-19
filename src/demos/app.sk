@@ -150,31 +150,32 @@ def initializeJfaPatternDemo(container HTMLElement) {
 
 def initializeSliderDemo(container HTMLElement) {
     const gridSize = 256
-    const inputCanvas = sizeCanvas(<canvas />, gridSize)
-    const outputCanvas = sizeCanvas(<canvas />, gridSize)
-
-    const sliderLabelStyle Style = { "display": "inline-block", "text-align": "center", "width": "\(gridSize)px" }
+    const sliderLabelStyle Style = {
+        "display": "inline-block",
+        "text-align": "center",
+        "width": "\(gridSize)px"
+    }
     sliderLabelStyle.take(defaultLabelStyle)
-    const label = <div style=sliderLabelStyle />
-    const slider = <div style={ "width": "226px", "display": "inline-block" } />
 
-    container.appendChild((
+    const content = (
         <div style={ "text-align": "center" }>
-            inputCanvas
-            outputCanvas
+            sizeCanvas(<canvas class="input-canvas" />, gridSize)
+            sizeCanvas(<canvas class="output-canvas" />, gridSize)
             <div style={ "margin-top": "20px" }>
-                label
-                slider
+                <div class="label" style=sliderLabelStyle />
+                <div class="slider" style={ "width": "226px", "display": "inline-block" } />
             </div>
         </div>
-    ).rawElement)
+    )
+
+    container.appendChild(content.rawElement)
 
     SlidableMaxJFARoundDemoController.new(
-        inputCanvas.element,
-        outputCanvas.element,
+        content.findDescendentByClassName("input-canvas").rawElement as HTMLCanvasElement,
+        content.findDescendentByClassName("output-canvas").rawElement as HTMLCanvasElement,
         gridSize,
-        label.rawElement,
-        slider.rawElement,
+        content.findDescendentByClassName("label").rawElement,
+        content.findDescendentByClassName("slider").rawElement,
         => { displayError(container) }
     )
 }
@@ -205,9 +206,6 @@ def initializeDistanceDemo(container HTMLElement) {
 }
 
 def initializeShadowDemo(container HTMLElement) {
-    const gridSize = 256
-    const outputCanvas = sizeCanvas(<canvas />, gridSize)
-
     const labelStyle Style = {
         "display": "inline-block",
         "text-align": "right",
@@ -221,33 +219,31 @@ def initializeShadowDemo(container HTMLElement) {
         "width": "226px"
     }
 
-    const spreadLabel = (<span style=labelStyle>"Spread"</span>)
-    const spreadSlider = <div style=sliderStyle />
-    const blurLabel = (<span style=labelStyle>"Blur"</span>)
-    const blurSlider = <div style=sliderStyle />
-
     const controlsContainerStyle Style = { "margin": "20px auto" }
-    container.appendChild((
+    const gridSize = 256
+    const content = (
         <div style={ "text-align": "center" }>
-            outputCanvas
+            sizeCanvas(<canvas class="output-canvas" />, gridSize)
             <div style=controlsContainerStyle>
-                spreadLabel
-                spreadSlider
+                <span style=labelStyle>"Spread"</span>
+                <div class="spread-slider" style=sliderStyle />
             </div>
             <div style=controlsContainerStyle>
-                blurLabel
-                blurSlider
+                <span style=labelStyle>"Blur"</span>
+                <div class="blur-slider" style=sliderStyle />
             </div>
         </div>
-    ).rawElement)
+    )
+    container.appendChild(content.rawElement)
 
-    outputCanvas.element.getContext2D.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
+    const outputCanvas = content.findDescendentByClassName("output-canvas").rawElement as HTMLCanvasElement
+    outputCanvas.getContext2D.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
     ShadowDemoController.new(
         container,
         gridSize,
-        outputCanvas.element,
-        spreadSlider.rawElement,
-        blurSlider.rawElement
+        outputCanvas,
+        content.findDescendentByClassName("spread-slider").rawElement,
+        content.findDescendentByClassName("blur-slider").rawElement
     )
 }
 
