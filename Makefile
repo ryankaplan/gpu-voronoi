@@ -21,3 +21,13 @@ watch: | npm-modules
 clean:
 	rm www/compiled.js
 	rm -rf www/glsl
+
+# Useful for building the demo for the blog post on my personal website.
+# I don't like that I'm compiling to a directory outside of this repo, but
+# this will have to do until Skew has a package manager.
+
+blog-demo: | npm-modules build-shaders
+	$(BUILD) --release --output-file=../../compiled/voronoi-demo.js
+
+watch-blog-demo: | npm-modules
+	node_modules/.bin/watch src 'clear && make blog-demo'

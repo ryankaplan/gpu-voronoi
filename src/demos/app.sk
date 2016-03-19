@@ -36,11 +36,20 @@ const defaultLabelStyle Style = {
     "font-family": "'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Geneva, Verdana, sans-serif"
 }
 
+const demoContainerStyle Style = {
+    "text-align": "center",
+    "margin": "40px auto"
+}
+
+const inputCanvasStyle Style = {
+    "background-color": "#F5F5F5"
+}
+
 def initializePaintDemo(container HTMLElement) {
-    const inputCanvas = sizeCanvas(<canvas />, 256)
+    const inputCanvas = sizeCanvas(<canvas style=inputCanvasStyle />, 256)
     const outputCanvas = sizeCanvas(<canvas />, 256)
     container.appendChild((
-        <div style={ "text-align": "center" }>
+        <div style=demoContainerStyle>
             inputCanvas
             outputCanvas
         </div>
@@ -59,10 +68,10 @@ def initializePaintDemo(container HTMLElement) {
 }
 
 def initializeFishDemo(container HTMLElement) {
-    const inputCanvas = sizeCanvas(<canvas />, 256)
+    const inputCanvas = sizeCanvas(<canvas style=inputCanvasStyle />, 256)
     const outputCanvas = sizeCanvas(<canvas />, 256)
     container.appendChild((
-        <div style={ "text-align": "center" }>
+        <div style=demoContainerStyle>
             inputCanvas
             outputCanvas
         </div>
@@ -92,11 +101,11 @@ def initializePhotoDemo(container HTMLElement) {
     }
 
     const inputCanvas = sizeCanvas(<canvas style=inputCanvasStyle />, 256)
-    const image = <img id="eye" src="images/eye.jpg" style=inputCanvasStyle />
+    const image = <img id="eye" src="/images/eye.jpg" style=inputCanvasStyle />
     const outputCanvas = sizeCanvas(<canvas />, 256)
 
     container.appendChild((
-        <div style={ "text-align": "center" }>
+        <div style=demoContainerStyle>
             <div style={ "display": "inline-block", "position": "relative", "width": "256px", "height": "256px" }>
                 image
                 inputCanvas
@@ -136,7 +145,7 @@ def initializeJfaPatternDemo(container HTMLElement) {
     const label = <div style=patternLabelStyle />
     const slider = <div style=patternSliderStyle />
     container.appendChild((
-        <div style={ "text-align": "center" }>
+        <div style=demoContainerStyle>
             patternCanvas
             label
             slider
@@ -158,8 +167,8 @@ def initializeSliderDemo(container HTMLElement) {
     sliderLabelStyle.take(defaultLabelStyle)
 
     const content = (
-        <div style={ "text-align": "center" }>
-            sizeCanvas(<canvas class="input-canvas" />, gridSize)
+        <div style=demoContainerStyle>
+            sizeCanvas(<canvas class="input-canvas" style=inputCanvasStyle />, gridSize)
             sizeCanvas(<canvas class="output-canvas" />, gridSize)
             <div style={ "margin-top": "20px" }>
                 <div class="label" style=sliderLabelStyle />
@@ -181,10 +190,10 @@ def initializeSliderDemo(container HTMLElement) {
 }
 
 def initializeDistanceDemo(container HTMLElement) {
-    const inputCanvas = sizeCanvas(<canvas />, 256)
+    const inputCanvas = sizeCanvas(<canvas style=inputCanvasStyle />, 256)
     const outputCanvas = sizeCanvas(<canvas />, 256)
     container.appendChild((
-        <div style={ "text-align": "center" }>
+        <div style=demoContainerStyle>
             inputCanvas
             outputCanvas
         </div>
@@ -222,7 +231,7 @@ def initializeShadowDemo(container HTMLElement) {
     const controlsContainerStyle Style = { "margin": "20px auto" }
     const gridSize = 256
     const content = (
-        <div style={ "text-align": "center" }>
+        <div style=demoContainerStyle>
             sizeCanvas(<canvas class="output-canvas" />, gridSize)
             <div style=controlsContainerStyle>
                 <span style=labelStyle>"Spread"</span>

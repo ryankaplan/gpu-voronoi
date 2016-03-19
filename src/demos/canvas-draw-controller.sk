@@ -22,7 +22,6 @@ class CanvasDrawController {
         _outputCanvas = outputCanvas
         _onDraw = onDraw
 
-        _inputCanvas.style.backgroundColor = "white"
         _ctx = _inputCanvas.getContext2D
         _ctx.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
 

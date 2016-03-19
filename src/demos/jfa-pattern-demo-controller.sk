@@ -40,7 +40,7 @@ namespace JFAPatternDemoController {
 
     # From here: http://stackoverflow.com/a/6333775
     def fillAndStrokeArrow(ctx CanvasRenderingContext2D, from IntPair, to IntPair) {
-        const headlen = 10
+        const headlen = 12
         const angle = Math.atan2(to.y - from.y, to.x - from.x)
 
         # Draw the line
@@ -79,7 +79,7 @@ class JFAPatternDemoController {
     const _logicalCanvasSize int
     const _mouseBehaviorManager MouseBehaviorManager
     var _state State
-    var _isUserDraggingSlider bool
+    var _userIsDragging bool
     var _elapsedSinceLastRender double = 0.0
 
     def new(canvas HTMLCanvasElement, logicalCanvasSize int, gridSize int, label HTMLElement, slider HTMLElement) {
@@ -91,13 +91,14 @@ class JFAPatternDemoController {
 
         _state = State.new(IntPair.new(0, 0), 0)
         Browser.renderWhileElementOnScreen(canvas, (elapsedMs double) => {
-            self._render(elapsedMs)
+            self._stepSimulation(elapsedMs)
         })
 
         # Initialize mouse interactions
         _mouseBehaviorManager = MouseBehaviorManager.new
         _mouseBehaviorManager.listenOnElement(canvas)
         const moveToStateUnderMouse = (event MouseEvent) => {
+            _userIsDragging = true
             const cellLocation = event.location / _cellSize
             _state.center = IntPair.new(cellLocation.x as int - 1, cellLocation.y as int)
         }
@@ -106,6 +107,10 @@ class JFAPatternDemoController {
             if event.isDown {
                 moveToStateUnderMouse(event)
             }
+            _render
+        })
+        _mouseBehaviorManager.onUp((event MouseEvent) => {
+            _userIsDragging = false
         })
 
 
@@ -123,7 +128,7 @@ class JFAPatternDemoController {
         # 2 way data binding between slider and simulation
 
         _slider.on("start", => {
-            _isUserDraggingSlider = true
+            _userIsDragging = true
             _state.jfaRound = _slider.get as int
             _updateUI(.SLIDER)
         })
@@ -131,7 +136,7 @@ class JFAPatternDemoController {
         _slider.on("end", => {
             _state.jfaRound = _slider.get as int
             _updateUI(.SLIDER)
-            _isUserDraggingSlider = false
+            _userIsDragging = false
         })
 
         _slider.on("slide", => {
@@ -174,25 +179,31 @@ class JFAPatternDemoController {
         return _logicalCanvasSize / _gridSize
     }
 
-    def _render(elapsedMs double) {
+    def _stepSimulation(elapsedMs double) {
         _elapsedSinceLastRender += elapsedMs
 
         if _elapsedSinceLastRender > frameDurationMs {
             _elapsedSinceLastRender = 0
 
-            const oldJfaRound = _state.jfaRound
-            _state = nextState(_state)
+            if !_userIsDragging {
+                const oldJfaRound = _state.jfaRound
+                _state = nextState(_state)
 
-            if oldJfaRound != _state.jfaRound {
-                _updateUI(.SIMULATION)
+                if oldJfaRound != _state.jfaRound {
+                    _updateUI(.SIMULATION)
+                }
+
+                _render
             }
-
-            const ctx = _canvas.getContext2D
-            ctx.clearRect(0, 0, _logicalCanvasSize, _logicalCanvasSize)
-            _drawBackgroundGrid(ctx)
-            _drawCells(ctx)
-            _drawArrows(ctx)
         }
+    }
+
+    def _render {
+        const ctx = _canvas.getContext2D
+        ctx.clearRect(0, 0, _logicalCanvasSize, _logicalCanvasSize)
+        _drawBackgroundGrid(ctx)
+        _drawCells(ctx)
+        _drawArrows(ctx)
     }
 
     def _drawBackgroundGrid(ctx CanvasRenderingContext2D) {
@@ -209,13 +220,14 @@ class JFAPatternDemoController {
             ctx.moveTo(cellSize * i, 0)
             ctx.lineTo(cellSize * i, _logicalCanvasSize)
         }
-        ctx.strokeStyle = Color.darkGrey.toCSS
+        ctx.strokeStyle = Color.veryLightGrey.toCSS
         ctx.stroke
 
         # Border around everything
         ctx.beginPath
-        ctx.rect(0, 0, _logicalCanvasSize - 1, _logicalCanvasSize - 1)
-        ctx.strokeStyle = Color.lightGrey.toCSS
+        ctx.lineWidth = 2
+        ctx.rect(1, 1, _logicalCanvasSize - 2, _logicalCanvasSize - 2)
+        ctx.strokeStyle = Color.mediumGrey.toCSS
         ctx.stroke
     }
 
@@ -225,8 +237,8 @@ class JFAPatternDemoController {
         # Draw center square
         ctx.beginPath
         ctx.rect(_state.center.x * cellSize, _state.center.y * cellSize, cellSize, cellSize)
-        ctx.strokeStyle = Color.veryLightGrey.toCSS
-        ctx.stroke
+        ctx.fillStyle = Color.purple.toCSS
+        ctx.fill
 
         # Draw the cells that we're moving to
         ctx.beginPath
@@ -255,8 +267,8 @@ class JFAPatternDemoController {
         # Draw the lines to arrows to the cells
         ctx.beginPath
         ctx.lineWidth = gridLineWidth
-        ctx.strokeStyle = Color.veryLightGrey.toCSS
-        ctx.fillStyle = "white"
+        ctx.strokeStyle = Color.mediumGrey.toCSS
+        ctx.fillStyle = Color.mediumGrey.toCSS
         for deltaX in [-k, 0, k] {
             for deltaY in [-k, 0, k] {
                 if deltaX == 0 && deltaY == 0 {

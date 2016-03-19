@@ -18,7 +18,7 @@ namespace Color {
     const darkGrey = Color.fromHex(0x333333)
     const mediumGrey = Color.fromHex(0x666666)
     const lightGrey = Color.fromHex(0x999999)
-    const veryLightGrey = Color.fromHex(0xA5A5A5)
+    const veryLightGrey = Color.fromHex(0xEFEFEF)
     const purple = Color.fromHex(0x8F4CFF)
     const white = Color.fromHex(0xFFFFFF)
     const black = Color.fromHex(0x000000)
