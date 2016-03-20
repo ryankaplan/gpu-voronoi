@@ -1,20 +1,27 @@
 precision highp float;
 precision highp int;
 
-uniform sampler2D iCellGridTexture;
+// Raw input from a user to be transformed into JFA data
 uniform sampler2D iSeedInputTexture;
+
+// Texture to hold JFA data (rg, ba pairs each holding an
+// x and y co-ordinate respectively)
 uniform sampler2D iInputTexture;
 
-// Width and height of texture grid that we use to store
-// JFA data
-uniform vec2 iGridSize;
+// The size of the input textures, if any
 uniform vec2 iResolution;
-uniform vec2 iCellGridSize;
+
+// What step size to use for the current round of JFA
 uniform int iStepSize;
+
+// When this is true, Voronoi 'seed' distance wraps
+// around the edges of the input texture
+uniform bool iUseTorusDistanceForSeeds;
+
+// Params for drawing shadows
 uniform float iShadowSpread;
 uniform float iShadowBlur;
 uniform vec4 iShadowColor;
-uniform bool iUseTorusDistanceForSeeds;
 
 // The color that is *not* to be counted as seed.
 uniform vec4 iBackgroundColor;
@@ -25,11 +32,6 @@ uniform vec4 iBackgroundColor;
 const float EPSILON = 0.0001;
 
 const vec4 RED = vec4(1.0, 0.0, 0.0, 1.0);
-const vec4 GREEN = vec4(0.0, 1.0, 0.0, 1.0);
-const vec4 BLUE = vec4(0.0, 0.0, 1.0, 1.0);
-const vec4 CYAN = vec4(0.0, 1.0, 1.0, 1.0);
-const vec4 MAGENTA = vec4(1.0, 0.0, 1.0, 1.0);
-const vec4 YELLOW = vec4(1.0, 1.0, 0.0, 1.0);
 const vec4 BLACK = vec4(0.0, 0.0, 0.0, 1.0);
 const vec4 WHITE = vec4(1.0, 1.0, 1.0, 1.0);
 
@@ -126,7 +128,7 @@ bool cell_isValid(const vec4 obj) {
 ////////////////////////////////////////////////////////////////////////
 
 export void fPrepForJFA() {
-    vec2 gridUv = gl_FragCoord.xy / iGridSize;
+    vec2 gridUv = gl_FragCoord.xy / iResolution;
     vec2 gridUvFlippedY = vec2(gridUv.x, 1.0 - gridUv.y);
     vec4 pixel = texture2D(iSeedInputTexture, gridUvFlippedY);
     if (approxEqual(pixel, iBackgroundColor)) {
@@ -149,8 +151,8 @@ float torusDistance(vec2 a, vec2 b, vec2 torusSize) {
 }
 
 vec4 compareCellWithCellAtOffset(const vec4 self, const vec2 offset) {
-    vec2 gridUv = (gl_FragCoord.xy + offset) / iCellGridSize;
-    vec4 otherCell = texture2D(iCellGridTexture, gridUv);
+    vec2 gridUv = (gl_FragCoord.xy + offset) / iResolution;
+    vec4 otherCell = texture2D(iInputTexture, gridUv);
 
     if (!validUv(gridUv) && !iUseTorusDistanceForSeeds) {
         otherCell = createInvalidCell();
@@ -171,8 +173,16 @@ vec4 compareCellWithCellAtOffset(const vec4 self, const vec2 offset) {
         vec2 selfSeedLocation = cell_closestSeed(self);
         vec2 otherSeedLocation = cell_closestSeed(otherCell);
 
-        float selfSeedDist = iUseTorusDistanceForSeeds ? torusDistance(selfSeedLocation, gl_FragCoord.xy, iCellGridSize) : distance(selfSeedLocation, gl_FragCoord.xy);
-        float otherSeedDist = iUseTorusDistanceForSeeds ? torusDistance(otherSeedLocation, gl_FragCoord.xy, iCellGridSize) : distance(otherSeedLocation, gl_FragCoord.xy);
+        float selfSeedDist = (
+            iUseTorusDistanceForSeeds ?
+            torusDistance(selfSeedLocation, gl_FragCoord.xy, iResolution) :
+            distance(selfSeedLocation, gl_FragCoord.xy)
+        );
+        float otherSeedDist = (
+            iUseTorusDistanceForSeeds ?
+            torusDistance(otherSeedLocation, gl_FragCoord.xy, iResolution) :
+            distance(otherSeedLocation, gl_FragCoord.xy)
+        );
 
         if (selfSeedDist > otherSeedDist) {
             return otherCell;
@@ -184,8 +194,8 @@ vec4 compareCellWithCellAtOffset(const vec4 self, const vec2 offset) {
 
 export void fJumpFlood() {
     // Find the object at this grid position
-    vec2 gridUv = gl_FragCoord.xy / iCellGridSize;
-    vec4 thisCell = texture2D(iCellGridTexture, gridUv);
+    vec2 gridUv = gl_FragCoord.xy / iResolution;
+    vec4 thisCell = texture2D(iInputTexture, gridUv);
 
     thisCell = compareCellWithCellAtOffset(thisCell, vec2(0, iStepSize));
     thisCell = compareCellWithCellAtOffset(thisCell, vec2(iStepSize, iStepSize));
@@ -203,16 +213,16 @@ export void fJumpFlood() {
 ////////////////////////////////////////////////////////////////////////
 
 export void fDrawJumpFloodData() {
-    vec2 gridUv = gl_FragCoord.xy / iGridSize;
-    vec4 object = texture2D(iCellGridTexture, gridUv);
+    vec2 gridUv = gl_FragCoord.xy / iResolution;
+    vec4 object = texture2D(iInputTexture, gridUv);
     vec2 seedLocation = cell_closestSeed(object) + vec2(.5);
-    float dist = torusDistance(seedLocation, gl_FragCoord.xy, iGridSize);
+    float dist = torusDistance(seedLocation, gl_FragCoord.xy, iResolution);
 
     if (cell_isValid(object)) {
         // Pixel shaders have fragments co-ordinates on the half pixel. We
         // lost the half pixel when encoding as an int, so add it back now
         // before we sample from the original pixel.
-        vec2 gridUv = seedLocation / iGridSize;
+        vec2 gridUv = seedLocation / iResolution;
         vec2 gridUvFlippedY = vec2(gridUv.x, 1.0 - gridUv.y);
         gl_FragColor = texture2D(iSeedInputTexture, gridUvFlippedY);
     } else if (cell_isValid(object)) {
@@ -223,33 +233,33 @@ export void fDrawJumpFloodData() {
 }
 
 export void fDrawDistanceField() {
-    vec2 gridUv = gl_FragCoord.xy / iGridSize;
+    vec2 gridUv = gl_FragCoord.xy / iResolution;
 
     if (!validUv(gridUv)) {
         gl_FragColor = RED;
         return;
     }
 
-    vec4 object = texture2D(iCellGridTexture, gridUv);
+    vec4 object = texture2D(iInputTexture, gridUv);
     vec2 seedLocation = cell_closestSeed(object);
-    float dist = torusDistance(seedLocation, gl_FragCoord.xy, iGridSize);
+    float dist = torusDistance(seedLocation, gl_FragCoord.xy, iResolution);
 
     // The 0.5 is made up. We just need to divide `dist` by
     // some number bigger than its maximum possible size, and
-    // for our demos `iGridSize.x / 0.5` works fine.
-    dist = 1.0 - (dist / (iGridSize.x * 0.5));
+    // for our demos `iResolution.x / 0.5` works fine.
+    dist = 1.0 - (dist / (iResolution.x * 0.5));
     gl_FragColor = vec4(dist, dist, dist, 1.0);
 }
 
 export void fDrawShadow() {
-    vec2 gridUv = gl_FragCoord.xy / iGridSize;
+    vec2 gridUv = gl_FragCoord.xy / iResolution;
 
     if (!validUv(gridUv)) {
         gl_FragColor = RED;
         return;
     }
 
-    vec4 object = texture2D(iCellGridTexture, gridUv);
+    vec4 object = texture2D(iInputTexture, gridUv);
     vec2 seedLocation = cell_closestSeed(object);
     float dist = distance(seedLocation, gl_FragCoord.xy);
 

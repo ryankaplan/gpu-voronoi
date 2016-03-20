@@ -192,7 +192,7 @@ class JumpFlood {
         _prepJumpFloodData.use
                           .attrib("quad", _quadBuffer, 2)
                           .uniform("iSeedInputTexture", 0)
-                          .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
+                          .uniform("iResolution", Float32Array.new([_gridSize, _gridSize]))
                           .uniform("iBackgroundColor", backgroundColor)
                           .draw(_wham.ctx.TRIANGLE_STRIP, 4)
     }
@@ -210,11 +210,11 @@ class JumpFlood {
 
         _wham.ctx.viewport(0, 0, _gridSize, _gridSize)
         _drawVoronoi.use
-                          .attrib("quad", _quadBuffer, 2)
-                          .uniform("iSeedInputTexture", 0)
-                          .uniform("iCellGridTexture", 1)
-                          .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
-                          .draw(_wham.ctx.TRIANGLE_STRIP, 4)
+                    .attrib("quad", _quadBuffer, 2)
+                    .uniform("iSeedInputTexture", 0)
+                    .uniform("iInputTexture", 1)
+                    .uniform("iResolution", Float32Array.new([_gridSize, _gridSize]))
+                    .draw(_wham.ctx.TRIANGLE_STRIP, 4)
 
         _drawTempTexture
     }
@@ -225,12 +225,11 @@ class JumpFlood {
         _checkFramebufferCompletion
         _destTexture.bind(0)
         _wham.ctx.viewport(0, 0, _gridSize, _gridSize)
-        _drawDistanceField
-                        .use
-                        .attrib("quad", _quadBuffer, 2)
-                        .uniform("iCellGridTexture", 0)
-                        .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
-                        .draw(_wham.ctx.TRIANGLE_STRIP, 4)
+        _drawDistanceField.use
+                          .attrib("quad", _quadBuffer, 2)
+                          .uniform("iInputTexture", 0)
+                          .uniform("iResolution", Float32Array.new([_gridSize, _gridSize]))
+                          .draw(_wham.ctx.TRIANGLE_STRIP, 4)
 
         _drawTempTexture
     }
@@ -243,7 +242,7 @@ class JumpFlood {
         _wham.ctx.viewport(0, 0, _gridSize, _gridSize)
         _drawDropShadow.use
                     .attrib("quad", _quadBuffer, 2)
-                    .uniform("iCellGridTexture", 0)
+                    .uniform("iInputTexture", 0)
                     .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
                     .uniform("iShadowSpread", shadowSpread)
                     .uniform("iShadowBlur", shadowBlur)
@@ -326,9 +325,9 @@ class JumpFlood {
         _jumpFlood
             .use
             .attrib("quad", _quadBuffer, 2)
-            .uniform("iCellGridTexture", 0)
+            .uniform("iInputTexture", 0)
             .uniform("iStepSize", stepSize)
-            .uniform("iCellGridSize", Float32Array.new([_gridSize, _gridSize]))
+            .uniform("iResolution", Float32Array.new([_gridSize, _gridSize]))
             .uniform("iUseTorusDistanceForSeeds", options.wrap ? 1 : 0)
             .draw(_wham.ctx.TRIANGLE_STRIP, 4)
 
