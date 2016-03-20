@@ -29,54 +29,47 @@ uniform vec4 iBackgroundColor;
 // Helpers
 ////////////////////////////////////////////////////////////////////////
 
-const float EPSILON = 0.0001;
-
 const vec4 RED = vec4(1.0, 0.0, 0.0, 1.0);
 const vec4 BLACK = vec4(0.0, 0.0, 0.0, 1.0);
 const vec4 WHITE = vec4(1.0, 1.0, 1.0, 1.0);
 
-int modInt(int a, int b) {
+int modInt(const int a, const int b) {
     return int(mod(float(a), float(b)));
 }
 
-int joinInt(ivec2 ab) {
+int joinInt(const ivec2 ab) {
     return ab.x * 256 + ab.y;
 }
 
-ivec2 splitInt(int encoded) {
+ivec2 splitInt(const int encoded) {
     return ivec2(encoded / 256, modInt(encoded, 256));
 }
 
-bool approxEqual(float a, float b) {
-    return abs(a - b) < EPSILON;
+bool approxEqual(const vec4 a, const vec4 b) {
+    // 0.005 * 255 is roughly 1.2, so this will match colors
+    // one digit away from each other.
+    const float EPSILON = 0.005;
+
+    // Return true if `a` and `b` are at most EPSILON apart
+    // in any dimension
+    return all(
+        lessThan(abs(a - b), vec4(EPSILON))
+    );
 }
 
-bool approxEqual(vec2 a, vec2 b) {
-    return
-        approxEqual(a[0], b[0]) &&
-        approxEqual(a[1], b[1]);
+bool between(const vec2 value, const vec2 bottom, const vec2 top) {
+    return (
+        all(greaterThan(value, bottom)) &&
+        all(lessThan(value, top))
+    );
 }
 
-bool approxEqual(vec3 a, vec3 b) {
-    return
-        approxEqual(a[0], b[0]) &&
-        approxEqual(a[1], b[1]) &&
-        approxEqual(a[2], b[2]);
-}
-bool approxEqual(vec4 a, vec4 b) {
-    return
-        approxEqual(a[0], b[0]) &&
-        approxEqual(a[1], b[1]) &&
-        approxEqual(a[2], b[2]) &&
-        approxEqual(a[3], b[3]);
-}
-
-bool between(vec2 value, vec2 bottom, vec2 top) {
-    return value.x > bottom.x && value.x < top.x && value.y > bottom.y && value.y < top.y;
-}
-
-bool validUv(vec2 uv) {
-    return uv.x >= 0.0 && uv.y >= 0.0 && uv.x <= 1.0 && uv.y <= 1.0;
+bool validUv(const vec2 uv) {
+    return between(
+        uv,
+        vec2(0., 0.),
+        vec2(1., 1.)
+    );
 }
 
 // Vertex shader for drawing a quad
@@ -106,17 +99,19 @@ vec4 createCell(const ivec2 location) {
 // Output is a vec4 that can be stored in a texel. It's co-ordinates
 // are from 0-1.
 //
-// This is the call with co-ordinates (~65k, ~65k)
+// This represents the cell at location 21k, 21k
 vec4 createInvalidCell() {
     return createCell(ivec2(21000, 21000));
 }
 
-// Input is a vec4 that can be used as a texel. It's co-ordinates
-// are from 0-1.
+// Input is a vec4 that can be used as a texture co-ordinate.
 vec2 cell_closestSeed(const vec4 obj) {
     int x = joinInt(ivec2(obj.rg * 255.));
     int y = joinInt(ivec2(obj.ba * 255.));
-    return vec2(x, y);
+
+    // We must add back the (0.5, 0.5) that we lost here when
+    // encoding gl_FragCoord as an ivec location.
+    return vec2(x, y) + vec2(.5);
 }
 
 bool cell_isValid(const vec4 obj) {
@@ -134,6 +129,11 @@ export void fPrepForJFA() {
     if (approxEqual(pixel, iBackgroundColor)) {
         gl_FragColor = createInvalidCell();
     } else {
+        // gl_FragCoord.xy is a vec2 on the half pixel (i.e. it's not
+        // an integer value, it's an integer plus (0.5, 0.5)).
+        //
+        // So we lose the (0.5, 0.5) here when converting to an ivec.
+        // This means that we must add it back las
         gl_FragColor = createCell(ivec2(gl_FragCoord.xy));
     }
 }
@@ -215,16 +215,12 @@ export void fJumpFlood() {
 export void fDrawJumpFloodData() {
     vec2 gridUv = gl_FragCoord.xy / iResolution;
     vec4 object = texture2D(iInputTexture, gridUv);
-    vec2 seedLocation = cell_closestSeed(object) + vec2(.5);
-    float dist = torusDistance(seedLocation, gl_FragCoord.xy, iResolution);
 
     if (cell_isValid(object)) {
-        // Pixel shaders have fragments co-ordinates on the half pixel. We
-        // lost the half pixel when encoding as an int, so add it back now
-        // before we sample from the original pixel.
+        vec2 seedLocation = cell_closestSeed(object);
         vec2 gridUv = seedLocation / iResolution;
-        vec2 gridUvFlippedY = vec2(gridUv.x, 1.0 - gridUv.y);
-        gl_FragColor = texture2D(iSeedInputTexture, gridUvFlippedY);
+        gridUv.y = 1. - gridUv.y;
+        gl_FragColor = texture2D(iSeedInputTexture, gridUv);
     } else if (cell_isValid(object)) {
         gl_FragColor = BLACK;
     } else {

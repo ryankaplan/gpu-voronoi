@@ -34,6 +34,7 @@ namespace Math {
 namespace Browser {
     # This is a function so that we can easily stub it out
     def devicePixelRatio double {
+        return 1
         return window.devicePixelRatio
     }
 

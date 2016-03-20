@@ -243,7 +243,7 @@ class JumpFlood {
         _drawDropShadow.use
                     .attrib("quad", _quadBuffer, 2)
                     .uniform("iInputTexture", 0)
-                    .uniform("iGridSize", Float32Array.new([_gridSize, _gridSize]))
+                    .uniform("iResolution", Float32Array.new([_gridSize, _gridSize]))
                     .uniform("iShadowSpread", shadowSpread)
                     .uniform("iShadowBlur", shadowBlur)
                     .uniform("iShadowColor", Float32Array.new([0.7, 0.7, 0.7, 1.0]))
