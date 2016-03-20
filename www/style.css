@@ -3,12 +3,12 @@ html, body {
     height: 100%;
 
     font-weight: 300;
-    color: #CCC;
-    background-color: #282828;
+    color: #333;
+    background-color: white;
 }
 
 a {
-    color: #DDD;
+    color: #55E;
 }
 
 p {
@@ -17,13 +17,9 @@ p {
     text-align: left;
 }
 
-.uppercase {
-    text-transform: uppercase;
-}
-
 h1, h2, h3, .sans-serif {
     font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Geneva, Verdana, sans-serif;
-    color: #EEE;
+    color: #333;
     text-transform: uppercase;
 }
 
@@ -53,10 +49,8 @@ h1, h2 {
     letter-spacing: 2px;
 }
 
-/* Demo index page */
-
 hr {
-    border: 1px solid #DDD;
+    border: 1px solid #333;
 }
 
 .disclaimer {
@@ -64,7 +58,7 @@ hr {
     font-size: 14px;
 }
 
-#demo-page p {
+p {
     margin: 45px 20px;
     line-height: 250%;
     letter-spacing: 0.5px;
