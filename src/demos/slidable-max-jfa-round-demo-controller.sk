@@ -40,7 +40,7 @@ class SlidableMaxJFARoundDemoController {
     }
 
     def _drawWithSteps(steps int) {
-        _label.textContent = "Round #\(_slider.get as int)"
+        _label.textContent = "Show JFA result after round #\(_slider.get as int)"
         const opts = JumpFlood.Options.new
         opts.maxRounds = steps
         _jfa.computeAndDraw(_inputCanvas, opts)
