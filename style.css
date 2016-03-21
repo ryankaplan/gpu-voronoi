@@ -3,12 +3,12 @@ html, body {
     height: 100%;
 
     font-weight: 300;
-    color: #CCC;
-    background-color: #282828;
+    color: #333;
+    background-color: white;
 }
 
 a {
-    color: #DDD;
+    color: #55E;
 }
 
 p {
@@ -17,51 +17,14 @@ p {
     text-align: left;
 }
 
-.uppercase {
-    text-transform: uppercase;
-}
-
 h1, h2, h3, .sans-serif {
     font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Geneva, Verdana, sans-serif;
-    color: #EEE;
+    color: #333;
     text-transform: uppercase;
 }
 
 .label {
     font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Geneva, Verdana, sans-serif;
-}
-
-.jfa-round-label {
-    display: inline-block;
-    text-align: center;
-    width: 256px;
-}
-
-.shadow-spread-controls, .shadow-blur-controls {
-    margin: 20px auto;
-}
-
-.shadow-spread-label, .shadow-blur-label {
-    display: inline-block;
-    min-width: 55px;
-    text-align: right;
-    margin-right: 40px;
-}
-
-.jfa-round-slider, .shadow-spread-slider, .shadow-blur-slider {
-    width: 226px;
-    display: inline-block;
-}
-
-.step-size-label {
-    margin-top: 20px;
-    display: block;
-    margin: 20px auto;
-}
-
-.step-size-slider {
-    width: 226px;
-    margin: 20px auto;
 }
 
 #demo-page {
@@ -86,14 +49,8 @@ h1, h2 {
     letter-spacing: 2px;
 }
 
-.demo-controls {
-    margin-top: 20px;
-}
-
-/* Demo index page */
-
 hr {
-    border: 1px solid #DDD;
+    border: 1px solid #333;
 }
 
 .disclaimer {
@@ -101,55 +58,8 @@ hr {
     font-size: 14px;
 }
 
-.image-caption {
-    color: #999;
-    margin: 12px;
-    font-size: 12px;
-    font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Geneva, Verdana, sans-serif;
-}
-
-#webgl-error {
-    width: 100%;
-    height: 100%;
-    text-align: center;
-    padding-top: 100px;
-}
-
-#demo-page p {
+p {
     margin: 45px 20px;
     line-height: 250%;
     letter-spacing: 0.5px;
-}
-
-/* Demo pages */
-
-.demo-container {
-    text-align: center;
-}
-
-canvas {
-    display: inline-block;
-}
-
-/* Photo demo */
-
-.input-canvas-container {
-    display: inline-block;
-    position: relative;
-    width: 256px;
-    height: 256px;
-}
-
-.input-canvas-container #eye,
-.input-canvas-container .input-canvas {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-}
-
-
-#fish-demo-container .input-canvas {
-    background-color: #111;
 }
