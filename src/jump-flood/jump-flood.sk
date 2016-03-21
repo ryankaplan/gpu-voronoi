@@ -190,10 +190,10 @@ class JumpFlood {
 
         _wham.ctx.viewport(0, 0, _gridSize, _gridSize)
         _prepJumpFloodData.use
-                          .attrib("quad", _quadBuffer, 2)
-                          .uniform("iSeedInputTexture", 0)
-                          .uniform("iResolution", Float32Array.new([_gridSize, _gridSize]))
-                          .uniform("iBackgroundColor", backgroundColor)
+                          .attrib(GLSLX_NAME_QUAD, _quadBuffer, 2)
+                          .uniform(GLSLX_NAME_I_SEED_INPUT_TEXTURE, 0)
+                          .uniform(GLSLX_NAME_I_RESOLUTION, Float32Array.new([_gridSize, _gridSize]))
+                          .uniform(GLSLX_NAME_I_BACKGROUND_COLOR, backgroundColor)
                           .draw(_wham.ctx.TRIANGLE_STRIP, 4)
     }
 
@@ -210,10 +210,10 @@ class JumpFlood {
 
         _wham.ctx.viewport(0, 0, _gridSize, _gridSize)
         _drawVoronoi.use
-                    .attrib("quad", _quadBuffer, 2)
-                    .uniform("iSeedInputTexture", 0)
-                    .uniform("iInputTexture", 1)
-                    .uniform("iResolution", Float32Array.new([_gridSize, _gridSize]))
+                    .attrib(GLSLX_NAME_QUAD, _quadBuffer, 2)
+                    .uniform(GLSLX_NAME_I_SEED_INPUT_TEXTURE, 0)
+                    .uniform(GLSLX_NAME_I_INPUT_TEXTURE, 1)
+                    .uniform(GLSLX_NAME_I_RESOLUTION, Float32Array.new([_gridSize, _gridSize]))
                     .draw(_wham.ctx.TRIANGLE_STRIP, 4)
 
         _drawTempTexture
@@ -226,9 +226,9 @@ class JumpFlood {
         _destTexture.bind(0)
         _wham.ctx.viewport(0, 0, _gridSize, _gridSize)
         _drawDistanceField.use
-                          .attrib("quad", _quadBuffer, 2)
-                          .uniform("iInputTexture", 0)
-                          .uniform("iResolution", Float32Array.new([_gridSize, _gridSize]))
+                          .attrib(GLSLX_NAME_QUAD, _quadBuffer, 2)
+                          .uniform(GLSLX_NAME_I_INPUT_TEXTURE, 0)
+                          .uniform(GLSLX_NAME_I_RESOLUTION, Float32Array.new([_gridSize, _gridSize]))
                           .draw(_wham.ctx.TRIANGLE_STRIP, 4)
 
         _drawTempTexture
@@ -241,12 +241,12 @@ class JumpFlood {
         _destTexture.bind(0)
         _wham.ctx.viewport(0, 0, _gridSize, _gridSize)
         _drawDropShadow.use
-                    .attrib("quad", _quadBuffer, 2)
-                    .uniform("iInputTexture", 0)
-                    .uniform("iResolution", Float32Array.new([_gridSize, _gridSize]))
-                    .uniform("iShadowSpread", shadowSpread)
-                    .uniform("iShadowBlur", shadowBlur)
-                    .uniform("iShadowColor", Float32Array.new([0.7, 0.7, 0.7, 1.0]))
+                    .attrib(GLSLX_NAME_QUAD, _quadBuffer, 2)
+                    .uniform(GLSLX_NAME_I_INPUT_TEXTURE, 0)
+                    .uniform(GLSLX_NAME_I_RESOLUTION, Float32Array.new([_gridSize, _gridSize]))
+                    .uniform(GLSLX_NAME_I_SHADOW_SPREAD, shadowSpread)
+                    .uniform(GLSLX_NAME_I_SHADOW_BLUR, shadowBlur)
+                    .uniform(GLSLX_NAME_I_SHADOW_COLOR, Float32Array.new([0.7, 0.7, 0.7, 1.0]))
                     .draw(_wham.ctx.TRIANGLE_STRIP, 4)
         _drawTempTexture
     }
@@ -260,9 +260,9 @@ class JumpFlood {
         _tempOutputTexture.bind(0)
         _wham.ctx.viewport(0, 0, _outputCanvas.width, _outputCanvas.height)
         _renderTexture.use
-                      .attrib("quad", _quadBuffer, 2)
-                      .uniform("iTexture", 0)
-                      .uniform("iResolution", Float32Array.new([_outputCanvas.width, _outputCanvas.height]))
+                      .attrib(GLSLX_NAME_QUAD, _quadBuffer, 2)
+                      .uniform(GLSLX_NAME_I_INPUT_TEXTURE, 0)
+                      .uniform(GLSLX_NAME_I_RESOLUTION, Float32Array.new([_outputCanvas.width, _outputCanvas.height]))
                       .draw(_wham.ctx.TRIANGLE_STRIP, 4)
     }
 
@@ -312,23 +312,15 @@ class JumpFlood {
         _framebuffer.attach(_destTexture)
         _checkFramebufferCompletion
 
-        if !RELEASE {
-            const gl = _wham.ctx
-            var check = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
-            if check != gl.FRAMEBUFFER_COMPLETE {
-                throw Error.new("Framebuffer completion issue")
-            }
-        }
-
         _sourceTexture.bind(0)
         _wham.ctx.viewport(0, 0, _gridSize, _gridSize)
         _jumpFlood
             .use
-            .attrib("quad", _quadBuffer, 2)
-            .uniform("iInputTexture", 0)
-            .uniform("iStepSize", stepSize)
-            .uniform("iResolution", Float32Array.new([_gridSize, _gridSize]))
-            .uniform("iUseTorusDistanceForSeeds", options.wrap ? 1 : 0)
+            .attrib(GLSLX_NAME_QUAD, _quadBuffer, 2)
+            .uniform(GLSLX_NAME_I_INPUT_TEXTURE, 0)
+            .uniform(GLSLX_NAME_I_STEP_SIZE, stepSize)
+            .uniform(GLSLX_NAME_I_RESOLUTION, Float32Array.new([_gridSize, _gridSize]))
+            .uniform(GLSLX_NAME_I_USE_TORUS_DISTANCE_FOR_SEEDS, options.wrap ? 1 : 0)
             .draw(_wham.ctx.TRIANGLE_STRIP, 4)
 
         self._swapBuffers
