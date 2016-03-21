@@ -1,3 +1,7 @@
+def gridSize int {
+    return 256
+}
+
 def sizeCanvas(canvas HTMLCanvasElement, size int) {
     canvas.width = (size * Browser.devicePixelRatio) as int
     canvas.height = (size * Browser.devicePixelRatio) as int
@@ -46,8 +50,8 @@ const inputCanvasStyle Style = {
 }
 
 def initializePaintDemo(container HTMLElement) {
-    const inputCanvas = sizeCanvas(<canvas style=inputCanvasStyle />, 256)
-    const outputCanvas = sizeCanvas(<canvas />, 256)
+    const inputCanvas = sizeCanvas(<canvas style=inputCanvasStyle />, gridSize)
+    const outputCanvas = sizeCanvas(<canvas />, gridSize)
     container.appendChild((
         <div style=demoContainerStyle>
             inputCanvas
@@ -68,8 +72,8 @@ def initializePaintDemo(container HTMLElement) {
 }
 
 def initializeFishDemo(container HTMLElement) {
-    const inputCanvas = sizeCanvas(<canvas style=inputCanvasStyle />, 256)
-    const outputCanvas = sizeCanvas(<canvas />, 256)
+    const inputCanvas = sizeCanvas(<canvas style=inputCanvasStyle />, gridSize)
+    const outputCanvas = sizeCanvas(<canvas />, gridSize)
     container.appendChild((
         <div style=demoContainerStyle>
             inputCanvas
@@ -100,13 +104,13 @@ def initializePhotoDemo(container HTMLElement) {
         "left": "0"
     }
 
-    const inputCanvas = sizeCanvas(<canvas style=inputCanvasStyle />, 256)
+    const inputCanvas = sizeCanvas(<canvas style=inputCanvasStyle />, gridSize)
     const image = <img id="eye" src="/images/eye.jpg" style=inputCanvasStyle />
-    const outputCanvas = sizeCanvas(<canvas />, 256)
+    const outputCanvas = sizeCanvas(<canvas />, gridSize)
 
     container.appendChild((
         <div style=demoContainerStyle>
-            <div style={ "display": "inline-block", "position": "relative", "width": "256px", "height": "256px" }>
+            <div style={ "display": "inline-block", "position": "relative", "width": "\(gridSize)px", "height": "\(gridSize)px" }>
                 image
                 inputCanvas
             </div>
@@ -141,7 +145,7 @@ def initializeJfaPatternDemo(container HTMLElement) {
         "display": "inline-block"
     }
 
-    const patternCanvas = sizeCanvas(<canvas />, 256)
+    const patternCanvas = sizeCanvas(<canvas />, gridSize)
     const label = <div style=patternLabelStyle />
     const slider = <div style=patternSliderStyle />
     container.appendChild((
@@ -152,13 +156,12 @@ def initializeJfaPatternDemo(container HTMLElement) {
         </div>
     ).rawElement)
 
-    const gridSize = 16
-    const logicalCanvasSize = 256
-    JFAPatternDemoController.new(patternCanvas.element, logicalCanvasSize, gridSize, label.rawElement, slider.rawElement)
+    const demoGridSize = 16
+    const logicalCanvasSize = gridSize
+    JFAPatternDemoController.new(patternCanvas.element, logicalCanvasSize, demoGridSize, label.rawElement, slider.rawElement)
 }
 
 def initializeSliderDemo(container HTMLElement) {
-    const gridSize = 256
     const sliderLabelStyle Style = {
         "display": "inline-block",
         "text-align": "left",
@@ -190,8 +193,8 @@ def initializeSliderDemo(container HTMLElement) {
 }
 
 def initializeDistanceDemo(container HTMLElement) {
-    const inputCanvas = sizeCanvas(<canvas style=inputCanvasStyle />, 256)
-    const outputCanvas = sizeCanvas(<canvas />, 256)
+    const inputCanvas = sizeCanvas(<canvas style=inputCanvasStyle />, gridSize)
+    const outputCanvas = sizeCanvas(<canvas />, gridSize)
     container.appendChild((
         <div style=demoContainerStyle>
             inputCanvas
@@ -229,7 +232,6 @@ def initializeShadowDemo(container HTMLElement) {
     }
 
     const controlsContainerStyle Style = { "margin": "20px auto" }
-    const gridSize = 256
     const content = (
         <div style=demoContainerStyle>
             sizeCanvas(<canvas class="output-canvas" />, gridSize)

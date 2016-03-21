@@ -211,14 +211,15 @@ export void fJumpFlood() {
     vec2 gridUv = gl_FragCoord.xy / iResolution;
     vec4 thisCell = texture2D(iInputTexture, gridUv);
 
-    thisCell = compareCellWithCellAtOffset(thisCell, vec2(0, iStepSize));
-    thisCell = compareCellWithCellAtOffset(thisCell, vec2(iStepSize, iStepSize));
-    thisCell = compareCellWithCellAtOffset(thisCell, vec2(iStepSize, 0));
-    thisCell = compareCellWithCellAtOffset(thisCell, vec2(iStepSize, - iStepSize));
-    thisCell = compareCellWithCellAtOffset(thisCell, vec2(0, - iStepSize));
-    thisCell = compareCellWithCellAtOffset(thisCell, vec2(- iStepSize, - iStepSize));
-    thisCell = compareCellWithCellAtOffset(thisCell, vec2(- iStepSize, 0));
-    thisCell = compareCellWithCellAtOffset(thisCell, vec2(- iStepSize, iStepSize));
+    int stepSize = iStepSize;
+    thisCell = compareCellWithCellAtOffset(thisCell, vec2(0, stepSize));
+    thisCell = compareCellWithCellAtOffset(thisCell, vec2(stepSize, stepSize));
+    thisCell = compareCellWithCellAtOffset(thisCell, vec2(stepSize, 0));
+    thisCell = compareCellWithCellAtOffset(thisCell, vec2(stepSize, - stepSize));
+    thisCell = compareCellWithCellAtOffset(thisCell, vec2(0, - stepSize));
+    thisCell = compareCellWithCellAtOffset(thisCell, vec2(- stepSize, - stepSize));
+    thisCell = compareCellWithCellAtOffset(thisCell, vec2(- stepSize, 0));
+    thisCell = compareCellWithCellAtOffset(thisCell, vec2(- stepSize, stepSize));
 
     gl_FragColor = thisCell;
 }
