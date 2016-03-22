@@ -64,7 +64,7 @@ const inputCanvasStyle Style = {
 }
 
 def initializePaintDemo(container HTMLElement) {
-    dynamic.container.style = null
+    (container as dynamic).removeAttribute("style")
     const inputCanvas = sizeCanvas(<canvas style=inputCanvasStyle />, gridSize)
     const outputCanvas = sizeCanvas(<canvas />, gridSize)
     container.appendChild((
@@ -87,7 +87,7 @@ def initializePaintDemo(container HTMLElement) {
 }
 
 def initializeFishDemo(container HTMLElement) {
-    dynamic.container.style = null
+    (container as dynamic).removeAttribute("style")
     const inputCanvas = sizeCanvas(<canvas style=inputCanvasStyle />, gridSize)
     const outputCanvas = sizeCanvas(<canvas />, gridSize)
     container.appendChild((
@@ -112,7 +112,7 @@ def initializeFishDemo(container HTMLElement) {
 }
 
 def initializePhotoDemo(container HTMLElement) {
-    dynamic.container.style = null
+    (container as dynamic).removeAttribute("style")
     const inputCanvasStyle Style = {
         "width": "100%",
         "height": "100%",
@@ -150,7 +150,7 @@ def initializePhotoDemo(container HTMLElement) {
 }
 
 def initializeJfaPatternDemo(container HTMLElement) {
-    dynamic.container.style = null
+    (container as dynamic).removeAttribute("style")
     const patternLabelStyle Style = {
         "margin-top": "20px",
         "display": "block",
@@ -180,7 +180,7 @@ def initializeJfaPatternDemo(container HTMLElement) {
 }
 
 def initializeSliderDemo(container HTMLElement) {
-    dynamic.container.style = null
+    (container as dynamic).removeAttribute("style")
     const sliderLabelStyle Style = {
         "display": "inline-block",
         "text-align": "center",
@@ -213,7 +213,7 @@ def initializeSliderDemo(container HTMLElement) {
 }
 
 def initializeDistanceDemo(container HTMLElement) {
-    dynamic.container.style = null
+    (container as dynamic).removeAttribute("style")
     const inputCanvas = sizeCanvas(<canvas style=inputCanvasStyle />, gridSize)
     const outputCanvas = sizeCanvas(<canvas />, gridSize)
     container.appendChild((
@@ -239,7 +239,7 @@ def initializeDistanceDemo(container HTMLElement) {
 }
 
 def initializeShadowDemo(container HTMLElement) {
-    dynamic.container.style = null
+    (container as dynamic).removeAttribute("style")
     const labelStyle Style = {
         "display": "inline-block",
         "text-align": "right",
