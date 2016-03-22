@@ -29,5 +29,8 @@ clean:
 blog-demo: | npm-modules build-shaders
 	$(BUILD) --release --output-file=../../compiled/voronoi-demo.js
 
+blog-demo-debug: | npm-modules build-shaders
+	$(BUILD) --output-file=../../compiled/voronoi-demo.js
+
 watch-blog-demo: | npm-modules
-	node_modules/.bin/watch src 'clear && make blog-demo'
+	node_modules/.bin/watch src 'clear && make blog-demo-debug'

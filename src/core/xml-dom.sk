@@ -36,11 +36,19 @@ class XMLDomElement {
     # Public HTMLElement attributes
     var style Style = Style.new
     var id string = null
-    var class string = null
 
     def new(tag string) {
         _element = document.createElement(tag)
     }
+
+    def class=(value string) {
+        _element.className = value
+    }
+
+    def class string {
+        return _element.className
+    }
+
 
     def children List<XMLDomElement> {
         return _children

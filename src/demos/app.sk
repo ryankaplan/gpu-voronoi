@@ -25,7 +25,21 @@ def getCanvas(container HTMLElement, className string, canvasSize int) HTMLCanva
 
 def displayError(container HTMLElement) {
     container.innerHTML = ""
-    container.textContent = "Demo disabled. Couldn't enable WebGL."
+
+    const errorStyle Style = {
+        "text-align": "center",
+        "margin": "40px auto",
+        "background-color": "#FCFFD3",
+        "padding": "40px",
+        "font-family": "Helvetica",
+        "line-height": "40px"
+    }
+
+    container.appendChild((
+        <div class="caps" style=errorStyle> # bold?
+            "Demo disabled. Couldn't start WebGL."
+        </div>
+    ).rawElement)
 }
 
 def tryOrDisplayError(container HTMLElement, tryBlock fn()) {
