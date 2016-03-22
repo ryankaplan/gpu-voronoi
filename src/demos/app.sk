@@ -164,8 +164,9 @@ def initializeJfaPatternDemo(container HTMLElement) {
 def initializeSliderDemo(container HTMLElement) {
     const sliderLabelStyle Style = {
         "display": "inline-block",
-        "text-align": "left",
-        "width": "\(gridSize)px"
+        "text-align": "center",
+        "width": "\(gridSize)px",
+        "margin-bottom": "20px",
     }
     sliderLabelStyle.take(defaultLabelStyle)
 
