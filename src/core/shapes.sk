@@ -9,8 +9,8 @@ class Square {
         ctx.rect(
             (center.x - size / 2) as int,
             (center.y - size / 2) as int,
-            size,
-            size
+            size * 2,
+            size * 2
         )
         ctx.fillStyle = color.toCSS
         ctx.fill
