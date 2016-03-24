@@ -38,9 +38,10 @@ class GridDemoController {
     const _onDraw fn()
     const _firstPattern CanvasPattern
     const _secondPattern CanvasPattern
-    const _secondColorOffset = Vector.new(spacing / 2, spacing / 2)
+    const _secondColorOffset = Vector.new(spacing / 2 + spacing / 4, spacing / 2 - spacing / 4)
 
     const _mouseBehaviorManager = MouseBehaviorManager.new
+    var _userHasInteracted = false
 
     # onDraw will be called whenever the user draws something in the canvas.
     # Useful since we want to re-compute the Voronoi diagram of the canvas
@@ -63,6 +64,8 @@ class GridDemoController {
 
         _mouseBehaviorManager.register(dragBehavior)
         dragBehavior.onUpdate = (type UpdateType) => {
+            _userHasInteracted = true
+
             switch type {
                 case .CHANGE {
                     _render(_secondColorOffset + dragBehavior.offset)
@@ -75,6 +78,13 @@ class GridDemoController {
         }
 
         _render(_secondColorOffset)
+
+        Browser.renderWhileElementOnScreen(_inputCanvas, (elapsedMs) => {
+            if !_userHasInteracted {
+                _secondColorOffset += elapsedMs / 30.0
+                _render(_secondColorOffset)
+            }
+        })
     }
 
     def _render(offset Vector) {
@@ -90,7 +100,7 @@ class GridDemoController {
 
         # Translate the ctx before drawing the second one to offset it
         _ctx.save
-        _ctx.translate(offset.x, offset.y)
+        _ctx.translate(offset.x as int, offset.y as int)
         _ctx.fill
         _ctx.restore
 
