@@ -52,7 +52,6 @@ class GridDemoController {
         _onDraw = onDraw
 
         _ctx = _inputCanvas.getContext2D
-        #_ctx.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
 
         _firstPattern = _ctx.createPattern(drawGrid(_inputCanvas.width, _inputCanvas.height), "repeat")
         _secondPattern = _ctx.createPattern(drawGrid(_inputCanvas.width, _inputCanvas.height), "repeat")
