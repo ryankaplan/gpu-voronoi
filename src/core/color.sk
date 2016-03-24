@@ -24,6 +24,15 @@ namespace Color {
     const black = Color.fromHex(0x000000)
     const clear = Color.new(0, 0, 0, 0)
 
+    def randomPurple Color {
+       return Color.new(
+           0.5 + Math.random * 0.4,
+           0.2,
+           0.3 + Math.random * 0.5,
+           1.0
+       )
+    }
+
     def encodeColorValues(a int, b int) int {
         if a < 0 || a > 255 {
             throw Error.new("First parameter \(a) is out of bounds. Must be between 0 and 255.")

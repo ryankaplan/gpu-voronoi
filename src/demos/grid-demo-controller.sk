@@ -1,0 +1,101 @@
+namespace GridDemoController {
+    const spacing = 64
+    const dotRadius = 1
+
+    def drawGrid(width int, height int) HTMLCanvasElement {
+        const canvas = document.createElement("canvas") as HTMLCanvasElement
+        canvas.width = width
+        canvas.height = height
+
+        const ctx = canvas.getContext2D
+        ctx.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
+
+        ctx.clearRect(0, 0, width, height)
+
+        for x in -1..(width / spacing) + 1 {
+            for y in -1..(height / spacing) + 1 {
+                ctx.beginPath
+                ctx.rect(
+                    x * spacing + spacing / 2,
+                    y * spacing + spacing / 2,
+                    dotRadius * Browser.devicePixelRatio,
+                    dotRadius * Browser.devicePixelRatio
+                )
+                ctx.fillStyle = Color.randomPurple.toCSS
+                ctx.fill
+            }
+        }
+
+        return canvas
+    }
+
+}
+
+class GridDemoController {
+    const _inputCanvas HTMLCanvasElement
+    const _outputCanvas HTMLCanvasElement
+    const _ctx CanvasRenderingContext2D
+    const _onDraw fn()
+    const _firstPattern CanvasPattern
+    const _secondPattern CanvasPattern
+    const _secondColorOffset = Vector.new(spacing / 2, spacing / 2)
+
+    const _mouseBehaviorManager = MouseBehaviorManager.new
+
+    # onDraw will be called whenever the user draws something in the canvas.
+    # Useful since we want to re-compute the Voronoi diagram of the canvas
+    # every time the user draws.
+    def new(inputCanvas HTMLCanvasElement, outputCanvas HTMLCanvasElement, onDraw fn()) {
+        _inputCanvas = inputCanvas
+        _outputCanvas = outputCanvas
+        _onDraw = onDraw
+
+        _ctx = _inputCanvas.getContext2D
+        #_ctx.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
+
+        _firstPattern = _ctx.createPattern(drawGrid(_inputCanvas.width, _inputCanvas.height), "repeat")
+        _secondPattern = _ctx.createPattern(drawGrid(_inputCanvas.width, _inputCanvas.height), "repeat")
+
+        _mouseBehaviorManager.listenOnElement(_inputCanvas)
+        _mouseBehaviorManager.listenOnElement(_outputCanvas)
+
+        const dragBehavior = DragBehavior.new
+
+        _mouseBehaviorManager.register(dragBehavior)
+        dragBehavior.onUpdate = (type UpdateType) => {
+            switch type {
+                case .CHANGE {
+                    _render(_secondColorOffset + dragBehavior.offset)
+                }
+                case .COMMIT {
+                    _secondColorOffset += dragBehavior.offset
+                    _render(_secondColorOffset)
+                }
+            }
+        }
+
+        _render(_secondColorOffset)
+    }
+
+    def _render(offset Vector) {
+        _ctx.clearRect(0, 0, _inputCanvas.width, _inputCanvas.height)
+        _ctx.beginPath
+        _ctx.rect(0, 0, _inputCanvas.width, _inputCanvas.height)
+        _ctx.fillStyle = _firstPattern
+        _ctx.fill
+
+        _ctx.beginPath
+        _ctx.rect(0, 0, _inputCanvas.width, _inputCanvas.height)
+        _ctx.fillStyle = _secondPattern
+
+        # Translate the ctx before drawing the second one to offset it
+        _ctx.save
+        _ctx.translate(offset.x, offset.y)
+        _ctx.fill
+        _ctx.restore
+
+        if _onDraw != null {
+            _onDraw()
+        }
+    }
+}

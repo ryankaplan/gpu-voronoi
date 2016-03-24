@@ -48,13 +48,6 @@ class CanvasDrawController {
         const canvasRect = _inputCanvas.getBoundingClientRect
 
         if point.x > 0 && point.y > 0 && point.x < canvasRect.width && point.y < canvasRect.height {
-            const color = Color.new(
-                0.5 + Math.random * 0.4,
-                0.2,
-                0.3 + Math.random * 0.5,
-                1.0
-            )
-
             _ctx.beginPath
             _ctx.rect(
                 (point.x - dotRadius) as int,
@@ -62,7 +55,7 @@ class CanvasDrawController {
                 dotRadius * 2,
                 dotRadius * 2
             )
-            _ctx.fillStyle = color.toCSS
+            _ctx.fillStyle = Color.randomPurple.toCSS
             _ctx.fill
             if _onDraw != null {
                 _onDraw()

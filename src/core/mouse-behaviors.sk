@@ -4,24 +4,24 @@ enum UpdateType {
 }
 
 class DragBehavior :: MouseBehavior {
-    const _element HTMLElement
-    var _dragStart Vector
+    # Where the last drag started
+    var _dragStart Vector = null
 
-    var offset Vector
-    var onUpdate fn(UpdateType)
+    # The current offset from _dragStart
+    var offset Vector = Vector.new(0, 0)
 
-    def new(element HTMLElement) {
-        _element = element
-    }
+    # Called while dragging with .CHANGE and at the end of a
+    # drag with .COMMIT
+    var onUpdate fn(UpdateType) = null
 
     def down(e MouseEvent) {
-        _setCursorMove(true)
+        _setCursorMove(e.target, true)
         _dragStart = e.location
         _update(e.location, .CHANGE)
     }
 
     def move(e MouseEvent) {
-        _setCursorMove(e.isDown)
+        _setCursorMove(e.target, e.isDown)
         if _dragStart != null {
             _update(e.location, .CHANGE)
         }
@@ -32,7 +32,7 @@ class DragBehavior :: MouseBehavior {
             _update(e.location, .COMMIT)
             _dragStart = null
         }
-        _setCursorMove(false)
+        _setCursorMove(e.target, false)
     }
 
     def _update(eventLocation Vector, type UpdateType) {
@@ -44,7 +44,7 @@ class DragBehavior :: MouseBehavior {
         }
     }
 
-    def _setCursorMove(setMove bool) {
-        _element.style.cursor = setMove ? "move" : null
+    def _setCursorMove(element HTMLElement, setMove bool) {
+        element.style.cursor = setMove ? "move" : null
     }
 }

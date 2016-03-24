@@ -57,7 +57,7 @@ class DraggableTextDemoController {
         _mouseBehaviorManager.listenOnElement(_inputCanvas)
         _mouseBehaviorManager.listenOnElement(_outputCanvas)
 
-        dragBehavior = DragBehavior.new(_outputCanvas)
+        dragBehavior = DragBehavior.new
         dragBehavior.onUpdate = (type UpdateType) => {
             switch type {
                 case .CHANGE {

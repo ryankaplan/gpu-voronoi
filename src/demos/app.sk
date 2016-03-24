@@ -64,7 +64,6 @@ const inputCanvasStyle Style = {
 }
 
 def initializePaintDemo(container HTMLElement) {
-    (container as dynamic).removeAttribute("style")
     const inputCanvas = sizeCanvas(<canvas style=inputCanvasStyle />, gridSize)
     const outputCanvas = sizeCanvas(<canvas />, gridSize)
     container.appendChild((
@@ -87,7 +86,6 @@ def initializePaintDemo(container HTMLElement) {
 }
 
 def initializeFishDemo(container HTMLElement) {
-    (container as dynamic).removeAttribute("style")
     const inputCanvas = sizeCanvas(<canvas style=inputCanvasStyle />, gridSize)
     const outputCanvas = sizeCanvas(<canvas />, gridSize)
     container.appendChild((
@@ -112,7 +110,6 @@ def initializeFishDemo(container HTMLElement) {
 }
 
 def initializePhotoDemo(container HTMLElement) {
-    (container as dynamic).removeAttribute("style")
     const inputCanvasStyle Style = {
         "width": "100%",
         "height": "100%",
@@ -150,7 +147,6 @@ def initializePhotoDemo(container HTMLElement) {
 }
 
 def initializeJfaPatternDemo(container HTMLElement) {
-    (container as dynamic).removeAttribute("style")
     const patternLabelStyle Style = {
         "margin-top": "20px",
         "display": "block",
@@ -180,7 +176,6 @@ def initializeJfaPatternDemo(container HTMLElement) {
 }
 
 def initializeSliderDemo(container HTMLElement) {
-    (container as dynamic).removeAttribute("style")
     const sliderLabelStyle Style = {
         "display": "inline-block",
         "text-align": "center",
@@ -213,7 +208,6 @@ def initializeSliderDemo(container HTMLElement) {
 }
 
 def initializeDistanceDemo(container HTMLElement) {
-    (container as dynamic).removeAttribute("style")
     const inputCanvas = sizeCanvas(<canvas style=inputCanvasStyle />, gridSize)
     const outputCanvas = sizeCanvas(<canvas />, gridSize)
     container.appendChild((
@@ -239,7 +233,6 @@ def initializeDistanceDemo(container HTMLElement) {
 }
 
 def initializeShadowDemo(container HTMLElement) {
-    (container as dynamic).removeAttribute("style")
     const labelStyle Style = {
         "display": "inline-block",
         "text-align": "right",
@@ -280,17 +273,47 @@ def initializeShadowDemo(container HTMLElement) {
     )
 }
 
+def initializeGridDemo(container HTMLElement) {
+    const inputCanvas = sizeCanvas(<canvas style=inputCanvasStyle />, gridSize)
+    const outputCanvas = sizeCanvas(<canvas />, gridSize)
+    container.appendChild((
+        <div style=demoContainerStyle>
+            inputCanvas
+            outputCanvas
+        </div>
+    ).rawElement)
+
+    var jfa JumpFlood = null
+    tryOrDisplayError(container, => {
+        jfa = JumpFlood.new(outputCanvas.element)
+    })
+
+    if jfa != null {
+        const opts = JumpFlood.Options.new
+        opts.wrap = true
+        GridDemoController.new(inputCanvas.element, outputCanvas.element, => {
+            jfa.computeAndDraw(inputCanvas.element, opts)
+        })
+    }
+}
+
+def getContainer(id string) HTMLElement {
+    const container = document.getElementById(id)
+    (container as dynamic).removeAttribute("style")
+    return container
+}
 
 @entry
 def main {
     window.addEventListener("load", => {
-        initializePaintDemo(document.getElementById("paint-demo-container"))
-        initializeFishDemo(document.getElementById("fish-demo-container"))
-        initializePhotoDemo(document.getElementById("photo-demo-container"))
-        initializeJfaPatternDemo(document.getElementById("jfa-pattern-demo-container"))
-        initializeSliderDemo(document.getElementById("slider-demo-container"))
-        initializeDistanceDemo(document.getElementById("distance-demo-container"))
-        initializeShadowDemo(document.getElementById("shadow-demo-container"))
+        initializePaintDemo(getContainer("paint-demo-container"))
+        initializeFishDemo(getContainer("fish-demo-container"))
+        initializePhotoDemo(getContainer("photo-demo-container"))
+        initializeJfaPatternDemo(getContainer("jfa-pattern-demo-container"))
+        initializeSliderDemo(getContainer("slider-demo-container"))
+        initializeDistanceDemo(getContainer("distance-demo-container"))
+        initializeShadowDemo(getContainer("shadow-demo-container"))
+        initializeGridDemo(getContainer("grid-demo-container"))
     })
 }
 
