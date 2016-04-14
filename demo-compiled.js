@@ -45,15 +45,15 @@
   }
 
   function sizeCanvas1(canvas, size) {
-    canvas.width = size * Browser.devicePixelRatio() | 0;
-    canvas.height = size * Browser.devicePixelRatio() | 0;
+    canvas.width = __imul(size, Browser.devicePixelRatio() | 0);
+    canvas.height = __imul(size, Browser.devicePixelRatio() | 0);
     canvas.style.width = size.toString() + 'px';
     canvas.style.height = size.toString() + 'px';
   }
 
   function sizeCanvas2(canvas, size) {
-    canvas.setWidth(size * Browser.devicePixelRatio() | 0);
-    canvas.setHeight(size * Browser.devicePixelRatio() | 0);
+    canvas.setWidth(__imul(size, Browser.devicePixelRatio() | 0));
+    canvas.setHeight(__imul(size, Browser.devicePixelRatio() | 0));
     canvas.style.setWidth(size.toString() + 'px');
     canvas.style.setHeight(size.toString() + 'px');
     return canvas;
@@ -72,7 +72,6 @@
     }
 
     catch (temp) {
-      console.log(temp);
       displayError(container);
     }
   }
@@ -1094,7 +1093,7 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.font = DraggableTextDemoController.textSizePx.toString() + 'px Baskerville';
     var width = ctx.measureText(DraggableTextDemoController.text).width;
-    canvas.width = Math.round(width) * Browser.devicePixelRatio() | 0;
+    canvas.width = __imul(Math.round(width) | 0, Browser.devicePixelRatio() | 0);
     canvas.height = DraggableTextDemoController.textSizePx * Browser.devicePixelRatio() | 0;
     ctx.scale(Browser.devicePixelRatio(), Browser.devicePixelRatio());
     ctx.font = DraggableTextDemoController.textSizePx.toString() + 'px Baskerville';
