@@ -8,7 +8,7 @@ namespace GridDemoController {
         canvas.height = height
 
         const ctx = canvas.getContext2D
-        ctx.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
+        ctx.scale(Browser.powerOfTwoLessThanDevicePixelRatio, Browser.powerOfTwoLessThanDevicePixelRatio)
 
         ctx.clearRect(0, 0, width, height)
 
@@ -18,8 +18,8 @@ namespace GridDemoController {
                 ctx.rect(
                     x * spacing + spacing / 2,
                     y * spacing + spacing / 2,
-                    dotRadius * Browser.devicePixelRatio,
-                    dotRadius * Browser.devicePixelRatio
+                    dotRadius * Browser.powerOfTwoLessThanDevicePixelRatio,
+                    dotRadius * Browser.powerOfTwoLessThanDevicePixelRatio
                 )
                 ctx.fillStyle = Color.randomPurple.toCSS
                 ctx.fill

@@ -84,7 +84,7 @@ class JFAPatternDemoController {
 
     def new(canvas HTMLCanvasElement, logicalCanvasSize int, gridSize int, label HTMLElement, slider HTMLElement) {
         _canvas = canvas
-        _canvas.getContext2D.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
+        _canvas.getContext2D.scale(Browser.powerOfTwoLessThanDevicePixelRatio, Browser.powerOfTwoLessThanDevicePixelRatio)
         _logicalCanvasSize = logicalCanvasSize
         _gridSize = gridSize
         _label = label

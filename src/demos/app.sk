@@ -3,15 +3,15 @@ def gridSize int {
 }
 
 def sizeCanvas(canvas HTMLCanvasElement, size int) {
-    canvas.width = (size * Browser.devicePixelRatio) as int
-    canvas.height = (size * Browser.devicePixelRatio) as int
+    canvas.width = size * Browser.powerOfTwoLessThanDevicePixelRatio
+    canvas.height = size * Browser.powerOfTwoLessThanDevicePixelRatio
     canvas.style.width = "\(size)px"
     canvas.style.height = "\(size)px"
 }
 
 def sizeCanvas(canvas canvas, size int) canvas {
-    canvas.width = (size * Browser.devicePixelRatio) as int
-    canvas.height = (size * Browser.devicePixelRatio) as int
+    canvas.width = size * Browser.powerOfTwoLessThanDevicePixelRatio
+    canvas.height = size * Browser.powerOfTwoLessThanDevicePixelRatio
     canvas.style.width = "\(size)px"
     canvas.style.height = "\(size)px"
     return canvas
@@ -263,7 +263,7 @@ def initializeShadowDemo(container HTMLElement) {
     container.appendChild(content.rawElement)
 
     const outputCanvas = content.findDescendentByClassName("output-canvas").rawElement as HTMLCanvasElement
-    outputCanvas.getContext2D.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
+    outputCanvas.getContext2D.scale(Browser.powerOfTwoLessThanDevicePixelRatio, Browser.powerOfTwoLessThanDevicePixelRatio)
     ShadowDemoController.new(
         container,
         gridSize,

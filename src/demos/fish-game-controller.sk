@@ -29,7 +29,7 @@ class FishGameController {
         _outputCanvas = outputCanvas
         _onDraw = onDraw
         _ctx = _inputCanvas.getContext2D
-        _ctx.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
+        _ctx.scale(Browser.powerOfTwoLessThanDevicePixelRatio, Browser.powerOfTwoLessThanDevicePixelRatio)
 
         const canvasRect = _inputCanvas.getBoundingClientRect
 

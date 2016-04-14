@@ -32,6 +32,14 @@ namespace Math {
 
 
 namespace Browser {
+    def powerOfTwoLessThanDevicePixelRatio int {
+        var i = 0
+        while 2 ** i < devicePixelRatio {
+            i++
+        }
+        return 2 ** i
+    }
+
     # This is a function so that we can easily stub it out
     def devicePixelRatio double {
         return window.devicePixelRatio

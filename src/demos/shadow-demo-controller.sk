@@ -80,15 +80,15 @@ class ShadowDemoController {
 
         # Output canvas has a white background
         _outputCanvasCtx.fillStyle = "white"
-        _outputCanvasCtx.fillRect(0, 0, _outputCanvas.width / Browser.devicePixelRatio, _outputCanvas.height / Browser.devicePixelRatio)
+        _outputCanvasCtx.fillRect(0, 0, _outputCanvas.width / Browser.powerOfTwoLessThanDevicePixelRatio, _outputCanvas.height / Browser.powerOfTwoLessThanDevicePixelRatio)
 
         # Draw the shadow of the text on the background
         _outputCanvasCtx.drawImage(
             _shadowCanvas,
             0,
             0,
-            _outputCanvas.width / Browser.devicePixelRatio,
-            _outputCanvas.height / Browser.devicePixelRatio
+            _outputCanvas.width / Browser.powerOfTwoLessThanDevicePixelRatio,
+            _outputCanvas.height / Browser.powerOfTwoLessThanDevicePixelRatio
         )
 
         # Draw the text to the center of the output canvas
@@ -96,6 +96,6 @@ class ShadowDemoController {
 
         _outputCanvasCtx.strokeStyle = "#C5C5C5"
         _outputCanvasCtx.lineWidth = 1
-        _outputCanvasCtx.strokeRect(0, 0, _outputCanvas.width / Browser.devicePixelRatio, _outputCanvas.height / Browser.devicePixelRatio)
+        _outputCanvasCtx.strokeRect(0, 0, _outputCanvas.width / Browser.powerOfTwoLessThanDevicePixelRatio, _outputCanvas.height / Browser.powerOfTwoLessThanDevicePixelRatio)
     }
 }

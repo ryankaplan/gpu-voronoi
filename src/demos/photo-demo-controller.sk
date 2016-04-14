@@ -266,7 +266,7 @@ class PhotoDemoController {
         _mouseBehaviorManager.listenOnElement(outputCanvas)
 
         inputContext = inputCanvas.getContext2D
-        inputContext.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
+        inputContext.scale(Browser.powerOfTwoLessThanDevicePixelRatio, Browser.powerOfTwoLessThanDevicePixelRatio)
 
         _seedCanvas = document.createElement("canvas") as HTMLCanvasElement
         _seedCtx = _seedCanvas.getContext2D
@@ -328,8 +328,8 @@ class PhotoDemoController {
         _seedCtx.fillStyle = sourcePattern
         _seedCtx.beginPath
         _seedCtx.rect(
-            (point.x * Browser.devicePixelRatio) as int,
-            (point.y * Browser.devicePixelRatio) as int,
+            (point.x * Browser.powerOfTwoLessThanDevicePixelRatio) as int,
+            (point.y * Browser.powerOfTwoLessThanDevicePixelRatio) as int,
             1,
             1
         )

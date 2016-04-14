@@ -23,7 +23,7 @@ class CanvasDrawController {
         _onDraw = onDraw
 
         _ctx = _inputCanvas.getContext2D
-        _ctx.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
+        _ctx.scale(Browser.powerOfTwoLessThanDevicePixelRatio, Browser.powerOfTwoLessThanDevicePixelRatio)
 
         _mouseBehaviorManager.listenOnElement(_inputCanvas)
         _mouseBehaviorManager.listenOnElement(_outputCanvas)

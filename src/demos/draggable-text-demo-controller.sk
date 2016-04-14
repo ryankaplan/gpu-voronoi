@@ -12,9 +12,9 @@ namespace DraggableTextDemoController {
         ctx.font = "\(textSizePx)px Baskerville"
 
         const width = ctx.measureText(text).width
-        canvas.width = (Math.round(width) * Browser.devicePixelRatio) as int
-        canvas.height = (textSizePx * Browser.devicePixelRatio) as int
-        ctx.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
+        canvas.width = (Math.round(width) * Browser.powerOfTwoLessThanDevicePixelRatio) as int
+        canvas.height = textSizePx * Browser.powerOfTwoLessThanDevicePixelRatio
+        ctx.scale(Browser.powerOfTwoLessThanDevicePixelRatio, Browser.powerOfTwoLessThanDevicePixelRatio)
 
         ctx.font = "\(textSizePx)px Baskerville"
         ctx.fillStyle = "#333"
@@ -44,14 +44,14 @@ class DraggableTextDemoController {
 
         _textCanvas = drawTextCanvas
         _ctx = _inputCanvas.getContext2D
-        _ctx.scale(Browser.devicePixelRatio, Browser.devicePixelRatio)
+        _ctx.scale(Browser.powerOfTwoLessThanDevicePixelRatio, Browser.powerOfTwoLessThanDevicePixelRatio)
         _logicalCanvasSize = outputCanvas.getBoundingClientRect.width
 
         # Figure out the width of the text and set _lastKnownOffset so that the text
         # is centered in the canvas
         const halfCanvas = Vector.new(_outputCanvas.width, _outputCanvas.height) / 2
         const halfTextSize = Vector.new(_textCanvas.width, _textCanvas.height) / 2
-        center = (halfCanvas - halfTextSize) / Browser.devicePixelRatio
+        center = (halfCanvas - halfTextSize) / Browser.powerOfTwoLessThanDevicePixelRatio
         lastKnownOffset = center.clone
 
         _mouseBehaviorManager.listenOnElement(_inputCanvas)
@@ -85,6 +85,6 @@ class DraggableTextDemoController {
     }
 
     def drawTextToContext(ctx CanvasRenderingContext2D, offset Vector) {
-        ctx.drawImage(_textCanvas, offset.x, offset.y, _textCanvas.width / Browser.devicePixelRatio, _textCanvas.height / Browser.devicePixelRatio)
+        ctx.drawImage(_textCanvas, offset.x, offset.y, _textCanvas.width / Browser.powerOfTwoLessThanDevicePixelRatio, _textCanvas.height / Browser.powerOfTwoLessThanDevicePixelRatio)
     }
 }
