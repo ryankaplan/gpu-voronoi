@@ -72,6 +72,7 @@
     }
 
     catch (temp) {
+      console.log(temp);
       displayError(container);
     }
   }
