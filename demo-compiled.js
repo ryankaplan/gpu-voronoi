@@ -45,15 +45,15 @@
   }
 
   function sizeCanvas1(canvas, size) {
-    canvas.width = __imul(size, Browser.devicePixelRatio() | 0);
-    canvas.height = __imul(size, Browser.devicePixelRatio() | 0);
+    canvas.width = __imul(size, Browser.powerOfTwoLessThanDevicePixelRatio());
+    canvas.height = __imul(size, Browser.powerOfTwoLessThanDevicePixelRatio());
     canvas.style.width = size.toString() + 'px';
     canvas.style.height = size.toString() + 'px';
   }
 
   function sizeCanvas2(canvas, size) {
-    canvas.setWidth(__imul(size, Browser.devicePixelRatio() | 0));
-    canvas.setHeight(__imul(size, Browser.devicePixelRatio() | 0));
+    canvas.setWidth(__imul(size, Browser.powerOfTwoLessThanDevicePixelRatio()));
+    canvas.setHeight(__imul(size, Browser.powerOfTwoLessThanDevicePixelRatio()));
     canvas.style.setWidth(size.toString() + 'px');
     canvas.style.setHeight(size.toString() + 'px');
     return canvas;
@@ -207,7 +207,7 @@
     var content = (ref = new div(), ref.style = demoContainerStyle, ref.append1(sizeCanvas2((ref1 = new canvas(), ref1.setClass('output-canvas'), ref1), gridSize())), ref.append1((ref2 = new div(), ref2.style = controlsContainerStyle, ref2.append1((ref3 = new span(), ref3.style = labelStyle, ref3.append('Spread'), ref3)), ref2.append1((ref4 = new div(), ref4.setClass('spread-slider'), ref4.style = sliderStyle, ref4)), ref2)), ref.append1((ref5 = new div(), ref5.style = controlsContainerStyle, ref5.append1((ref6 = new span(), ref6.style = labelStyle, ref6.append('Blur'), ref6)), ref5.append1((ref7 = new div(), ref7.setClass('blur-slider'), ref7.style = sliderStyle, ref7)), ref5)), ref);
     container.appendChild(content.rawElement());
     var outputCanvas = content.findDescendentByClassName('output-canvas').rawElement();
-    in_HTMLCanvasElement.getContext2D(outputCanvas).scale(Browser.devicePixelRatio(), Browser.devicePixelRatio());
+    in_HTMLCanvasElement.getContext2D(outputCanvas).scale(Browser.powerOfTwoLessThanDevicePixelRatio(), Browser.powerOfTwoLessThanDevicePixelRatio());
     new ShadowDemoController(container, gridSize(), outputCanvas, content.findDescendentByClassName('spread-slider').rawElement(), content.findDescendentByClassName('blur-slider').rawElement());
   }
 
@@ -257,6 +257,16 @@
   }
 
   var Browser = {};
+
+  Browser.powerOfTwoLessThanDevicePixelRatio = function() {
+    var i = 0;
+
+    while (in_int.power(2, i) < Browser.devicePixelRatio()) {
+      i = i + 1 | 0;
+    }
+
+    return in_int.power(2, i);
+  };
 
   // This is a function so that we can easily stub it out
   Browser.devicePixelRatio = function() {
@@ -1009,7 +1019,7 @@
     self._outputCanvas = outputCanvas;
     self._onDraw = onDraw;
     self._ctx = in_HTMLCanvasElement.getContext2D(self._inputCanvas);
-    self._ctx.scale(Browser.devicePixelRatio(), Browser.devicePixelRatio());
+    self._ctx.scale(Browser.powerOfTwoLessThanDevicePixelRatio(), Browser.powerOfTwoLessThanDevicePixelRatio());
     self._mouseBehaviorManager.listenOnElement(self._inputCanvas);
     self._mouseBehaviorManager.listenOnElement(self._outputCanvas);
     self._mouseBehaviorManager.onDown(function(e) {
@@ -1057,14 +1067,14 @@
     self._outputCanvas = outputCanvas;
     self._textCanvas = DraggableTextDemoController.drawTextCanvas();
     self._ctx = in_HTMLCanvasElement.getContext2D(self._inputCanvas);
-    self._ctx.scale(Browser.devicePixelRatio(), Browser.devicePixelRatio());
+    self._ctx.scale(Browser.powerOfTwoLessThanDevicePixelRatio(), Browser.powerOfTwoLessThanDevicePixelRatio());
     self._logicalCanvasSize = outputCanvas.getBoundingClientRect().width;
 
     // Figure out the width of the text and set _lastKnownOffset so that the text
     // is centered in the canvas
     var halfCanvas = new Vector(self._outputCanvas.width, self._outputCanvas.height).divide1(2);
     var halfTextSize = new Vector(self._textCanvas.width, self._textCanvas.height).divide1(2);
-    self.center = halfCanvas.subtract(halfTextSize).divide1(Browser.devicePixelRatio());
+    self.center = halfCanvas.subtract(halfTextSize).divide1(Browser.powerOfTwoLessThanDevicePixelRatio());
     self.lastKnownOffset = self.center.clone();
     self._mouseBehaviorManager.listenOnElement(self._inputCanvas);
     self._mouseBehaviorManager.listenOnElement(self._outputCanvas);
@@ -1093,9 +1103,9 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.font = DraggableTextDemoController.textSizePx.toString() + 'px Baskerville';
     var width = ctx.measureText(DraggableTextDemoController.text).width;
-    canvas.width = __imul(Math.round(width) | 0, Browser.devicePixelRatio() | 0);
-    canvas.height = DraggableTextDemoController.textSizePx * Browser.devicePixelRatio() | 0;
-    ctx.scale(Browser.devicePixelRatio(), Browser.devicePixelRatio());
+    canvas.width = Math.round(width) * Browser.powerOfTwoLessThanDevicePixelRatio() | 0;
+    canvas.height = __imul(DraggableTextDemoController.textSizePx, Browser.powerOfTwoLessThanDevicePixelRatio());
+    ctx.scale(Browser.powerOfTwoLessThanDevicePixelRatio(), Browser.powerOfTwoLessThanDevicePixelRatio());
     ctx.font = DraggableTextDemoController.textSizePx.toString() + 'px Baskerville';
     in_CanvasRenderingContext2D.setFillStyle(ctx, '#333');
     ctx.textBaseline = 'hanging';
@@ -1114,7 +1124,7 @@
   };
 
   DraggableTextDemoController.prototype.drawTextToContext = function(ctx, offset) {
-    ctx.drawImage(this._textCanvas, offset.x, offset.y, this._textCanvas.width / Browser.devicePixelRatio(), this._textCanvas.height / Browser.devicePixelRatio());
+    ctx.drawImage(this._textCanvas, offset.x, offset.y, this._textCanvas.width / Browser.powerOfTwoLessThanDevicePixelRatio() | 0, this._textCanvas.height / Browser.powerOfTwoLessThanDevicePixelRatio() | 0);
   };
 
   function FishGameController(inputCanvas, outputCanvas, onDraw) {
@@ -1132,7 +1142,7 @@
     self._outputCanvas = outputCanvas;
     self._onDraw = onDraw;
     self._ctx = in_HTMLCanvasElement.getContext2D(self._inputCanvas);
-    self._ctx.scale(Browser.devicePixelRatio(), Browser.devicePixelRatio());
+    self._ctx.scale(Browser.powerOfTwoLessThanDevicePixelRatio(), Browser.powerOfTwoLessThanDevicePixelRatio());
     var canvasRect = self._inputCanvas.getBoundingClientRect();
 
     for (var i = 1, count = self._numPads; i < count; i = i + 1 | 0) {
@@ -1248,13 +1258,13 @@
     canvas.width = width;
     canvas.height = height;
     var ctx = in_HTMLCanvasElement.getContext2D(canvas);
-    ctx.scale(Browser.devicePixelRatio(), Browser.devicePixelRatio());
+    ctx.scale(Browser.powerOfTwoLessThanDevicePixelRatio(), Browser.powerOfTwoLessThanDevicePixelRatio());
     ctx.clearRect(0, 0, width, height);
 
     for (var x = -1, count1 = (width / GridDemoController.spacing | 0) + 1 | 0; x < count1; x = x + 1 | 0) {
       for (var y = -1, count = (height / GridDemoController.spacing | 0) + 1 | 0; y < count; y = y + 1 | 0) {
         ctx.beginPath();
-        ctx.rect(__imul(x, GridDemoController.spacing) + (GridDemoController.spacing / 2 | 0) | 0, __imul(y, GridDemoController.spacing) + (GridDemoController.spacing / 2 | 0) | 0, GridDemoController.dotRadius * Browser.devicePixelRatio(), GridDemoController.dotRadius * Browser.devicePixelRatio());
+        ctx.rect(__imul(x, GridDemoController.spacing) + (GridDemoController.spacing / 2 | 0) | 0, __imul(y, GridDemoController.spacing) + (GridDemoController.spacing / 2 | 0) | 0, __imul(GridDemoController.dotRadius, Browser.powerOfTwoLessThanDevicePixelRatio()), __imul(GridDemoController.dotRadius, Browser.powerOfTwoLessThanDevicePixelRatio()));
         in_CanvasRenderingContext2D.setFillStyle(ctx, Color.randomPurple().toCSS());
         ctx.fill();
       }
@@ -1296,7 +1306,7 @@
     self._userIsDragging = false;
     self._elapsedSinceLastRender = 0;
     self._canvas = canvas;
-    in_HTMLCanvasElement.getContext2D(self._canvas).scale(Browser.devicePixelRatio(), Browser.devicePixelRatio());
+    in_HTMLCanvasElement.getContext2D(self._canvas).scale(Browser.powerOfTwoLessThanDevicePixelRatio(), Browser.powerOfTwoLessThanDevicePixelRatio());
     self._logicalCanvasSize = logicalCanvasSize;
     self._gridSize = gridSize;
     self._label = label;
@@ -1750,7 +1760,7 @@
     this._mouseBehaviorManager.listenOnElement(this.inputCanvas);
     this._mouseBehaviorManager.listenOnElement(this.outputCanvas);
     this.inputContext = in_HTMLCanvasElement.getContext2D(this.inputCanvas);
-    this.inputContext.scale(Browser.devicePixelRatio(), Browser.devicePixelRatio());
+    this.inputContext.scale(Browser.powerOfTwoLessThanDevicePixelRatio(), Browser.powerOfTwoLessThanDevicePixelRatio());
     this._seedCanvas = document.createElement('canvas');
     this._seedCtx = in_HTMLCanvasElement.getContext2D(this._seedCanvas);
     this._seedCanvas.width = this.inputCanvas.width;
@@ -1790,7 +1800,7 @@
     this._drawAtPoint1(this.inputContext, point, 'rgba(255, 255, 255, 0.7)', 2);
     in_CanvasRenderingContext2D.setFillStyle1(this._seedCtx, this.sourcePattern);
     this._seedCtx.beginPath();
-    this._seedCtx.rect(point.x * Browser.devicePixelRatio() | 0, point.y * Browser.devicePixelRatio() | 0, 1, 1);
+    this._seedCtx.rect(point.x * Browser.powerOfTwoLessThanDevicePixelRatio() | 0, point.y * Browser.powerOfTwoLessThanDevicePixelRatio() | 0, 1, 1);
     this._seedCtx.fill();
   };
 
@@ -1855,16 +1865,16 @@
 
     // Output canvas has a white background
     in_CanvasRenderingContext2D.setFillStyle(this._outputCanvasCtx, 'white');
-    this._outputCanvasCtx.fillRect(0, 0, this._outputCanvas.width / Browser.devicePixelRatio(), this._outputCanvas.height / Browser.devicePixelRatio());
+    this._outputCanvasCtx.fillRect(0, 0, this._outputCanvas.width / Browser.powerOfTwoLessThanDevicePixelRatio() | 0, this._outputCanvas.height / Browser.powerOfTwoLessThanDevicePixelRatio() | 0);
 
     // Draw the shadow of the text on the background
-    this._outputCanvasCtx.drawImage(this._shadowCanvas, 0, 0, this._outputCanvas.width / Browser.devicePixelRatio(), this._outputCanvas.height / Browser.devicePixelRatio());
+    this._outputCanvasCtx.drawImage(this._shadowCanvas, 0, 0, this._outputCanvas.width / Browser.powerOfTwoLessThanDevicePixelRatio() | 0, this._outputCanvas.height / Browser.powerOfTwoLessThanDevicePixelRatio() | 0);
 
     // Draw the text to the center of the output canvas
     this._controller.drawTextToContext(this._outputCanvasCtx, this._controller.center);
     in_CanvasRenderingContext2D.setStrokeStyle(this._outputCanvasCtx, '#C5C5C5');
     this._outputCanvasCtx.lineWidth = 1;
-    this._outputCanvasCtx.strokeRect(0, 0, this._outputCanvas.width / Browser.devicePixelRatio(), this._outputCanvas.height / Browser.devicePixelRatio());
+    this._outputCanvasCtx.strokeRect(0, 0, this._outputCanvas.width / Browser.powerOfTwoLessThanDevicePixelRatio() | 0, this._outputCanvas.height / Browser.powerOfTwoLessThanDevicePixelRatio() | 0);
   };
 
   function SlidableMaxJFARoundDemoController(inputCanvas, outputCanvas, gridSize, label, slider, onError) {
